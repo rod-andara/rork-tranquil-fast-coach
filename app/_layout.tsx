@@ -54,6 +54,7 @@ function RootLayoutNav() {
           presentation: "card",
         }} 
       />
+      <Stack.Screen name="paywall" options={{ headerShown: true, title: 'Premium' }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );

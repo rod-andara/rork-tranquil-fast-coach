@@ -93,7 +93,7 @@ export default function SettingsScreen() {
           subTextColor={textSecondary}
           borderColor={border}
           onUpgradePress={() => {
-            Alert.alert('Premium', 'Premium features are coming soon. Stay tuned!');
+            router.push('/paywall');
           }}
         />
 

@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronRight, Crown, User2 } from 'lucide-react-native';
 import { borderRadius, colors, shadows, spacing, typography } from '@/constants/theme';
 
@@ -27,7 +27,14 @@ function ProfileCard({ testID, name, email, onUpgradePress, backgroundColor = co
         </View>
       </View>
 
-      <TouchableOpacity style={styles.upgradeRow} onPress={onUpgradePress} activeOpacity={0.8} testID="upgrade-cta">
+      <TouchableOpacity
+        style={styles.upgradeRow}
+        onPress={onUpgradePress}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Upgrade to Premium"
+        testID="upgrade-cta"
+      >
         <View style={styles.upgradeLeft}>
           <Crown size={18} color={colors.primary} />
           <Text style={[styles.upgradeText, { color: textColor }]}>Upgrade to Premium</Text>

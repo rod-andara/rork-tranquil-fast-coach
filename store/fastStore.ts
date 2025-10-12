@@ -28,6 +28,7 @@ export interface FastState {
   notificationsEnabled: boolean;
   isDarkMode: boolean;
   onboardingComplete: boolean;
+  isPremium: boolean;
   
   startFast: (planOrDuration: number | string) => void;
   pauseFast: () => void;
@@ -38,6 +39,7 @@ export interface FastState {
   setNotificationsEnabled: (enabled: boolean) => void;
   setDarkMode: (enabled: boolean) => void;
   completeOnboarding: () => void;
+  setPremium: (value: boolean) => void;
   loadFromStorage: () => Promise<void>;
   saveToStorage: () => Promise<void>;
 }
@@ -52,6 +54,7 @@ export const useFastStore = create<FastState>((set, get) => ({
   notificationsEnabled: true,
   isDarkMode: false,
   onboardingComplete: false,
+  isPremium: false,
 
   startFast: (planOrDuration: number | string) => {
     const state = get();
@@ -150,6 +153,11 @@ export const useFastStore = create<FastState>((set, get) => ({
     get().saveToStorage();
   },
 
+  setPremium: (value: boolean) => {
+    set({ isPremium: value });
+    get().saveToStorage();
+  },
+
   loadFromStorage: async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
@@ -173,6 +181,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         notificationsEnabled: state.notificationsEnabled,
         isDarkMode: state.isDarkMode,
         onboardingComplete: state.onboardingComplete,
+        isPremium: state.isPremium,
       };
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch (error) {

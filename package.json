@@ -34,7 +34,7 @@
     "expo-symbols": "~0.4.4",
     "expo-system-ui": "~5.0.6",
     "expo-task-manager": "~13.1.6",
-    "expo-web-browser": "^14.2.0",
+    "expo-web-browser": "~14.2.0",
     "lucide-react-native": "^0.475.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
@@ -46,6 +46,7 @@
     "react-native-screens": "~4.10.0",
     "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
+    "react-native-webview": "13.13.5",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
