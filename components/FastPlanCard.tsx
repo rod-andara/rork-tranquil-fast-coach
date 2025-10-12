@@ -35,7 +35,7 @@ export default function FastPlanCard({
       activeOpacity={0.7}
     >
       {popular && (
-        <View style={styles.popularBadge}>
+        <View style={styles.popularBadgeInline}>
           <Text style={styles.popularText}>Most Popular</Text>
         </View>
       )}
@@ -89,14 +89,13 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     backgroundColor: '#F5F3FF',
   },
-  popularBadge: {
-    position: 'absolute',
-    top: spacing.md,
-    left: spacing.md,
+  popularBadgeInline: {
+    alignSelf: 'flex-start',
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
+    marginBottom: spacing.sm,
   },
   popularText: {
     ...typography.small,

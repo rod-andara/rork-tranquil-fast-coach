@@ -92,7 +92,9 @@ export default function SettingsScreen() {
           textColor={text}
           subTextColor={textSecondary}
           borderColor={border}
-          onUpgradePress={() => router.push('/onboarding/choose-plan')}
+          onUpgradePress={() => {
+            Alert.alert('Premium', 'Premium features are coming soon. Stay tuned!');
+          }}
         />
 
         <View style={styles.section}>
