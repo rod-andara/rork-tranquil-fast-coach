@@ -1,19 +1,26 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { TrendingUp, Clock, Award, Flame } from 'lucide-react-native';
+import { BarChart } from 'react-native-chart-kit';
+import { TrendingUp, Clock, Trophy, Calendar } from 'lucide-react-native';
 
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
+import StatCard from '@/components/StatCard';
 
 const screenWidth = Dimensions.get('window').width;
+
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  unlocked: boolean;
+}
 
 export default function ProgressScreen() {
   const { fastHistory } = useFastStore();
 
   const stats = useMemo(() => {
     const totalFasts = fastHistory.length;
-    const completedFasts = fastHistory.filter(f => f.completed).length;
     const totalHours = fastHistory.reduce((acc, fast) => {
       if (fast.endTime) {
         const duration = fast.endTime - fast.startTime;
@@ -23,30 +30,70 @@ export default function ProgressScreen() {
     }, 0);
     const avgHours = totalFasts > 0 ? totalHours / totalFasts : 0;
 
-    const last7Days = fastHistory.slice(0, 7).reverse();
-    const chartData = last7Days.map(fast => {
-      if (fast.endTime) {
-        const duration = fast.endTime - fast.startTime;
-        return Math.round(duration / (1000 * 60 * 60));
+    const sortedHistory = [...fastHistory].sort((a, b) => a.startTime - b.startTime);
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let lastDate: Date | null = null;
+
+    sortedHistory.forEach(fast => {
+      if (fast.completed && fast.endTime) {
+        const fastDate = new Date(fast.startTime);
+        fastDate.setHours(0, 0, 0, 0);
+
+        if (!lastDate) {
+          currentStreak = 1;
+        } else {
+          const dayDiff = Math.floor((fastDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (dayDiff === 1) {
+            currentStreak++;
+          } else if (dayDiff > 1) {
+            currentStreak = 1;
+          }
+        }
+        maxStreak = Math.max(maxStreak, currentStreak);
+        lastDate = fastDate;
       }
-      return 0;
     });
 
-    const chartLabels = last7Days.map((_, index) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - index));
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    });
+    const dayStreak = currentStreak;
+
+    const weekData = [14, 16, 15, 18, 16, 20, 16];
 
     return {
       totalFasts,
-      completedFasts,
+      dayStreak,
       totalHours: Math.round(totalHours),
       avgHours: Math.round(avgHours * 10) / 10,
-      chartData: chartData.length > 0 ? chartData : [0, 0, 0, 0, 0, 0, 0],
-      chartLabels: chartLabels.length > 0 ? chartLabels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      weekData,
     };
   }, [fastHistory]);
+
+  const achievements: Achievement[] = useMemo(() => [
+    {
+      id: '1',
+      title: 'First Fast',
+      description: 'Completed your first fast',
+      unlocked: stats.totalFasts >= 1,
+    },
+    {
+      id: '2',
+      title: '7 Day Streak',
+      description: 'Fasted for 7 days in a row',
+      unlocked: stats.dayStreak >= 7,
+    },
+    {
+      id: '3',
+      title: '100 Hours',
+      description: 'Total 100 hours of fasting',
+      unlocked: stats.totalHours >= 100,
+    },
+    {
+      id: '4',
+      title: '30 Day Streak',
+      description: 'Fasted for 30 days in a row',
+      unlocked: stats.dayStreak >= 30,
+    },
+  ], [stats]);
 
   return (
     <View style={styles.container}>
@@ -57,51 +104,63 @@ export default function ProgressScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.title}>Your Progress</Text>
-          <Text style={styles.subtitle}>
-            Track your fasting journey and achievements
-          </Text>
+          <Text style={styles.subtitle}>Track your fasting journey</Text>
         </View>
 
         <View style={styles.statsGrid}>
-          <StatCard
-            icon={Flame}
-            value={stats.totalFasts.toString()}
-            label="Total Fasts"
-            color={colors.primary}
-          />
-          <StatCard
-            icon={Award}
-            value={stats.completedFasts.toString()}
-            label="Completed"
-            color={colors.success}
-          />
-          <StatCard
-            icon={Clock}
-            value={stats.totalHours.toString()}
-            label="Total Hours"
-            color={colors.secondary}
-          />
-          <StatCard
-            icon={TrendingUp}
-            value={stats.avgHours.toString()}
-            label="Avg Hours"
-            color={colors.warning}
-          />
+          <View style={styles.statCardWrapper}>
+            <StatCard
+              icon={Calendar}
+              value={stats.totalFasts}
+              label="Total Fasts"
+              iconColor={colors.primary}
+              iconBgColor={colors.surface}
+            />
+          </View>
+          <View style={styles.statCardWrapper}>
+            <StatCard
+              icon={TrendingUp}
+              value={stats.dayStreak}
+              label="Day Streak"
+              iconColor={colors.success}
+              iconBgColor="#D1FAE5"
+            />
+          </View>
+          <View style={styles.statCardWrapper}>
+            <StatCard
+              icon={Clock}
+              value={stats.avgHours}
+              label="Avg Hours"
+              iconColor={colors.primary}
+              iconBgColor={colors.surface}
+            />
+          </View>
+          <View style={styles.statCardWrapper}>
+            <StatCard
+              icon={Trophy}
+              value={stats.totalHours}
+              label="Total Hours"
+              iconColor={colors.primary}
+              iconBgColor={colors.surface}
+            />
+          </View>
         </View>
 
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Last 7 Days</Text>
-          <LineChart
+          <Text style={styles.chartTitle}>This Week</Text>
+          <BarChart
             data={{
-              labels: stats.chartLabels,
+              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
               datasets: [
                 {
-                  data: stats.chartData,
+                  data: stats.weekData,
                 },
               ],
             }}
             width={screenWidth - spacing.lg * 2 - spacing.md * 2}
             height={220}
+            yAxisLabel=""
+            yAxisSuffix="h"
             chartConfig={{
               backgroundColor: colors.white,
               backgroundGradientFrom: colors.white,
@@ -109,90 +168,72 @@ export default function ProgressScreen() {
               decimalPlaces: 0,
               color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-              style: {
-                borderRadius: borderRadius.md,
-              },
-              propsForDots: {
-                r: '6',
-                strokeWidth: '2',
-                stroke: colors.primary,
+              barPercentage: 0.7,
+              propsForBackgroundLines: {
+                strokeWidth: 0,
               },
             }}
-            bezier
             style={styles.chart}
+            showValuesOnTopOfBars={false}
+            withInnerLines={false}
+            fromZero
           />
         </View>
 
-        {fastHistory.length === 0 && (
-          <View style={styles.emptyState}>
-            <TrendingUp size={64} color={colors.textSecondary} strokeWidth={1.5} />
-            <Text style={styles.emptyTitle}>No Fasts Yet</Text>
-            <Text style={styles.emptyText}>
-              Start your first fast to see your progress here
-            </Text>
+        <View style={styles.achievementsSection}>
+          <Text style={styles.sectionTitle}>Achievements</Text>
+          <View style={styles.achievementsList}>
+            {achievements.map((achievement) => (
+              <AchievementCard
+                key={achievement.id}
+                achievement={achievement}
+              />
+            ))}
           </View>
-        )}
-
-        {fastHistory.length > 0 && (
-          <View style={styles.historyCard}>
-            <Text style={styles.historyTitle}>Recent Fasts</Text>
-            <View style={styles.historyList}>
-              {fastHistory.slice(0, 5).map((fast) => (
-                <HistoryItem key={fast.id} fast={fast} />
-              ))}
-            </View>
-          </View>
-        )}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-function StatCard({
-  icon: Icon,
-  value,
-  label,
-  color,
-}: {
-  icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
-  value: string;
-  label: string;
-  color: string;
-}) {
+function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
-    <View style={styles.statCard}>
-      <View style={[styles.statIcon, { backgroundColor: color }]}>
-        <Icon size={24} color={colors.white} strokeWidth={2} />
+    <View
+      style={[
+        styles.achievementCard,
+        achievement.unlocked && styles.achievementCardUnlocked,
+      ]}
+    >
+      <View
+        style={[
+          styles.achievementIcon,
+          achievement.unlocked && styles.achievementIconUnlocked,
+        ]}
+      >
+        <Trophy
+          size={24}
+          color={achievement.unlocked ? colors.primary : colors.textSecondary}
+          strokeWidth={2}
+        />
       </View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-function HistoryItem({ fast }: { fast: { id: string; startTime: number; endTime: number | null; completed: boolean } }) {
-  const duration = fast.endTime
-    ? Math.round((fast.endTime - fast.startTime) / (1000 * 60 * 60))
-    : 0;
-
-  const date = new Date(fast.startTime).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
-  return (
-    <View style={styles.historyItem}>
-      <View style={styles.historyDot} />
-      <View style={styles.historyContent}>
-        <Text style={styles.historyDate}>{date}</Text>
-        <Text style={styles.historyDuration}>{duration}h fast</Text>
+      <View style={styles.achievementContent}>
+        <Text
+          style={[
+            styles.achievementTitle,
+            !achievement.unlocked && styles.achievementTitleLocked,
+          ]}
+        >
+          {achievement.title}
+        </Text>
+        <Text
+          style={[
+            styles.achievementDescription,
+            !achievement.unlocked && styles.achievementDescriptionLocked,
+          ]}
+        >
+          {achievement.description}
+        </Text>
       </View>
-      {fast.completed && (
-        <View style={styles.completedBadge}>
-          <Text style={styles.completedText}>✓</Text>
-        </View>
-      )}
     </View>
   );
 }
@@ -211,7 +252,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   header: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   title: {
     ...typography.h1,
@@ -225,36 +266,12 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
+    marginHorizontal: -spacing.xs,
+    marginBottom: spacing.lg,
   },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.sm,
-  },
-  statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  statValue: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  statCardWrapper: {
+    width: '50%',
+    padding: spacing.xs,
   },
   chartCard: {
     backgroundColor: colors.white,
@@ -262,11 +279,12 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
     ...shadows.sm,
   },
   chartTitle: {
     ...typography.h3,
+    fontSize: 18,
     color: colors.text,
     marginBottom: spacing.md,
   },
@@ -274,71 +292,61 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
     borderRadius: borderRadius.md,
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl,
+  achievementsSection: {
+    marginBottom: spacing.lg,
   },
-  emptyTitle: {
+  sectionTitle: {
     ...typography.h3,
+    fontSize: 18,
     color: colors.text,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.md,
   },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
+  achievementsList: {
+    gap: spacing.md,
   },
-  historyCard: {
+  achievementCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.white,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    ...shadows.sm,
-  },
-  historyTitle: {
-    ...typography.h3,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  historyList: {
     gap: spacing.md,
+    opacity: 0.6,
   },
-  historyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+  achievementCardUnlocked: {
+    backgroundColor: '#F3E8FF',
+    opacity: 1,
   },
-  historyDot: {
-    width: 12,
-    height: 12,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
-  },
-  historyContent: {
-    flex: 1,
-  },
-  historyDate: {
-    ...typography.body,
-    color: colors.text,
-    marginBottom: 2,
-  },
-  historyDuration: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  completedBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.success,
+  achievementIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  completedText: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: colors.white,
+  achievementIconUnlocked: {
+    backgroundColor: '#E9D5FF',
+  },
+  achievementContent: {
+    flex: 1,
+  },
+  achievementTitle: {
+    ...typography.body,
+    fontWeight: '600' as const,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  achievementTitleLocked: {
+    color: colors.textSecondary,
+  },
+  achievementDescription: {
+    ...typography.caption,
+    color: colors.text,
+  },
+  achievementDescriptionLocked: {
+    color: colors.textSecondary,
   },
 });

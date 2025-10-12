@@ -1,134 +1,227 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  Image,
+} from 'react-native';
+import { Search, ChevronRight, BookOpen, Utensils } from 'lucide-react-native';
 
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 
+type ContentType = 'All' | 'Recipes' | 'Articles' | 'Products';
+
+interface Recipe {
+  id: string;
+  type: 'recipe';
+  title: string;
+  description: string;
+  image: string;
+  tags: string[];
+}
+
 interface Article {
   id: string;
+  type: 'article';
   title: string;
-  content: string;
+  description: string;
+  source: string;
   category: string;
 }
 
-const ARTICLES: Article[] = [
+type ContentItem = Recipe | Article;
+
+const CONTENT: ContentItem[] = [
   {
     id: '1',
-    title: 'What is Intermittent Fasting?',
-    category: 'Basics',
-    content: 'Intermittent fasting is an eating pattern that cycles between periods of fasting and eating. It does not specify which foods you should eat but rather when you should eat them. Common methods include the 16/8 method, where you fast for 16 hours and eat during an 8-hour window.',
+    type: 'recipe',
+    title: 'Mediterranean Quinoa Breakfast Bowl',
+    description: 'Perfect for breaking your fast with 25g of protein and healthy fats',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400',
+    tags: ['High Protein', 'Mediterranean', 'Quick'],
   },
   {
     id: '2',
-    title: 'Benefits of Fasting',
-    category: 'Health',
-    content: 'Research suggests intermittent fasting may help with weight loss, improve metabolic health, reduce inflammation, and support cellular repair processes. It may also improve brain function and increase longevity. Always consult with a healthcare provider before starting.',
+    type: 'recipe',
+    title: 'Salmon Avocado Power Bowl',
+    description: 'Low-carb, high-fat meal packed with omega-3s and nutrients',
+    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
+    tags: ['Keto', 'Low Carb', 'Healthy Fats'],
   },
   {
     id: '3',
-    title: 'How to Start Safely',
-    category: 'Getting Started',
-    content: 'Begin with a shorter fasting window like 12:12 and gradually increase. Stay hydrated during fasting periods. Break your fast with nutritious, whole foods. Listen to your body and adjust as needed. If you have any medical conditions, consult your doctor first.',
+    type: 'recipe',
+    title: 'Complete Nutrition Buddha Bowl',
+    description: 'Nutrient-dense meal with everything you need in one bowl',
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
+    tags: ['OMAD', 'Complete Nutrition', 'Plant-Based'],
   },
   {
     id: '4',
-    title: 'What Can I Drink While Fasting?',
-    category: 'FAQ',
-    content: 'During fasting periods, you can drink water, black coffee, and unsweetened tea. These beverages contain minimal to no calories and will not break your fast. Avoid adding sugar, milk, or cream to your drinks during the fasting window.',
+    type: 'article',
+    title: 'The Complete Guide to Intermittent Fasting',
+    description: 'Evidence-based overview of intermittent fasting benefits and methods',
+    source: 'Healthline',
+    category: 'Science',
   },
   {
     id: '5',
-    title: 'Common Mistakes to Avoid',
-    category: 'Tips',
-    content: 'Avoid overeating during your eating window, not staying hydrated, choosing unhealthy foods, and being too rigid with your schedule. Remember that consistency is more important than perfection. Be patient with yourself as you adapt to this new eating pattern.',
+    type: 'article',
+    title: 'Essential Electrolytes During Fasting',
+    description: 'Why electrolytes matter and how to maintain proper balance while fasting',
+    source: 'Healthline',
+    category: 'Supplements',
   },
   {
     id: '6',
-    title: 'Breaking Your Fast',
+    type: 'article',
+    title: 'What to Eat When Breaking Your Fast',
+    description: 'Optimize your eating window with the right foods for better results',
+    source: 'Mayo Clinic',
     category: 'Nutrition',
-    content: 'Break your fast with easily digestible foods like fruits, vegetables, and lean proteins. Avoid heavy, processed foods immediately after fasting. Start with a small meal and wait 30-60 minutes before eating a larger meal. This helps your digestive system adjust.',
+  },
+  {
+    id: '7',
+    type: 'article',
+    title: 'Exercise and Intermittent Fasting: The Perfect Combination',
+    description: 'How to combine fasting with exercise for optimal results',
+    source: 'Healthline',
+    category: 'Fitness',
   },
 ];
 
 export default function LearnScreen() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTab, setSelectedTab] = useState<ContentType>('All');
 
-  const toggleArticle = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
+  const filteredContent = CONTENT.filter((item) => {
+    const matchesSearch =
+      searchQuery === '' ||
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesTab =
+      selectedTab === 'All' ||
+      (selectedTab === 'Recipes' && item.type === 'recipe') ||
+      (selectedTab === 'Articles' && item.type === 'article');
+
+    return matchesSearch && matchesTab;
+  });
+
+  const tabs: ContentType[] = ['All', 'Recipes', 'Articles', 'Products'];
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Learn About Fasting</Text>
-          <Text style={styles.subtitle}>
-            Discover the science and best practices
-          </Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Learn & Grow</Text>
+        <Text style={styles.subtitle}>Recipes, tips, and expert guidance</Text>
+
+        <View style={styles.searchContainer}>
+          <Search size={20} color={colors.textSecondary} strokeWidth={2} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search recipes, articles, and products..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
 
-        <View style={styles.articles}>
-          {ARTICLES.map((article) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              isExpanded={expandedId === article.id}
-              onToggle={() => toggleArticle(article.id)}
-            />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabsContainer}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={[
+                styles.tab,
+                selectedTab === tab && styles.tabActive,
+              ]}
+              onPress={() => setSelectedTab(tab)}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  selectedTab === tab && styles.tabTextActive,
+                ]}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
+      </View>
 
-        <View style={styles.disclaimerCard}>
-          <Text style={styles.disclaimerTitle}>Important Note</Text>
-          <Text style={styles.disclaimerText}>
-            This information is for educational purposes only and should not replace professional medical advice. Always consult with a healthcare provider before starting any new diet or fasting regimen, especially if you have existing health conditions.
-          </Text>
-        </View>
-      </ScrollView>
+      <FlatList
+        data={filteredContent}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => {
+          if (item.type === 'recipe') {
+            return <RecipeCard recipe={item} />;
+          } else {
+            return <ArticleCard article={item} />;
+          }
+        }}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          filteredContent.some((item) => item.type === 'recipe') ? (
+            <View style={styles.sectionHeader}>
+              <Utensils size={20} color={colors.primary} strokeWidth={2} />
+              <Text style={styles.sectionTitle}>Healthy Recipes</Text>
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 }
 
-function ArticleCard({
-  article,
-  isExpanded,
-  onToggle,
-}: {
-  article: Article;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
+function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <TouchableOpacity
-      style={styles.articleCard}
-      onPress={onToggle}
-      activeOpacity={0.7}
-    >
-      <View style={styles.articleHeader}>
-        <View style={styles.articleIcon}>
-          <BookOpen size={20} color={colors.primary} strokeWidth={2} />
+    <TouchableOpacity style={styles.recipeCard} activeOpacity={0.7}>
+      <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+      <View style={styles.recipeContent}>
+        <View style={styles.recipeHeader}>
+          <Text style={styles.recipeTitle}>{recipe.title}</Text>
+          <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2} />
         </View>
-        <View style={styles.articleInfo}>
-          <Text style={styles.articleCategory}>{article.category}</Text>
-          <Text style={styles.articleTitle}>{article.title}</Text>
-        </View>
-        <View style={styles.expandIcon}>
-          {isExpanded ? (
-            <ChevronUp size={24} color={colors.textSecondary} />
-          ) : (
-            <ChevronDown size={24} color={colors.textSecondary} />
-          )}
+        <Text style={styles.recipeDescription}>{recipe.description}</Text>
+        <View style={styles.recipeTags}>
+          {recipe.tags.map((tag, index) => (
+            <View key={index} style={styles.tag}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
         </View>
       </View>
-      {isExpanded && (
-        <View style={styles.articleContent}>
-          <Text style={styles.articleText}>{article.content}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function ArticleCard({ article }: { article: Article }) {
+  return (
+    <TouchableOpacity style={styles.articleCard} activeOpacity={0.7}>
+      <View style={styles.articleIcon}>
+        <BookOpen size={20} color={colors.primary} strokeWidth={2} />
+      </View>
+      <View style={styles.articleContent}>
+        <View style={styles.articleHeader}>
+          <Text style={styles.articleCategory}>{article.category}</Text>
+          <Text style={styles.articleSource}>• {article.source}</Text>
         </View>
-      )}
+        <Text style={styles.articleTitle}>{article.title}</Text>
+        <Text style={styles.articleDescription}>{article.description}</Text>
+      </View>
+      <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2} />
     </TouchableOpacity>
   );
 }
@@ -138,16 +231,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+  header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  header: {
-    marginBottom: spacing.xl,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.background,
   },
   title: {
     ...typography.h1,
@@ -157,23 +245,132 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
+    marginBottom: spacing.md,
   },
-  articles: {
-    gap: spacing.md,
-    marginBottom: spacing.xl,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    ...typography.body,
+    color: colors.text,
+    padding: 0,
+  },
+  tabsContainer: {
+    marginHorizontal: -spacing.lg,
+    paddingHorizontal: spacing.lg,
+  },
+  tabsContent: {
+    gap: spacing.sm,
+  },
+  tab: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  tabActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  tabText: {
+    ...typography.body,
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: colors.text,
+  },
+  tabTextActive: {
+    color: colors.white,
+  },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    ...typography.h3,
+    fontSize: 18,
+    color: colors.text,
+  },
+  recipeCard: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  recipeImage: {
+    width: '100%',
+    height: 180,
+    backgroundColor: colors.surface,
+  },
+  recipeContent: {
+    padding: spacing.md,
+  },
+  recipeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  recipeTitle: {
+    ...typography.body,
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: colors.text,
+    flex: 1,
+  },
+  recipeDescription: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  recipeTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  tag: {
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+  },
+  tagText: {
+    ...typography.small,
+    color: colors.primary,
+    fontWeight: '500' as const,
   },
   articleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.white,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    ...shadows.sm,
-  },
-  articleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: spacing.md,
     gap: spacing.md,
+    ...shadows.sm,
   },
   articleIcon: {
     width: 40,
@@ -183,50 +380,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  articleInfo: {
+  articleContent: {
     flex: 1,
+  },
+  articleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
   },
   articleCategory: {
     ...typography.small,
     color: colors.primary,
     fontWeight: '600' as const,
-    marginBottom: 2,
+  },
+  articleSource: {
+    ...typography.small,
+    color: colors.textSecondary,
+    marginLeft: spacing.xs,
   },
   articleTitle: {
     ...typography.body,
+    fontSize: 15,
     fontWeight: '600' as const,
-    color: colors.text,
-  },
-  expandIcon: {
-    padding: spacing.xs,
-  },
-  articleContent: {
-    marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  articleText: {
-    ...typography.body,
-    color: colors.text,
-    lineHeight: 24,
-  },
-  disclaimerCard: {
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  disclaimerTitle: {
-    ...typography.h3,
-    fontSize: 16,
     color: colors.text,
     marginBottom: spacing.xs,
   },
-  disclaimerText: {
+  articleDescription: {
     ...typography.caption,
     color: colors.textSecondary,
-    lineHeight: 20,
   },
 });
