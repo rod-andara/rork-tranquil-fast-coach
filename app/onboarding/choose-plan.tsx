@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
-import { Clock } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Path } from 'react-native-svg';
 
+import FastPlanCard from '@/components/FastPlanCard';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
 
@@ -12,113 +12,161 @@ const PLANS = [
   {
     id: '16:8' as FastingPlan,
     title: '16:8',
-    subtitle: 'Beginner Friendly',
-    description: '16 hours fasting, 8 hours eating',
+    description: 'Fast for 16 hours, eat within an 8-hour window. Perfect for beginners.',
+    fastHours: 16,
+    eatHours: 8,
     popular: true,
   },
   {
     id: '18:6' as FastingPlan,
     title: '18:6',
-    subtitle: 'Intermediate',
-    description: '18 hours fasting, 6 hours eating',
+    description: 'Fast for 18 hours, eat within a 6-hour window. Great for weight loss.',
+    fastHours: 18,
+    eatHours: 6,
     popular: false,
   },
   {
     id: '20:4' as FastingPlan,
-    title: '20:4',
-    subtitle: 'Advanced',
-    description: '20 hours fasting, 4 hours eating',
+    title: '20:4 (Warrior)',
+    description: 'Fast for 20 hours with a 4-hour eating window. Advanced fasting.',
+    fastHours: 20,
+    eatHours: 4,
+    popular: false,
+  },
+  {
+    id: '23:1' as FastingPlan,
+    title: 'OMAD (23:1)',
+    description: 'One meal a day. Maximum fasting benefits for experienced fasters.',
+    fastHours: 23,
+    eatHours: 1,
+    popular: false,
+  },
+  {
+    id: '14:10' as FastingPlan,
+    title: '14:10',
+    description: 'Fast for 14 hours, eat within 10 hours. Gentle introduction to fasting.',
+    fastHours: 14,
+    eatHours: 10,
     popular: false,
   },
 ];
 
+function ClockIllustration() {
+  return (
+    <Svg width="120" height="120" viewBox="0 0 120 120">
+      <Circle cx="60" cy="60" r="50" fill="#E0E7FF" />
+      <Circle cx="60" cy="60" r="45" fill="#FFFFFF" stroke="#D1D5DB" strokeWidth="2" />
+      <Path d="M60 60 L60 30" stroke="#6B7280" strokeWidth="3" strokeLinecap="round" />
+      <Path d="M60 60 L80 60" stroke="#6B7280" strokeWidth="3" strokeLinecap="round" />
+      <Circle cx="60" cy="60" r="4" fill="#6B7280" />
+      <Circle cx="60" cy="20" r="3" fill="#D1D5DB" />
+      <Circle cx="60" cy="100" r="3" fill="#D1D5DB" />
+      <Circle cx="20" cy="60" r="3" fill="#D1D5DB" />
+      <Circle cx="100" cy="60" r="3" fill="#D1D5DB" />
+    </Svg>
+  );
+}
+
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
   const { setSelectedPlan: saveSelectedPlan, completeOnboarding } = useFastStore();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
   const handleContinue = () => {
     saveSelectedPlan(selectedPlan);
     completeOnboarding();
-    router.replace('/home');
+    router.replace('/(tabs)/home');
   };
 
+  const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
+
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <LinearGradient
-        colors={[colors.secondary, colors.primary]}
-        style={styles.gradient}
-      >
-        <ScrollView 
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <Clock size={48} color={colors.white} strokeWidth={1.5} />
+            <View style={styles.illustrationContainer}>
+              <ClockIllustration />
             </View>
             <Text style={styles.title}>Choose Your Plan</Text>
             <Text style={styles.subtitle}>
               Select a fasting schedule that fits your lifestyle
             </Text>
+
+            <View style={styles.dotsContainer}>
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={[styles.dot, styles.dotActive]} />
+            </View>
           </View>
 
           <View style={styles.plans}>
             {PLANS.map((plan) => (
-              <TouchableOpacity
+              <FastPlanCard
                 key={plan.id}
-                style={[
-                  styles.planCard,
-                  selectedPlan === plan.id && styles.planCardSelected,
-                ]}
+                id={plan.id}
+                title={plan.title}
+                description={plan.description}
+                fastHours={plan.fastHours}
+                eatHours={plan.eatHours}
+                popular={plan.popular}
+                selected={selectedPlan === plan.id}
                 onPress={() => setSelectedPlan(plan.id)}
-                activeOpacity={0.8}
-              >
-                {plan.popular && (
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularText}>POPULAR</Text>
-                  </View>
-                )}
-                <Text style={styles.planTitle}>{plan.title}</Text>
-                <Text style={styles.planSubtitle}>{plan.subtitle}</Text>
-                <Text style={styles.planDescription}>{plan.description}</Text>
-                {selectedPlan === plan.id && (
-                  <View style={styles.checkmark}>
-                    <Text style={styles.checkmarkText}>✓</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+              />
             ))}
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <Animated.View
+          style={[
+            styles.footer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
           <TouchableOpacity
             style={styles.button}
             onPress={handleContinue}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Start My Journey</Text>
+            <Text style={styles.buttonText}>
+              Start {selectedPlanData?.title} Plan
+            </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.backText}>Back</Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    </SafeAreaView>
+        </Animated.View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondary,
+    backgroundColor: '#F3F4F6',
   },
-  gradient: {
+  safeArea: {
     flex: 1,
   },
   scrollView: {
@@ -127,111 +175,62 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   header: {
     alignItems: 'center',
     marginBottom: spacing.xl,
   },
-  iconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: borderRadius.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  illustrationContainer: {
     marginBottom: spacing.lg,
   },
   title: {
     ...typography.h1,
-    fontSize: 32,
-    color: colors.white,
+    fontSize: 28,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.sm,
+    fontWeight: '700' as const,
   },
   subtitle: {
     ...typography.body,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: colors.textSecondary,
     textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: borderRadius.full,
+    backgroundColor: '#D8B4FE',
+  },
+  dotActive: {
+    backgroundColor: colors.primary,
+    width: 24,
   },
   plans: {
     gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  planCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    position: 'relative',
-  },
-  planCardSelected: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderColor: colors.white,
-  },
-  popularBadge: {
-    position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-    backgroundColor: colors.warning,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-  },
-  popularText: {
-    ...typography.small,
-    fontWeight: '700' as const,
-    color: colors.white,
-  },
-  planTitle: {
-    ...typography.h2,
-    color: colors.white,
-    marginBottom: spacing.xs,
-  },
-  planSubtitle: {
-    ...typography.body,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: spacing.sm,
-  },
-  planDescription: {
-    ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  checkmark: {
-    position: 'absolute',
-    top: spacing.md,
-    right: spacing.md,
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmarkText: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: colors.primary,
   },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
-    gap: spacing.md,
+    backgroundColor: '#F3F4F6',
   },
   button: {
-    backgroundColor: colors.white,
-    paddingVertical: spacing.md,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
   buttonText: {
     ...typography.h3,
-    color: colors.primary,
-  },
-  backText: {
-    ...typography.body,
+    fontSize: 18,
     color: colors.white,
-    textAlign: 'center',
   },
 });

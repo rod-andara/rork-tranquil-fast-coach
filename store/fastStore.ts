@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-export type FastingPlan = '16:8' | '18:6' | '20:4' | 'custom';
+export type FastingPlan = '14:10' | '16:8' | '18:6' | '20:4' | '23:1' | 'custom';
 
 export interface FastSession {
   id: string;

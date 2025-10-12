@@ -1,53 +1,116 @@
 import { router } from 'expo-router';
-import { Sparkles } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 
-export default function WelcomeScreen() {
+function MeditatingIllustration() {
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <LinearGradient
-        colors={[colors.primary, colors.primaryLight]}
-        style={styles.gradient}
-      >
-        <View style={styles.content}>
-          <View style={styles.iconContainer}>
-            <Sparkles size={64} color={colors.white} strokeWidth={1.5} />
-          </View>
-
-          <Text style={styles.title}>Welcome to{'\n'}Tranquil Fast Coach</Text>
-          <Text style={styles.subtitle}>
-            Your personal guide to mindful intermittent fasting
-          </Text>
-
-          <View style={styles.features}>
-            <FeatureItem text="Track your fasting journey" />
-            <FeatureItem text="Achieve your wellness goals" />
-            <FeatureItem text="Build healthy habits" />
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push('/onboarding/track-succeed')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
-      </LinearGradient>
-    </SafeAreaView>
+    <Svg width="200" height="200" viewBox="0 0 200 200">
+      <Circle cx="100" cy="60" r="25" fill="#6D28D9" />
+      <Path
+        d="M75 85 Q75 75 85 75 L115 75 Q125 75 125 85 L125 110 Q125 120 115 120 L85 120 Q75 120 75 110 Z"
+        fill="#E0E7FF"
+      />
+      <Path
+        d="M60 110 L75 95 L75 110 Z"
+        fill="#FDE68A"
+      />
+      <Path
+        d="M125 95 L140 110 L125 110 Z"
+        fill="#FDE68A"
+      />
+      <Path
+        d="M85 120 L70 145 Q65 155 75 160 L85 155 Z"
+        fill="#E0E7FF"
+      />
+      <Path
+        d="M115 120 L130 145 Q135 155 125 160 L115 155 Z"
+        fill="#E0E7FF"
+      />
+      <Circle cx="90" cy="55" r="3" fill="#1F2937" />
+      <Circle cx="110" cy="55" r="3" fill="#1F2937" />
+      <Path
+        d="M95 65 Q100 68 105 65"
+        stroke="#1F2937"
+        strokeWidth="2"
+        fill="none"
+      />
+      <Circle cx="85" cy="40" r="8" fill="#6D28D9" opacity="0.3" />
+      <Circle cx="100" cy="35" r="6" fill="#6D28D9" opacity="0.3" />
+      <Circle cx="115" cy="40" r="8" fill="#6D28D9" opacity="0.3" />
+    </Svg>
   );
 }
 
-function FeatureItem({ text }: { text: string }) {
+export default function WelcomeScreen() {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
   return (
-    <View style={styles.featureItem}>
-      <View style={styles.featureDot} />
-      <Text style={styles.featureText}>{text}</Text>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <View style={styles.content}>
+          <View style={styles.illustrationContainer}>
+            <MeditatingIllustration />
+          </View>
+
+          <Text style={styles.title}>Welcome to FastTrack</Text>
+          <Text style={styles.subtitle}>
+            Your personal fasting coach to help you reach your wellness goals with ease.
+          </Text>
+
+          <View style={styles.dotsContainer}>
+            <View style={[styles.dot, styles.dotActive]} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+          </View>
+        </View>
+
+        <Animated.View
+          style={[
+            styles.footer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push('/onboarding/track-succeed')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Continue</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              router.replace('/(tabs)/home');
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </SafeAreaView>
     </View>
   );
 }
@@ -55,68 +118,77 @@ function FeatureItem({ text }: { text: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary,
+    backgroundColor: '#E9D5FF',
   },
-  gradient: {
+  safeArea: {
     flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: spacing.xxl,
   },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: borderRadius.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  illustrationContainer: {
+    width: 280,
+    height: 280,
+    backgroundColor: '#DDD6FE',
+    borderRadius: borderRadius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   title: {
     ...typography.h1,
-    fontSize: 36,
-    color: colors.white,
+    fontSize: 32,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.md,
+    fontWeight: '700' as const,
   },
   subtitle: {
-    ...typography.bodyLarge,
-    color: 'rgba(255, 255, 255, 0.9)',
+    ...typography.body,
+    color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+    lineHeight: 24,
   },
-  features: {
-    gap: spacing.md,
-    alignSelf: 'stretch',
-  },
-  featureItem: {
+  dotsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
-  featureDot: {
+  dot: {
     width: 8,
     height: 8,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.white,
+    backgroundColor: '#D8B4FE',
   },
-  featureText: {
-    ...typography.body,
-    color: colors.white,
+  dotActive: {
+    backgroundColor: colors.primary,
+    width: 24,
+  },
+  footer: {
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
   },
   button: {
-    backgroundColor: colors.white,
-    paddingVertical: spacing.md,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
   buttonText: {
     ...typography.h3,
-    color: colors.primary,
+    fontSize: 18,
+    color: colors.white,
+  },
+  skipText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });

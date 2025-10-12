@@ -1,71 +1,106 @@
 import { router } from 'expo-router';
-import { TrendingUp } from 'lucide-react-native';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 
-export default function TrackSucceedScreen() {
+function CelebratingIllustration() {
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <LinearGradient
-        colors={[colors.primaryLight, colors.secondary]}
-        style={styles.gradient}
-      >
+    <Svg width="200" height="200" viewBox="0 0 200 200">
+      <Circle cx="100" cy="60" r="25" fill="#6D28D9" />
+      <Path
+        d="M75 85 Q75 75 85 75 L115 75 Q125 75 125 85 L125 110 Q125 120 115 120 L85 120 Q75 120 75 110 Z"
+        fill="#A78BFA"
+      />
+      <Path
+        d="M60 80 L75 95 L75 110 L60 95 Z"
+        fill="#FDE68A"
+      />
+      <Path
+        d="M125 95 L140 80 L140 95 L125 110 Z"
+        fill="#FDE68A"
+      />
+      <Rect x="50" y="75" width="10" height="10" fill="#A78BFA" />
+      <Rect x="140" y="75" width="10" height="10" fill="#A78BFA" />
+      <Path
+        d="M85 120 L70 145 Q65 155 75 160 L85 155 Z"
+        fill="#A78BFA"
+      />
+      <Path
+        d="M115 120 L130 145 Q135 155 125 160 L115 155 Z"
+        fill="#A78BFA"
+      />
+      <Circle cx="90" cy="55" r="3" fill="#1F2937" />
+      <Circle cx="110" cy="55" r="3" fill="#1F2937" />
+      <Path
+        d="M90 65 Q100 70 110 65"
+        stroke="#1F2937"
+        strokeWidth="2"
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
+export default function TrackSucceedScreen() {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
+  return (
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <View style={styles.content}>
-          <View style={styles.iconContainer}>
-            <TrendingUp size={64} color={colors.white} strokeWidth={1.5} />
+          <View style={styles.illustrationContainer}>
+            <CelebratingIllustration />
           </View>
 
           <Text style={styles.title}>Track & Succeed</Text>
           <Text style={styles.subtitle}>
-            Monitor your progress with beautiful insights and stay motivated on your journey
+            Monitor your progress, build streaks, and celebrate every milestone on your journey.
           </Text>
 
-          <View style={styles.benefits}>
-            <BenefitCard
-              title="Visual Progress"
-              description="See your fasting streaks and achievements"
-            />
-            <BenefitCard
-              title="Smart Reminders"
-              description="Get notified when it's time to start or end your fast"
-            />
-            <BenefitCard
-              title="Detailed Stats"
-              description="Track your fasting hours, weight, and wellness metrics"
-            />
+          <View style={styles.dotsContainer}>
+            <View style={styles.dot} />
+            <View style={[styles.dot, styles.dotActive]} />
+            <View style={styles.dot} />
           </View>
         </View>
 
-        <View style={styles.footer}>
+        <Animated.View
+          style={[
+            styles.footer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.push('/onboarding/choose-plan')}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.skipText}>Back</Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    </SafeAreaView>
-  );
-}
-
-function BenefitCard({ title, description }: { title: string; description: string }) {
-  return (
-    <View style={styles.benefitCard}>
-      <Text style={styles.benefitTitle}>{title}</Text>
-      <Text style={styles.benefitDescription}>{description}</Text>
+        </Animated.View>
+      </SafeAreaView>
     </View>
   );
 }
@@ -73,80 +108,72 @@ function BenefitCard({ title, description }: { title: string; description: strin
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: '#F3F4F6',
   },
-  gradient: {
+  safeArea: {
     flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: spacing.xxl,
   },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: borderRadius.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  illustrationContainer: {
+    width: 280,
+    height: 280,
+    backgroundColor: '#E9D5FF',
+    borderRadius: borderRadius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   title: {
     ...typography.h1,
-    fontSize: 36,
-    color: colors.white,
+    fontSize: 32,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.md,
+    fontWeight: '700' as const,
   },
   subtitle: {
-    ...typography.bodyLarge,
-    color: 'rgba(255, 255, 255, 0.9)',
+    ...typography.body,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
     paddingHorizontal: spacing.md,
+    lineHeight: 24,
   },
-  benefits: {
-    gap: spacing.md,
-    alignSelf: 'stretch',
+  dotsContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
-  benefitCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: borderRadius.full,
+    backgroundColor: '#D8B4FE',
   },
-  benefitTitle: {
-    ...typography.h3,
-    fontSize: 18,
-    color: colors.white,
-    marginBottom: spacing.xs,
-  },
-  benefitDescription: {
-    ...typography.body,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.85)',
+  dotActive: {
+    backgroundColor: colors.primary,
+    width: 24,
   },
   footer: {
+    paddingBottom: spacing.xl,
     gap: spacing.md,
   },
   button: {
-    backgroundColor: colors.white,
-    paddingVertical: spacing.md,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
   buttonText: {
     ...typography.h3,
-    color: colors.primary,
-  },
-  skipText: {
-    ...typography.body,
+    fontSize: 18,
     color: colors.white,
-    textAlign: 'center',
   },
 });
