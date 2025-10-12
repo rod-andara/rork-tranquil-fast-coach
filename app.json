@@ -4,23 +4,23 @@
     "slug": "tranquil-fast-coach",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",  // Kept your path; add a 1024x1024 PNG if missing
-    "scheme": "tranquilfastcoach",  // Updated for deep linking
+    "icon": "./assets/images/icon.png",
+    "scheme": "tranquilfastcoach",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#8B5CF6"  // Updated to purple theme
+      "backgroundColor": "#8B5CF6"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tranquilfastcoach.app",  // Updated custom ID
+      "bundleIdentifier": "com.tranquilfastcoach.app",
       "infoPlist": {
         "UIBackgroundModes": [
           "background-processing"
         ],
-        "UIStatusBarStyle": "UIStatusBarStyleDarkContent"  // Added for iOS dark status bar
+        "UIStatusBarStyle": "UIStatusBarStyleDarkContent"
       },
       "entitlements": {
         "com": {
@@ -37,9 +37,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#8B5CF6"  // Optional: Match splash purple
+        "backgroundColor": "#8B5CF6"
       },
-      "package": "com.tranquilfastcoach.app",  // Updated custom package
+      "package": "com.tranquilfastcoach.app",
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -60,7 +60,7 @@
         "expo-notifications",
         {
           "icon": "./local/assets/notification_icon.png",
-          "color": "#8B5CF6",  // Optional: Match purple theme
+          "color": "#8B5CF6",
           "defaultChannel": "default",
           "sounds": [
             "./local/assets/notification_sound.wav"
