@@ -1,0 +1,69 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import React, { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import { useFastStore } from "@/store/fastStore";
+
+SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient();
+
+function RootLayoutNav() {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const loadData = async () => {
+      await useFastStore.getState().loadFromStorage();
+      setIsReady(true);
+    };
+    loadData();
+  }, []);
+
+  if (!isReady) {
+    return null;
+  }
+
+  return (
+    <Stack screenOptions={{ headerBackTitle: "Back" }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="onboarding/welcome" 
+        options={{ 
+          headerShown: false,
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="onboarding/track-succeed" 
+        options={{ 
+          headerShown: false,
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="onboarding/choose-plan" 
+        options={{ 
+          headerShown: false,
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <RootLayoutNav />
+      </GestureHandlerRootView>
+    </QueryClientProvider>
+  );
+}
