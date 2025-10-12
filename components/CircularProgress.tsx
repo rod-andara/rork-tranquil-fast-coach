@@ -33,7 +33,7 @@ export default function CircularProgress({
           strokeWidth={strokeWidth}
           fill="none"
         />
-        <G rotation={-90} originX={center} originY={center}>
+        <G transform={`rotate(-90 ${center} ${center})`}>
           <Circle
             cx={center}
             cy={center}
