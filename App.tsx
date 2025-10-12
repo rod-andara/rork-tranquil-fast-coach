@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { setupNotifications } from '@/services/notifications';
 
 export default function AppSetup() {
@@ -28,5 +29,5 @@ export default function AppSetup() {
     };
   }, []);
 
-  return null;
+  return <StatusBar style="dark" />;
 }

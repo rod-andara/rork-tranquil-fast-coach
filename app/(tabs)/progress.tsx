@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Dimensions, Platform } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { TrendingUp, Clock, Trophy, Calendar } from 'lucide-react-native';
 
@@ -148,6 +148,7 @@ export default function ProgressScreen() {
 
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>This Week</Text>
+          {Platform.OS !== 'web' ? (
           <BarChart
             data={{
               labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -178,6 +179,16 @@ export default function ProgressScreen() {
             withInnerLines={false}
             fromZero
           />
+          ) : (
+            <View style={styles.webBars}>
+              {stats.weekData.map((v, idx) => (
+                <View key={idx} style={styles.webBarItem}>
+                  <View style={[styles.webBar, { height: Math.max(10, (v / 24) * 180) }]} />
+                  <Text style={styles.webBarLabel}>{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][idx]}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         <View style={styles.achievementsSection}>
@@ -291,6 +302,27 @@ const styles = StyleSheet.create({
   chart: {
     marginVertical: spacing.sm,
     borderRadius: borderRadius.md,
+  },
+  webBars: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: 200,
+    paddingHorizontal: spacing.md,
+  },
+  webBarItem: {
+    alignItems: 'center',
+    width: (screenWidth - spacing.lg * 2 - spacing.md * 2) / 7 - 4,
+  },
+  webBar: {
+    width: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
+  },
+  webBarLabel: {
+    ...typography.small,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
   achievementsSection: {
     marginBottom: spacing.lg,

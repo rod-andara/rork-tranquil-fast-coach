@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  Image,
 } from 'react-native';
 import { Search, ChevronRight, BookOpen, Utensils } from 'lucide-react-native';
 
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import Skeleton from '@/components/Skeleton';
+import { Image } from 'expo-image';
 
 type ContentType = 'All' | 'Recipes' | 'Articles' | 'Products';
 
@@ -97,20 +98,30 @@ const CONTENT: ContentItem[] = [
 export default function LearnScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<ContentType>('All');
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const filteredContent = CONTENT.filter((item) => {
-    const matchesSearch =
-      searchQuery === '' ||
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
 
-    const matchesTab =
-      selectedTab === 'All' ||
-      (selectedTab === 'Recipes' && item.type === 'recipe') ||
-      (selectedTab === 'Articles' && item.type === 'article');
+  const filteredContent = useMemo(
+    () =>
+      CONTENT.filter((item) => {
+        const matchesSearch =
+          searchQuery === '' ||
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesSearch && matchesTab;
-  });
+        const matchesTab =
+          selectedTab === 'All' ||
+          (selectedTab === 'Recipes' && item.type === 'recipe') ||
+          (selectedTab === 'Articles' && item.type === 'article');
+
+        return matchesSearch && matchesTab;
+      }),
+    [searchQuery, selectedTab]
+  );
 
   const tabs: ContentType[] = ['All', 'Recipes', 'Articles', 'Products'];
 
@@ -128,6 +139,8 @@ export default function LearnScreen() {
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            accessible={true}
+            accessibilityLabel="Search content"
           />
         </View>
 
@@ -140,18 +153,14 @@ export default function LearnScreen() {
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[
-                styles.tab,
-                selectedTab === tab && styles.tabActive,
-              ]}
+              style={[styles.tab, selectedTab === tab && styles.tabActive]}
               onPress={() => setSelectedTab(tab)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter ${tab}`}
             >
               <Text
-                style={[
-                  styles.tabText,
-                  selectedTab === tab && styles.tabTextActive,
-                ]}
+                style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}
               >
                 {tab}
               </Text>
@@ -161,19 +170,32 @@ export default function LearnScreen() {
       </View>
 
       <FlatList
-        data={filteredContent}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
+        initialNumToRender={10}
+        windowSize={5}
+        data={(loading ? Array.from({ length: 6 }, (_, i) => ({ id: `s-${i}`, type: 'skeleton' as const })) : filteredContent) as any}
+        keyExtractor={(item: any) => item.id}
+        renderItem={({ item }: { item: any }) => {
+          if (loading || item.type === 'skeleton') {
+            return (
+              <View style={styles.skeletonCard}>
+                <Skeleton width={'100%'} height={180} />
+                <View style={{ padding: spacing.md, gap: spacing.sm }}>
+                  <Skeleton width={'60%'} height={16} />
+                  <Skeleton width={'90%'} height={12} />
+                </View>
+              </View>
+            );
+          }
           if (item.type === 'recipe') {
-            return <RecipeCard recipe={item} />;
+            return <RecipeCard recipe={item as Recipe} />;
           } else {
-            return <ArticleCard article={item} />;
+            return <ArticleCard article={item as Article} />;
           }
         }}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          filteredContent.some((item) => item.type === 'recipe') ? (
+          !loading && filteredContent.some((item) => (item as any).type === 'recipe') ? (
             <View style={styles.sectionHeader}>
               <Utensils size={20} color={colors.primary} strokeWidth={2} />
               <Text style={styles.sectionTitle}>Healthy Recipes</Text>
@@ -187,8 +209,18 @@ export default function LearnScreen() {
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <TouchableOpacity style={styles.recipeCard} activeOpacity={0.7}>
-      <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+    <TouchableOpacity
+      style={styles.recipeCard}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Open recipe ${recipe.title}`}
+    >
+      <Image
+        source={{ uri: recipe.image }}
+        style={styles.recipeImage}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+      />
       <View style={styles.recipeContent}>
         <View style={styles.recipeHeader}>
           <Text style={styles.recipeTitle}>{recipe.title}</Text>
@@ -209,7 +241,12 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 
 function ArticleCard({ article }: { article: Article }) {
   return (
-    <TouchableOpacity style={styles.articleCard} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.articleCard}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Open article ${article.title}`}
+    >
       <View style={styles.articleIcon}>
         <BookOpen size={20} color={colors.primary} strokeWidth={2} />
       </View>
@@ -408,5 +445,14 @@ const styles = StyleSheet.create({
   articleDescription: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  skeletonCard: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
+    ...shadows.sm,
   },
 });

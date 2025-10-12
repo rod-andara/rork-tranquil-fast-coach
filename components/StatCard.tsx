@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
@@ -11,7 +11,7 @@ interface StatCardProps {
   iconBgColor?: string;
 }
 
-export default function StatCard({
+function StatCardComponent({
   icon: Icon,
   value,
   label,
@@ -28,6 +28,8 @@ export default function StatCard({
     </View>
   );
 }
+
+export default memo(StatCardComponent);
 
 const styles = StyleSheet.create({
   container: {

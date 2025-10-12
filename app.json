@@ -20,6 +20,17 @@
         "UIBackgroundModes": [
           "background-processing"
         ]
+      },
+      "entitlements": {
+        "com": {
+          "apple": {
+            "developer": {
+              "networking": {
+                "wifi-info": true
+              }
+            }
+          }
+        }
       }
     },
     "android": {

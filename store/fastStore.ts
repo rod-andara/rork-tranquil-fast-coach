@@ -1,8 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import * as Haptics from 'expo-haptics';
+import NetInfo from '@react-native-community/netinfo';
 import { scheduleMilestones } from '@/services/notifications';
 import { getPlanDuration } from '@/utils';
+import { supabaseUpsertFast } from '@/services/supabase';
+import { enqueueOffline } from '@/services/offline-sync';
 
 export type FastingPlan = '14:10' | '16:8' | '18:6' | '20:4' | '23:1' | 'custom';
 
@@ -87,7 +90,7 @@ export const useFastStore = create<FastState>((set, get) => ({
     get().saveToStorage();
   },
 
-  endFast: () => {
+  endFast: async () => {
     const { currentFast, fastHistory } = get();
     if (currentFast) {
       const completedFast: FastSession = {
@@ -99,6 +102,16 @@ export const useFastStore = create<FastState>((set, get) => ({
         currentFast: null,
         fastHistory: [completedFast, ...fastHistory],
       });
+      try {
+        const state = await NetInfo.fetch();
+        if (state.isConnected) {
+          await supabaseUpsertFast({ user_id: 'stub', ...completedFast });
+        } else {
+          enqueueOffline({ type: 'upsertFast', payload: { user_id: 'stub', ...completedFast } });
+        }
+      } catch (e) {
+        enqueueOffline({ type: 'upsertFast', payload: { user_id: 'stub', ...completedFast } });
+      }
       get().saveToStorage();
     }
   },

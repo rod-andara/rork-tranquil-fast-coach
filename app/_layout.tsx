@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { useFastStore } from "@/store/fastStore";
 import AppSetup from "@/App";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,8 +67,10 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <Root style={{ flex: 1 }}>
-        <AppSetup />
-        <RootLayoutNav />
+        <ErrorBoundary>
+          <AppSetup />
+          <RootLayoutNav />
+        </ErrorBoundary>
       </Root>
     </QueryClientProvider>
   );

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -8,15 +8,17 @@ interface CircularProgressProps {
   progress: number;
   color: string;
   backgroundColor: string;
+  isLoading?: boolean;
   children?: ReactNode;
 }
 
-export default function CircularProgress({
+function CircularProgressComponent({
   size,
   strokeWidth,
   progress,
   color,
   backgroundColor,
+  isLoading = false,
   children,
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
@@ -53,6 +55,8 @@ export default function CircularProgress({
     </View>
   );
 }
+
+export default memo(CircularProgressComponent);
 
 const styles = StyleSheet.create({
   container: {
