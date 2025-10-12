@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
+import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { useFastStore } from "@/store/fastStore";
@@ -9,6 +10,8 @@ import { useFastStore } from "@/store/fastStore";
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+const Root = Platform.OS === 'web' ? View : GestureHandlerRootView;
 
 function RootLayoutNav() {
   const [isReady, setIsReady] = useState(false);
@@ -61,9 +64,9 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <Root style={{ flex: 1 }}>
         <RootLayoutNav />
-      </GestureHandlerRootView>
+      </Root>
     </QueryClientProvider>
   );
 }

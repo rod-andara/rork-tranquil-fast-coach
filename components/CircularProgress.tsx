@@ -21,12 +21,14 @@ export default function CircularProgress({
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
   const center = size / 2;
+
+  const dashLength = (progress / 100) * circumference;
+  const gapLength = circumference - dashLength;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} style={[styles.svg, { transform: [{ rotate: '-90deg' as const }] }]}>
+      <Svg width={size} height={size} style={styles.svg}>
         <Circle
           cx={center}
           cy={center}
@@ -42,8 +44,8 @@ export default function CircularProgress({
           stroke={color}
           strokeWidth={strokeWidth}
           fill="none"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={strokeDashoffset}
+          strokeDasharray={`${dashLength} ${gapLength}`}
+          strokeDashoffset={circumference * 0.25}
           strokeLinecap="round"
         />
       </Svg>
