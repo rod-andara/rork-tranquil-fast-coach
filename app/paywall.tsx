@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { WebView, WebViewNavigation } from 'react-native-webview';
+import { WebView } from 'react-native-webview';
+import type { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import * as WebBrowser from 'expo-web-browser';
-import { X } from 'lucide-react-native';
+import { ExternalLink, X } from 'lucide-react-native';
 import { colors, spacing, typography } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 
@@ -23,7 +24,11 @@ export default function PaywallScreen() {
   const uri = useMemo(() => DEFAULT_PAYWALL_URL, []);
 
   const handleSuccess = useCallback(() => {
-    setPremium(true);
+    try {
+      setPremium(true);
+    } catch (e) {
+      console.log('Failed to set premium', e);
+    }
     router.replace('/(tabs)/home');
   }, [router, setPremium]);
 
@@ -31,18 +36,21 @@ export default function PaywallScreen() {
     router.back();
   }, [router]);
 
-  const onNavChange = useCallback((navState: WebViewNavigation) => {
-    const url = navState.url ?? '';
-    if (url.startsWith(SUCCESS_URL_PREFIX)) {
-      handleSuccess();
-    } else if (url.startsWith(CANCEL_URL_PREFIX)) {
-      handleCancel();
-    }
-  }, [handleSuccess, handleCancel]);
+  const onNavChange = useCallback(
+    (navState: WebViewNavigation) => {
+      const url = navState?.url ?? '';
+      if (url.startsWith(SUCCESS_URL_PREFIX)) {
+        handleSuccess();
+      } else if (url.startsWith(CANCEL_URL_PREFIX)) {
+        handleCancel();
+      }
+    },
+    [handleSuccess, handleCancel]
+  );
 
   useEffect(() => {
     if (Platform.OS === 'web') {
-      WebBrowser.openBrowserAsync(uri).then(() => {
+      WebBrowser.openBrowserAsync(uri).finally(() => {
         router.back();
       });
     }
@@ -55,7 +63,13 @@ export default function PaywallScreen() {
         <View style={styles.center}>
           <Text style={[styles.title, { color: text }]}>Opening secure checkout…</Text>
           <ActivityIndicator color={colors.primary} />
-          <TouchableOpacity style={styles.linkBtn} onPress={() => WebBrowser.openBrowserAsync(uri)} testID="open-checkout-again">
+          <TouchableOpacity
+            style={styles.linkBtn}
+            onPress={() => WebBrowser.openBrowserAsync(uri)}
+            testID="open-checkout-again"
+            accessibilityRole="button"
+            accessibilityLabel="Open checkout again in browser"
+          >
             <Text style={styles.link}>Open again</Text>
           </TouchableOpacity>
         </View>
@@ -65,11 +79,31 @@ export default function PaywallScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: background }]} testID="paywall-screen">
-      <Stack.Screen options={{ title: 'Premium', headerRight: () => (
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon} accessibilityLabel="Close paywall" testID="paywall-close">
-          <X size={20} color={text} />
-        </TouchableOpacity>
-      ) }} />
+      <Stack.Screen
+        options={{
+          title: 'Premium',
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TouchableOpacity
+                onPress={() => WebBrowser.openBrowserAsync(uri)}
+                style={styles.headerIcon}
+                accessibilityLabel="Open checkout in browser"
+                testID="paywall-open-browser"
+              >
+                <ExternalLink size={18} color={text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={styles.headerIcon}
+                accessibilityLabel="Close paywall"
+                testID="paywall-close"
+              >
+                <X size={20} color={text} />
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
+      />
       <WebView
         ref={webRef}
         source={{ uri }}
@@ -92,7 +126,15 @@ export default function PaywallScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   webview: { flex: 1 },
-  loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
+  loader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
   title: { ...typography.h3 },
   linkBtn: { padding: spacing.sm },
