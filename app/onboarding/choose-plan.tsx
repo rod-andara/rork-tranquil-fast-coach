@@ -69,7 +69,7 @@ function ClockIllustration() {
 
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
-  const { setSelectedPlan: saveSelectedPlan, completeOnboarding } = useFastStore();
+  const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding } = useFastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
@@ -88,10 +88,19 @@ export default function ChoosePlanScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  const handleContinue = () => {
-    saveSelectedPlan(selectedPlan);
-    completeOnboarding();
-    router.replace('/(tabs)/home');
+  const handleContinue = async () => {
+    try {
+      if (onboardingComplete) {
+        await updatePlan(selectedPlan);
+        router.back();
+      } else {
+        saveSelectedPlan(selectedPlan);
+        completeOnboarding();
+        router.replace('/(tabs)/home');
+      }
+    } catch (e) {
+      console.log('Failed to apply plan', e);
+    }
   };
 
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
@@ -131,7 +140,12 @@ export default function ChoosePlanScreen() {
                 eatHours={plan.eatHours}
                 popular={plan.popular}
                 selected={selectedPlan === plan.id}
-                onPress={() => setSelectedPlan(plan.id)}
+                onPress={async () => {
+                  setSelectedPlan(plan.id);
+                  if (onboardingComplete) {
+                    await updatePlan(plan.id);
+                  }
+                }}
               />
             ))}
           </View>

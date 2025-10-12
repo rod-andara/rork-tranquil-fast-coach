@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Platform } from 'react-native';
-import { Stack } from 'expo-router';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
 
@@ -17,6 +17,7 @@ import {
 
 export default function FastScreen() {
   const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled } = useFastStore();
+  const router = useRouter();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
@@ -33,6 +34,15 @@ export default function FastScreen() {
 
   const progress = currentFast ? calculateProgress(elapsedTime, getPlanDuration(selectedPlan)) : 0;
   const targetEndTime = currentFast ? currentFast.startTime + getPlanDuration(selectedPlan) : 0;
+  const animatedWidth = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animatedWidth, {
+      toValue: progress,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  }, [progress, animatedWidth]);
 
   const handlePauseResume = () => {
     if (Platform.OS !== 'web') {
@@ -67,6 +77,11 @@ export default function FastScreen() {
       <Stack.Screen
         options={{
           title: 'Your Fast',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} accessibilityRole="button" testID="fast-back">
+              <Text style={{ color: colors.primary }}>Back</Text>
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <View style={styles.headerRight}>
               <Text style={styles.headerPlan}>{selectedPlan} Intermittent Fasting</Text>
@@ -126,7 +141,7 @@ export default function FastScreen() {
             <Text style={styles.detailValue}>{progress.toFixed(0)}%</Text>
           </View>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+            <Animated.View style={[styles.progressFill, { width: animatedWidth.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }) }]} />
           </View>
         </View>
 

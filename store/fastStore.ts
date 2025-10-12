@@ -22,6 +22,7 @@ export interface FastState {
   startFast: (duration: number) => void;
   endFast: () => void;
   setSelectedPlan: (plan: FastingPlan) => void;
+  updatePlan: (plan: FastingPlan) => Promise<void>;
   setCustomDuration: (duration: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   completeOnboarding: () => void;
@@ -70,6 +71,15 @@ export const useFastStore = create<FastState>((set, get) => ({
   setSelectedPlan: (plan: FastingPlan) => {
     set({ selectedPlan: plan });
     get().saveToStorage();
+  },
+
+  updatePlan: async (plan: FastingPlan) => {
+    const { currentFast } = get();
+    if (currentFast) {
+      set({ currentFast: null });
+    }
+    set({ selectedPlan: plan });
+    await get().saveToStorage();
   },
 
   setCustomDuration: (duration: number) => {

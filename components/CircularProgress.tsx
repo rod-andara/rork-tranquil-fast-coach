@@ -26,7 +26,7 @@ export default function CircularProgress({
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} style={styles.svg}>
+      <Svg width={size} height={size} style={[styles.svg, { transform: [{ rotate: '-90deg' as const }] }]}>
         <Circle
           cx={center}
           cy={center}
@@ -45,8 +45,6 @@ export default function CircularProgress({
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          rotation="-90"
-          origin={`${center}, ${center}`}
         />
       </Svg>
       {children && <View style={styles.content}>{children}</View>}

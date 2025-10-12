@@ -5,7 +5,10 @@ import { Bell, Trash2, Info, Heart } from 'lucide-react-native';
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 
+import { useRouter } from 'expo-router';
+
 export default function SettingsScreen() {
+  const router = useRouter();
   const { notificationsEnabled, setNotificationsEnabled, fastHistory } = useFastStore();
 
   const handleClearHistory = () => {
@@ -62,6 +65,26 @@ export default function SettingsScreen() {
               thumbColor={notificationsEnabled ? colors.primary : colors.white}
             />
           </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Fasting</Text>
+          <TouchableOpacity
+            style={styles.settingCard}
+            onPress={() => {
+              console.log('Go to choose plan from settings');
+              router.push('/onboarding/choose-plan');
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={styles.settingIcon}>
+              <Info size={24} color={colors.primary} strokeWidth={2} />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>Fasting Plan</Text>
+              <Text style={styles.settingDescription}>Change your current fasting plan</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>

@@ -160,12 +160,23 @@ export default function HomeScreen() {
             <Award size={20} color={colors.primary} />
             <Text style={styles.tipTitle}>Fasting Tip</Text>
           </View>
-          <Text style={styles.tipText}>
+          <Text style={styles.tipText} testID="home-tip">
             {currentFast
               ? "Stay hydrated! Drink plenty of water, herbal tea, or black coffee during your fast."
-              : "Ready to begin? Start your fasting journey and unlock the benefits of intermittent fasting."}
+              : `Start your ${selectedPlan} fasting journey and track your progress`}
           </Text>
         </View>
+        <TouchableOpacity
+          testID="change-plan-link"
+          style={styles.changePlan}
+          onPress={() => {
+            console.log('Navigating to choose-plan');
+            router.push('/onboarding/choose-plan');
+          }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.changePlanText}>Change Plan</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -218,7 +229,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   buttonContainer: {
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
   },
   button: {
     flexDirection: 'row',
@@ -251,6 +262,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.xl,
+    width: '100%',
   },
   tipCard: {
     backgroundColor: '#F3E8FF',
@@ -276,5 +288,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     lineHeight: 20,
+  },
+  changePlan: {
+    alignSelf: 'center',
+    marginTop: spacing.lg,
+  },
+  changePlanText: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: '600' as const,
   },
 });
