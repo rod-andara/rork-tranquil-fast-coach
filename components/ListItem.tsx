@@ -8,13 +8,15 @@ interface ListItemProps {
   testID?: string;
   Icon: LucideIcon;
   text: string;
+  subtitle?: string;
   onPress: () => void;
   iconColor?: string;
   textColor?: string;
   chevronColor?: string;
+  subTextColor?: string;
 }
 
-function ListItemComponent({ testID, Icon, text, onPress, iconColor = colors.primary, textColor = colors.text, chevronColor = colors.textSecondary }: ListItemProps) {
+function ListItemComponent({ testID, Icon, text, subtitle, onPress, iconColor = colors.primary, textColor = colors.text, chevronColor = colors.textSecondary, subTextColor = colors.textSecondary }: ListItemProps) {
   const handlePress = () => {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
@@ -28,7 +30,10 @@ function ListItemComponent({ testID, Icon, text, onPress, iconColor = colors.pri
     <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7} testID={testID}>
       <View style={styles.left}>
         <Icon size={22} color={iconColor} />
-        <Text style={[styles.text, { color: textColor }]}>{text}</Text>
+        <View style={styles.textContainer}>
+          <Text style={[styles.text, { color: textColor }]}>{text}</Text>
+          {subtitle ? <Text style={[styles.subtitle, { color: subTextColor }]}>{subtitle}</Text> : null}
+        </View>
       </View>
       <ChevronRight size={20} color={chevronColor} />
     </TouchableOpacity>
@@ -46,10 +51,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    flex: 1,
+  },
+  textContainer: {
+    flex: 1,
   },
   text: {
     ...typography.body,
     fontWeight: '600',
+  },
+  subtitle: {
+    ...typography.caption,
   },
 });
 

@@ -130,11 +130,13 @@ export default function SettingsScreen() {
             <ListItem
               testID="fasting-plan-row"
               Icon={Clock}
-              text={`Fasting Plan: ${selectedPlan}`}
+              text="Fasting Plan"
+              subtitle={`Current: ${selectedPlan}`}
               onPress={handleFastingPlan}
               iconColor={colors.primary}
               textColor={text}
               chevronColor={textSecondary}
+              subTextColor={textSecondary}
             />
           </View>
         </View>
