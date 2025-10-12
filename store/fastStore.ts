@@ -17,6 +17,7 @@ export interface FastState {
   selectedPlan: FastingPlan;
   customDuration: number;
   notificationsEnabled: boolean;
+  isDarkMode: boolean;
   onboardingComplete: boolean;
   
   startFast: (duration: number) => void;
@@ -25,6 +26,7 @@ export interface FastState {
   updatePlan: (plan: FastingPlan) => Promise<void>;
   setCustomDuration: (duration: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
+  setDarkMode: (enabled: boolean) => void;
   completeOnboarding: () => void;
   loadFromStorage: () => Promise<void>;
   saveToStorage: () => Promise<void>;
@@ -38,6 +40,7 @@ export const useFastStore = create<FastState>((set, get) => ({
   selectedPlan: '16:8',
   customDuration: 16,
   notificationsEnabled: true,
+  isDarkMode: false,
   onboardingComplete: false,
 
   startFast: (duration: number) => {
@@ -92,6 +95,11 @@ export const useFastStore = create<FastState>((set, get) => ({
     get().saveToStorage();
   },
 
+  setDarkMode: (enabled: boolean) => {
+    set({ isDarkMode: enabled });
+    get().saveToStorage();
+  },
+
   completeOnboarding: () => {
     set({ onboardingComplete: true });
     get().saveToStorage();
@@ -118,6 +126,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         selectedPlan: state.selectedPlan,
         customDuration: state.customDuration,
         notificationsEnabled: state.notificationsEnabled,
+        isDarkMode: state.isDarkMode,
         onboardingComplete: state.onboardingComplete,
       };
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));

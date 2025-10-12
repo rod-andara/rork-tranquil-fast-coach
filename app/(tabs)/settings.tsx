@@ -1,129 +1,103 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
-import { Bell, Trash2, Info, Heart } from 'lucide-react-native';
-
+import React, { useCallback } from 'react';
+import { StyleSheet, Text, View, ScrollView, Platform } from 'react-native';
+import { Bell, ChevronRight, Crown, Moon } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
-
 import { useRouter } from 'expo-router';
+import ProfileCard from '@/components/ProfileCard';
+import SwitchRow from '@/components/SwitchRow';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { notificationsEnabled, setNotificationsEnabled, fastHistory } = useFastStore();
+  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode } = useFastStore();
 
-  const handleClearHistory = () => {
-    Alert.alert(
-      'Clear History',
-      'Are you sure you want to clear all your fasting history? This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: () => {
-            useFastStore.setState({ fastHistory: [] });
-            useFastStore.getState().saveToStorage();
-          },
-        },
-      ]
-    );
-  };
+  const bg = isDarkMode ? colors.backgroundDark : colors.background;
+  const text = isDarkMode ? colors.textDark : colors.text;
+  const textSecondary = isDarkMode ? colors.textSecondaryDark : colors.textSecondary;
+  const surface = isDarkMode ? colors.surfaceDark : colors.white;
+  const border = isDarkMode ? colors.borderDark : colors.border;
+
+  const onToggleNotifications = useCallback((val: boolean) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    } else {
+      console.log('Haptics not available on web');
+    }
+    setNotificationsEnabled(val);
+  }, [setNotificationsEnabled]);
+
+  const onToggleDark = useCallback((val: boolean) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    } else {
+      console.log('Haptics not available on web');
+    }
+    setDarkMode(val);
+  }, [setDarkMode]);
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.subtitle}>
-            Customize your fasting experience
-          </Text>
+    <View style={[styles.container, { backgroundColor: bg }]} testID="settings-screen">
+      <ScrollView contentContainerStyle={[styles.scrollContent]} showsVerticalScrollIndicator={false}>
+        <View style={styles.header} testID="settings-header">
+          <Text style={[styles.title, { color: text }]}>Settings</Text>
+          <Text style={[styles.subtitle, { color: textSecondary }]}>Manage your account and preferences</Text>
         </View>
 
+        <ProfileCard
+          testID="profile-card"
+          name="John Doe"
+          email="john.doe@email.com"
+          backgroundColor={surface}
+          textColor={text}
+          subTextColor={textSecondary}
+          borderColor={border}
+          onUpgradePress={() => router.push('/onboarding/choose-plan')}
+        />
+
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <View style={styles.settingCard}>
-            <View style={styles.settingIcon}>
-              <Bell size={24} color={colors.primary} strokeWidth={2} />
-            </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Push Notifications</Text>
-              <Text style={styles.settingDescription}>
-                Get reminders for your fasting schedule
-              </Text>
-            </View>
-            <Switch
+          <Text style={[styles.sectionTitle, { color: text }]}>Preferences</Text>
+          <View style={[styles.card, { backgroundColor: surface, borderColor: border }]}
+            testID="preferences-card">
+            <SwitchRow
+              testID="notifications-row"
+              Icon={Bell}
+              label="Notifications"
+              description="Receive fasting reminders"
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: colors.border, true: colors.primaryLight }}
-              thumbColor={notificationsEnabled ? colors.primary : colors.white}
+              onValueChange={onToggleNotifications}
+              iconColor={colors.primary}
+              textColor={text}
+              subTextColor={textSecondary}
+            />
+            <View style={[styles.divider, { borderBottomColor: border }]} />
+            <SwitchRow
+              testID="darkmode-row"
+              Icon={Moon}
+              label="Dark Mode"
+              description="Toggle dark appearance"
+              value={isDarkMode}
+              onValueChange={onToggleDark}
+              iconColor={colors.primary}
+              textColor={text}
+              subTextColor={textSecondary}
             />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Fasting</Text>
-          <TouchableOpacity
-            style={styles.settingCard}
-            onPress={() => {
-              console.log('Go to choose plan from settings');
-              router.push('/onboarding/choose-plan');
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={styles.settingIcon}>
-              <Info size={24} color={colors.primary} strokeWidth={2} />
+          <View style={[styles.card, { backgroundColor: surface, borderColor: border }]} testID="upgrade-row">
+            <View style={styles.rowLeft}>
+              <Crown size={22} color={colors.primary} />
+              <Text style={[styles.rowLabel, { color: text }]}>Upgrade to Premium</Text>
             </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Fasting Plan</Text>
-              <Text style={styles.settingDescription}>Change your current fasting plan</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Data</Text>
-          <TouchableOpacity
-            style={styles.settingCard}
-            onPress={handleClearHistory}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.settingIcon, { backgroundColor: colors.error + '20' }]}>
-              <Trash2 size={24} color={colors.error} strokeWidth={2} />
-            </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Clear History</Text>
-              <Text style={styles.settingDescription}>
-                Remove all fasting records ({fastHistory.length} fasts)
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <View style={styles.settingCard}>
-            <View style={styles.settingIcon}>
-              <Info size={24} color={colors.primary} strokeWidth={2} />
-            </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Version</Text>
-              <Text style={styles.settingDescription}>1.0.0</Text>
-            </View>
+            <ChevronRight size={20} color={textSecondary} />
           </View>
         </View>
 
         <View style={styles.footer}>
-          <Heart size={20} color={colors.primary} fill={colors.primary} />
-          <Text style={styles.footerText}>
-            Made with care for your wellness journey
-          </Text>
+          <Text style={[styles.footerText, { color: textSecondary }]}>FastTrack v1.0.0</Text>
+          <Text style={[styles.footerText, { color: textSecondary }]}>Made with ❤ for your wellness journey</Text>
         </View>
       </ScrollView>
     </View>
@@ -133,78 +107,54 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollView: {
-    flex: 1,
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
+    gap: spacing.lg,
   },
   header: {
-    marginBottom: spacing.xl,
+    gap: spacing.xs,
   },
   title: {
     ...typography.h1,
-    color: colors.text,
-    marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body,
-    color: colors.textSecondary,
   },
   section: {
-    marginBottom: spacing.xl,
+    gap: spacing.md,
   },
   sectionTitle: {
     ...typography.h3,
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: spacing.md,
+    fontSize: 18,
   },
-  settingCard: {
-    backgroundColor: colors.white,
-    padding: spacing.md,
+  card: {
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    padding: spacing.md,
+    ...shadows.sm,
+  },
+  divider: {
+    borderBottomWidth: 1,
+    marginVertical: spacing.md,
+  },
+  rowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    ...shadows.sm,
   },
-  settingIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  settingInfo: {
-    flex: 1,
-  },
-  settingTitle: {
+  rowLabel: {
     ...typography.body,
-    fontWeight: '600' as const,
-    color: colors.text,
-    marginBottom: 2,
-  },
-  settingDescription: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontWeight: '600',
   },
   footer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.xl,
+    gap: spacing.xs,
+    paddingVertical: spacing.lg,
   },
   footerText: {
     ...typography.caption,
-    color: colors.textSecondary,
   },
 });
