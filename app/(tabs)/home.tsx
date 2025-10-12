@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Animated, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Play, Square } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Play, Square, Calendar, TrendingUp, Clock, Award } from 'lucide-react-native';
 
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
+import StatCard from '@/components/StatCard';
+import { formatTime, calculateProgress, getPlanDuration } from '@/utils/fastingUtils';
 
 export default function HomeScreen() {
-  const { currentFast, selectedPlan, startFast, endFast } = useFastStore();
+  const router = useRouter();
+  const { currentFast, selectedPlan, startFast, endFast, fastHistory } = useFastStore();
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [scaleAnim] = useState(new Animated.Value(1));
-
-  const getPlanDuration = () => {
-    const hours = parseInt(selectedPlan.split(':')[0]);
-    return hours * 60 * 60 * 1000;
-  };
 
   useEffect(() => {
     if (currentFast) {
@@ -31,153 +28,145 @@ export default function HomeScreen() {
     }
   }, [currentFast]);
 
-  const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+  const progress = currentFast ? calculateProgress(elapsedTime, getPlanDuration(selectedPlan)) : 0;
 
-    return {
-      hours: hours.toString().padStart(2, '0'),
-      minutes: minutes.toString().padStart(2, '0'),
-      seconds: seconds.toString().padStart(2, '0'),
-    };
-  };
+  const totalFasts = fastHistory.length;
+  const dayStreak = calculateDayStreak();
+  const avgHours = calculateAvgHours();
 
-  const getProgress = () => {
-    if (!currentFast) return 0;
-    const duration = getPlanDuration();
-    return Math.min((elapsedTime / duration) * 100, 100);
-  };
+  function calculateDayStreak(): number {
+    if (fastHistory.length === 0) return 0;
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < fastHistory.length; i++) {
+      const fastDate = new Date(fastHistory[i].startTime);
+      fastDate.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today.getTime() - fastDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === streak) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  function calculateAvgHours(): number {
+    if (fastHistory.length === 0) return 0;
+    const totalHours = fastHistory.reduce((sum, fast) => {
+      const duration = (fast.endTime || Date.now()) - fast.startTime;
+      return sum + duration / (1000 * 60 * 60);
+    }, 0);
+    return Math.round((totalHours / fastHistory.length) * 10) / 10;
+  }
 
   const handleStartFast = () => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    const duration = getPlanDuration();
+    const duration = getPlanDuration(selectedPlan);
     startFast(duration);
+    router.push('/fast');
   };
 
   const handleEndFast = () => {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
     endFast();
   };
 
-  const time = formatTime(elapsedTime);
-  const progress = getProgress();
-
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={[colors.primary, colors.primaryLight]}
-        style={styles.gradient}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.greeting}>Welcome Back</Text>
-            <Text style={styles.planText}>Current Plan: {selectedPlan}</Text>
-          </View>
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Welcome Back, User!</Text>
+          <Text style={styles.subtitle}>Current Plan: {selectedPlan} Intermittent Fasting</Text>
+        </View>
 
-          <View style={styles.timerContainer}>
-            <View style={styles.circularProgressWrapper}>
-              <CircularProgress
-                size={280}
-                strokeWidth={16}
-                progress={progress}
-                color={colors.white}
-                backgroundColor="rgba(255, 255, 255, 0.2)"
-              />
-              <View style={styles.timerContent}>
-                <Text style={styles.timerLabel}>
-                  {currentFast ? 'Fasting' : 'Ready to Start'}
-                </Text>
-                <View style={styles.timeDisplay}>
-                  <View style={styles.timeUnit}>
-                    <Text style={styles.timeValue}>{time.hours}</Text>
-                    <Text style={styles.timeLabel}>hours</Text>
-                  </View>
-                  <Text style={styles.timeSeparator}>:</Text>
-                  <View style={styles.timeUnit}>
-                    <Text style={styles.timeValue}>{time.minutes}</Text>
-                    <Text style={styles.timeLabel}>min</Text>
-                  </View>
-                  <Text style={styles.timeSeparator}>:</Text>
-                  <View style={styles.timeUnit}>
-                    <Text style={styles.timeValue}>{time.seconds}</Text>
-                    <Text style={styles.timeLabel}>sec</Text>
-                  </View>
-                </View>
-                {currentFast && (
-                  <Text style={styles.progressText}>
-                    {progress.toFixed(0)}% Complete
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-
-          <Animated.View style={[styles.buttonContainer, { transform: [{ scale: scaleAnim }] }]}>
-            {currentFast ? (
-              <TouchableOpacity
-                style={[styles.button, styles.stopButton]}
-                onPress={handleEndFast}
-                activeOpacity={0.8}
-              >
-                <Square size={24} color={colors.error} fill={colors.error} />
-                <Text style={[styles.buttonText, styles.stopButtonText]}>End Fast</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={[styles.button, styles.startButton]}
-                onPress={handleStartFast}
-                activeOpacity={0.8}
-              >
-                <Play size={24} color={colors.primary} fill={colors.primary} />
-                <Text style={[styles.buttonText, styles.startButtonText]}>Start Fast</Text>
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-
-          {!currentFast && (
-            <View style={styles.infoCard}>
-              <Text style={styles.infoTitle}>Ready to begin?</Text>
-              <Text style={styles.infoText}>
-                Start your {selectedPlan} fasting journey and track your progress
+        <View style={styles.timerSection}>
+          <CircularProgress
+            size={200}
+            strokeWidth={12}
+            progress={progress}
+            color={colors.primary}
+            backgroundColor={colors.border}
+          >
+            <View style={styles.timerContent}>
+              <Text style={styles.timerValue}>{formatTime(elapsedTime)}</Text>
+              <Text style={styles.timerLabel}>
+                {currentFast ? 'FASTING' : 'READY TO START'}
               </Text>
             </View>
+          </CircularProgress>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          {currentFast ? (
+            <TouchableOpacity
+              style={[styles.button, styles.stopButton]}
+              onPress={handleEndFast}
+              activeOpacity={0.8}
+            >
+              <Square size={20} color={colors.white} />
+              <Text style={styles.stopButtonText}>Stop Fast</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.button, styles.startButton]}
+              onPress={handleStartFast}
+              activeOpacity={0.8}
+            >
+              <Play size={20} color={colors.white} fill={colors.white} />
+              <Text style={styles.startButtonText}>Start Fast</Text>
+            </TouchableOpacity>
           )}
         </View>
-      </LinearGradient>
+
+        <View style={styles.statsSection}>
+          <StatCard
+            icon={Calendar}
+            value={totalFasts}
+            label="Total Fasts"
+            iconColor={colors.primary}
+            iconBgColor="#F3E8FF"
+          />
+          <StatCard
+            icon={TrendingUp}
+            value={dayStreak}
+            label="Day Streak"
+            iconColor={colors.success}
+            iconBgColor="#D1FAE5"
+          />
+          <StatCard
+            icon={Clock}
+            value={avgHours}
+            label="Avg Hours"
+            iconColor={colors.secondary}
+            iconBgColor="#FCE7F3"
+          />
+        </View>
+
+        <View style={styles.tipCard}>
+          <View style={styles.tipHeader}>
+            <Award size={20} color={colors.primary} />
+            <Text style={styles.tipTitle}>Fasting Tip</Text>
+          </View>
+          <Text style={styles.tipText}>
+            {currentFast
+              ? "Stay hydrated! Drink plenty of water, herbal tea, or black coffee during your fast."
+              : "Ready to begin? Start your fasting journey and unlock the benefits of intermittent fasting."}
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -185,76 +174,48 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
-  gradient: {
+  scrollView: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   header: {
     marginBottom: spacing.xl,
   },
   greeting: {
     ...typography.h1,
-    color: colors.white,
+    fontSize: 28,
+    color: colors.text,
     marginBottom: spacing.xs,
   },
-  planText: {
+  subtitle: {
     ...typography.body,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: colors.textSecondary,
   },
-  timerContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  timerSection: {
     alignItems: 'center',
-  },
-  circularProgressWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: spacing.xl,
   },
   timerContent: {
-    position: 'absolute',
-    justifyContent: 'center',
     alignItems: 'center',
+  },
+  timerValue: {
+    ...typography.h1,
+    fontSize: 36,
+    color: colors.text,
+    fontWeight: '700' as const,
+    marginBottom: spacing.xs,
   },
   timerLabel: {
-    ...typography.body,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: spacing.md,
-  },
-  timeDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  timeUnit: {
-    alignItems: 'center',
-  },
-  timeValue: {
-    ...typography.h1,
-    fontSize: 40,
-    color: colors.white,
-    fontWeight: '700' as const,
-  },
-  timeLabel: {
-    ...typography.small,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: spacing.xs,
-  },
-  timeSeparator: {
-    ...typography.h1,
-    fontSize: 40,
-    color: colors.white,
-    fontWeight: '700' as const,
-  },
-  progressText: {
-    ...typography.body,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: spacing.md,
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600' as const,
+    letterSpacing: 1,
   },
   buttonContainer: {
     marginBottom: spacing.xl,
@@ -264,43 +225,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     gap: spacing.sm,
     ...shadows.md,
   },
   startButton: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary,
   },
   stopButton: {
-    backgroundColor: colors.white,
-  },
-  buttonText: {
-    ...typography.h3,
+    backgroundColor: colors.error,
   },
   startButtonText: {
-    color: colors.primary,
-  },
-  stopButtonText: {
-    color: colors.error,
-  },
-  infoCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    marginBottom: spacing.xl,
-  },
-  infoTitle: {
     ...typography.h3,
     fontSize: 18,
     color: colors.white,
-    marginBottom: spacing.xs,
+    fontWeight: '600' as const,
   },
-  infoText: {
+  stopButtonText: {
+    ...typography.h3,
+    fontSize: 18,
+    color: colors.white,
+    fontWeight: '600' as const,
+  },
+  statsSection: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  tipCard: {
+    backgroundColor: '#F3E8FF',
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+  },
+  tipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  tipTitle: {
+    ...typography.h3,
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: '600' as const,
+  },
+  tipText: {
     ...typography.body,
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: colors.text,
+    lineHeight: 20,
   },
 });
