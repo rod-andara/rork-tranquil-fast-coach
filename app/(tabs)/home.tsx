@@ -9,26 +9,14 @@ import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
 import StatCard from '@/components/StatCard';
 import { formatTime, calculateProgress, getPlanDuration } from '@/utils/fastingUtils';
+import useFastTimer from '@/hooks/useFastTimer';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { currentFast, selectedPlan, startFast, endFast, fastHistory } = useFastStore();
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const { elapsedMs, calculateProgress: calc } = useFastTimer();
 
-  useEffect(() => {
-    if (currentFast) {
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - currentFast.startTime;
-        setElapsedTime(elapsed);
-      }, 1000);
-
-      return () => clearInterval(interval);
-    } else {
-      setElapsedTime(0);
-    }
-  }, [currentFast]);
-
-  const progress = currentFast ? calculateProgress(elapsedTime, getPlanDuration(selectedPlan)) : 0;
+  const progress = currentFast ? calc(elapsedMs, getPlanDuration(selectedPlan)) : 0;
 
   const totalFasts = fastHistory.length;
   const dayStreak = calculateDayStreak();
@@ -68,8 +56,7 @@ export default function HomeScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    const duration = getPlanDuration(selectedPlan);
-    startFast(duration);
+    startFast(selectedPlan);
     router.push('/fast');
   };
 
@@ -101,7 +88,7 @@ export default function HomeScreen() {
             backgroundColor={colors.border}
           >
             <View style={styles.timerContent}>
-              <Text style={styles.timerValue}>{formatTime(elapsedTime)}</Text>
+              <Text style={styles.timerValue}>{formatTime(elapsedMs)}</Text>
               <Text style={styles.timerLabel}>
                 {currentFast ? 'FASTING' : 'READY TO START'}
               </Text>

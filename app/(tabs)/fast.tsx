@@ -7,32 +7,16 @@ import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
-import {
-  formatTime,
-  formatDate,
-  calculateProgress,
-  getFastingMessage,
-  getPlanDuration,
-} from '@/utils/fastingUtils';
+import { formatTime, formatDate, calculateProgress, getFastingMessage, getPlanDuration } from '@/utils';
+import useFastTimer from '@/hooks/useFastTimer';
 
 export default function FastScreen() {
-  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled } = useFastStore();
+  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, pauseFast } = useFastStore();
   const router = useRouter();
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const { elapsedMs, calculateProgress: calc } = useFastTimer();
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (currentFast && !isPaused) {
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - currentFast.startTime;
-        setElapsedTime(elapsed);
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [currentFast, isPaused]);
-
-  const progress = currentFast ? calculateProgress(elapsedTime, getPlanDuration(selectedPlan)) : 0;
+  const progress = currentFast ? calc(elapsedMs, getPlanDuration(selectedPlan)) : 0;
   const targetEndTime = currentFast ? currentFast.startTime + getPlanDuration(selectedPlan) : 0;
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
@@ -49,6 +33,7 @@ export default function FastScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setIsPaused(!isPaused);
+    pauseFast();
   };
 
   const handleEndFast = () => {
@@ -119,7 +104,7 @@ export default function FastScreen() {
             backgroundColor={colors.border}
           >
             <View style={styles.timerContent}>
-              <Text style={styles.timerValue}>{formatTime(elapsedTime)}</Text>
+              <Text style={styles.timerValue}>{formatTime(elapsedMs)}</Text>
               <Text style={styles.timerLabel}>FASTING</Text>
             </View>
           </CircularProgress>

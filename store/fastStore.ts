@@ -1,5 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import * as Haptics from 'expo-haptics';
+import { scheduleMilestones } from '@/services/notifications';
+import { getPlanDuration } from '@/utils';
 
 export type FastingPlan = '14:10' | '16:8' | '18:6' | '20:4' | '23:1' | 'custom';
 
@@ -9,6 +12,9 @@ export interface FastSession {
   endTime: number | null;
   plannedDuration: number;
   completed: boolean;
+  plan?: string;
+  elapsedMs?: number;
+  isRunning?: boolean;
 }
 
 export interface FastState {
@@ -20,7 +26,8 @@ export interface FastState {
   isDarkMode: boolean;
   onboardingComplete: boolean;
   
-  startFast: (duration: number) => void;
+  startFast: (planOrDuration: number | string) => void;
+  pauseFast: () => void;
   endFast: () => void;
   setSelectedPlan: (plan: FastingPlan) => void;
   updatePlan: (plan: FastingPlan) => Promise<void>;
@@ -43,15 +50,40 @@ export const useFastStore = create<FastState>((set, get) => ({
   isDarkMode: false,
   onboardingComplete: false,
 
-  startFast: (duration: number) => {
+  startFast: (planOrDuration: number | string) => {
+    const state = get();
+    const isPlanString = typeof planOrDuration === 'string';
+    const plannedDuration = isPlanString ? getPlanDuration(planOrDuration) : planOrDuration;
+    const planName = isPlanString ? (planOrDuration as string) : state.selectedPlan;
     const newFast: FastSession = {
       id: Date.now().toString(),
       startTime: Date.now(),
       endTime: null,
-      plannedDuration: duration,
+      plannedDuration,
       completed: false,
+      plan: planName,
+      elapsedMs: 0,
+      isRunning: true,
     };
     set({ currentFast: newFast });
+    if (state.notificationsEnabled) {
+      try {
+        scheduleMilestones(Math.floor(plannedDuration / 1000));
+      } catch (e) {
+        console.log('[store] scheduleMilestones error', e);
+      }
+    }
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch {}
+    get().saveToStorage();
+  },
+
+  pauseFast: () => {
+    const { currentFast } = get();
+    if (!currentFast) return;
+    const toggled = { ...currentFast, isRunning: !currentFast.isRunning };
+    set({ currentFast: toggled });
     get().saveToStorage();
   },
 
