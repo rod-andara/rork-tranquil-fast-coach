@@ -17,9 +17,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.tranquilfastcoach.app",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "background-processing"
-        ],
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
         "ITSAppUsesNonExemptEncryption": false
       }
