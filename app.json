@@ -3,6 +3,8 @@
     "name": "Tranquil Fast Coach",
     "slug": "tranquil-fast-coach",
     "version": "1.0.0",
+    "owner": "rod_andara",
+    "projectId": "afb33717-bd46-45fa-8379-c849a59d73d6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "tranquilfastcoach",
