@@ -7,93 +7,36 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  Linking,
+  Alert,
+  Platform,
 } from 'react-native';
-import { Search, ChevronRight, BookOpen, Utensils } from 'lucide-react-native';
+import { Search, ChevronRight, BookOpen, ShoppingBag, Star } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import Skeleton from '@/components/Skeleton';
 import { Image } from 'expo-image';
+import { contentData, ContentItem } from '@/utils/content';
 
 type ContentType = 'All' | 'Recipes' | 'Articles' | 'Products';
 
-interface Recipe {
-  id: string;
-  type: 'recipe';
-  title: string;
-  description: string;
-  image: string;
-  tags: string[];
-}
-
-interface Article {
-  id: string;
-  type: 'article';
-  title: string;
-  description: string;
-  source: string;
-  category: string;
-}
-
-type ContentItem = Recipe | Article;
-
-const CONTENT: ContentItem[] = [
-  {
-    id: '1',
-    type: 'recipe',
-    title: 'Mediterranean Quinoa Breakfast Bowl',
-    description: 'Perfect for breaking your fast with 25g of protein and healthy fats',
-    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400',
-    tags: ['High Protein', 'Mediterranean', 'Quick'],
-  },
-  {
-    id: '2',
-    type: 'recipe',
-    title: 'Salmon Avocado Power Bowl',
-    description: 'Low-carb, high-fat meal packed with omega-3s and nutrients',
-    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
-    tags: ['Keto', 'Low Carb', 'Healthy Fats'],
-  },
-  {
-    id: '3',
-    type: 'recipe',
-    title: 'Complete Nutrition Buddha Bowl',
-    description: 'Nutrient-dense meal with everything you need in one bowl',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
-    tags: ['OMAD', 'Complete Nutrition', 'Plant-Based'],
-  },
-  {
-    id: '4',
-    type: 'article',
-    title: 'The Complete Guide to Intermittent Fasting',
-    description: 'Evidence-based overview of intermittent fasting benefits and methods',
-    source: 'Healthline',
-    category: 'Science',
-  },
-  {
-    id: '5',
-    type: 'article',
-    title: 'Essential Electrolytes During Fasting',
-    description: 'Why electrolytes matter and how to maintain proper balance while fasting',
-    source: 'Healthline',
-    category: 'Supplements',
-  },
-  {
-    id: '6',
-    type: 'article',
-    title: 'What to Eat When Breaking Your Fast',
-    description: 'Optimize your eating window with the right foods for better results',
-    source: 'Mayo Clinic',
-    category: 'Nutrition',
-  },
-  {
-    id: '7',
-    type: 'article',
-    title: 'Exercise and Intermittent Fasting: The Perfect Combination',
-    description: 'How to combine fasting with exercise for optimal results',
-    source: 'Healthline',
-    category: 'Fitness',
-  },
-];
+const handleOpenLink = async (url: string, title: string) => {
+  if (Platform.OS !== 'web') {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+  
+  if (url) {
+    const canOpen = await Linking.canOpenURL(url);
+    if (canOpen) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert('Error', 'Unable to open this link');
+    }
+  } else {
+    Alert.alert('Coming Soon', `${title} will be available soon!`);
+  }
+};
 
 export default function LearnScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -107,16 +50,17 @@ export default function LearnScreen() {
 
   const filteredContent = useMemo(
     () =>
-      CONTENT.filter((item) => {
+      contentData.filter((item) => {
         const matchesSearch =
           searchQuery === '' ||
           item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+          item.desc.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesTab =
           selectedTab === 'All' ||
           (selectedTab === 'Recipes' && item.type === 'recipe') ||
-          (selectedTab === 'Articles' && item.type === 'article');
+          (selectedTab === 'Articles' && item.type === 'article') ||
+          (selectedTab === 'Products' && item.type === 'product');
 
         return matchesSearch && matchesTab;
       }),
@@ -187,78 +131,132 @@ export default function LearnScreen() {
             );
           }
           if (item.type === 'recipe') {
-            return <RecipeCard recipe={item as Recipe} />;
-          } else {
-            return <ArticleCard article={item as Article} />;
+            return <RecipeCard recipe={item} />;
+          } else if (item.type === 'article') {
+            return <ArticleCard article={item} />;
+          } else if (item.type === 'product') {
+            return <ProductCard product={item} />;
           }
+          return null;
         }}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          !loading && filteredContent.some((item) => (item as any).type === 'recipe') ? (
-            <View style={styles.sectionHeader}>
-              <Utensils size={20} color={colors.primary} strokeWidth={2} />
-              <Text style={styles.sectionTitle}>Healthy Recipes</Text>
-            </View>
-          ) : null
-        }
+        ListHeaderComponent={null}
       />
     </View>
   );
 }
 
-function RecipeCard({ recipe }: { recipe: Recipe }) {
+function RecipeCard({ recipe }: { recipe: ContentItem }) {
   return (
     <TouchableOpacity
       style={styles.recipeCard}
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Open recipe ${recipe.title}`}
+      onPress={() => handleOpenLink(recipe.url, recipe.title)}
     >
-      <Image
-        source={{ uri: recipe.image }}
-        style={styles.recipeImage}
-        contentFit="cover"
-        cachePolicy="memory-disk"
-      />
+      {recipe.image && (
+        <Image
+          source={{ uri: recipe.image }}
+          style={styles.recipeImage}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+        />
+      )}
       <View style={styles.recipeContent}>
         <View style={styles.recipeHeader}>
           <Text style={styles.recipeTitle}>{recipe.title}</Text>
           <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2} />
         </View>
-        <Text style={styles.recipeDescription}>{recipe.description}</Text>
-        <View style={styles.recipeTags}>
-          {recipe.tags.map((tag, index) => (
+        <Text style={styles.recipeDescription}>{recipe.desc}</Text>
+        {recipe.tags && recipe.tags.length > 0 && (
+          <View style={styles.recipeTags}>
+            {recipe.tags.map((tag, index) => (
             <View key={index} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
 }
 
-function ArticleCard({ article }: { article: Article }) {
+function ArticleCard({ article }: { article: ContentItem }) {
   return (
     <TouchableOpacity
       style={styles.articleCard}
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Open article ${article.title}`}
+      onPress={() => handleOpenLink(article.url, article.title)}
     >
       <View style={styles.articleIcon}>
         <BookOpen size={20} color={colors.primary} strokeWidth={2} />
       </View>
       <View style={styles.articleContent}>
         <View style={styles.articleHeader}>
-          <Text style={styles.articleCategory}>{article.category}</Text>
-          <Text style={styles.articleSource}>• {article.source}</Text>
+          {article.category && <Text style={styles.articleCategory}>{article.category}</Text>}
+          {article.source && <Text style={styles.articleSource}>• {article.source}</Text>}
         </View>
         <Text style={styles.articleTitle}>{article.title}</Text>
-        <Text style={styles.articleDescription}>{article.description}</Text>
+        <Text style={styles.articleDescription}>{article.desc}</Text>
       </View>
       <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2} />
+    </TouchableOpacity>
+  );
+}
+
+function ProductCard({ product }: { product: ContentItem }) {
+  return (
+    <TouchableOpacity
+      style={styles.productCard}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`View product ${product.title}`}
+      onPress={() => handleOpenLink(product.url, product.title)}
+    >
+      {product.image && (
+        <Image
+          source={{ uri: product.image }}
+          style={styles.productImage}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+        />
+      )}
+      <View style={styles.productContent}>
+        <View style={styles.productHeader}>
+          <View style={styles.productTitleContainer}>
+            <Text style={styles.productTitle}>{product.title}</Text>
+          </View>
+          <View style={styles.productIcon}>
+            <ShoppingBag size={20} color={colors.primary} strokeWidth={2} />
+          </View>
+        </View>
+        <Text style={styles.productDescription}>{product.desc}</Text>
+        
+        {(product.price || product.rating) && (
+          <View style={styles.productMeta}>
+            {product.price && <Text style={styles.productPrice}>{product.price}</Text>}
+            {product.rating && (
+              <View style={styles.productRating}>
+                <Star size={14} color={colors.primary} fill={colors.primary} strokeWidth={2} />
+                <Text style={styles.productRatingText}>{product.rating}</Text>
+              </View>
+            )}
+          </View>
+        )}
+        
+        {product.whyRecommended && (
+          <View style={styles.productRecommendation}>
+            <Text style={styles.productRecommendationText}>
+              💡 {product.whyRecommended}
+            </Text>
+          </View>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -454,5 +452,87 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     overflow: 'hidden',
     ...shadows.sm,
+  },
+  productCard: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  productImage: {
+    width: '100%',
+    height: 160,
+    backgroundColor: colors.surface,
+  },
+  productContent: {
+    padding: spacing.md,
+  },
+  productHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  productTitleContainer: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  productTitle: {
+    ...typography.body,
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  productDescription: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  productMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  productPrice: {
+    ...typography.body,
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: colors.primary,
+  },
+  productRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  productRatingText: {
+    ...typography.small,
+    color: colors.textSecondary,
+    fontWeight: '500' as const,
+  },
+  productRecommendation: {
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.xs,
+  },
+  productRecommendationText: {
+    ...typography.small,
+    color: colors.text,
+    flex: 1,
+  },
+  productIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
