@@ -3,8 +3,6 @@
     "name": "Tranquil Fast Coach",
     "slug": "tranquil-fast-coach",
     "version": "1.0.0",
-    "owner": "rod_andara",
-    "projectId": "afb33717-bd46-45fa-8379-c849a59d73d6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "tranquilfastcoach",
@@ -22,7 +20,8 @@
         "UIBackgroundModes": [
           "background-processing"
         ],
-        "UIStatusBarStyle": "UIStatusBarStyleDarkContent"
+        "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
         "com": {
@@ -61,18 +60,22 @@
       [
         "expo-notifications",
         {
-          "icon": "./local/assets/notification_icon.png",
           "color": "#8B5CF6",
           "defaultChannel": "default",
-          "sounds": [
-            "./local/assets/notification_sound.wav"
-          ],
           "enableBackgroundRemoteNotifications": false
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://rork.com/"
+      },
+      "eas": {
+        "projectId": "afb33717-bd46-45fa-8379-c849a59d73d6"
+      }
     }
   }
 }
