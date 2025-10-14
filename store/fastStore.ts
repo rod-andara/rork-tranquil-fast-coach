@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import * as Haptics from 'expo-haptics';
 import NetInfo from '@react-native-community/netinfo';
-import { scheduleMilestones } from '@/services/notifications';
+import { scheduleMilestones } from '@/utils/notificationsUtils';
 import { getPlanDuration } from '@/utils';
 import { supabaseUpsertFast } from '@/services/supabase';
 import { enqueueOffline } from '@/services/offline-sync';
@@ -74,7 +74,7 @@ export const useFastStore = create<FastState>((set, get) => ({
     set({ currentFast: newFast });
     if (state.notificationsEnabled) {
       try {
-        scheduleMilestones(Math.floor(plannedDuration / 1000));
+        scheduleMilestones(Math.floor(plannedDuration / 1000), true);
       } catch (e) {
         console.log('[store] scheduleMilestones error', e);
       }
