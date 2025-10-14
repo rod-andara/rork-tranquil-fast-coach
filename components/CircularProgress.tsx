@@ -9,6 +9,7 @@ interface CircularProgressProps {
   color: string;
   backgroundColor: string;
   isLoading?: boolean;
+  isRunning?: boolean;
   children?: ReactNode;
 }
 
@@ -19,6 +20,7 @@ function CircularProgressComponent({
   color,
   backgroundColor,
   isLoading = false,
+  isRunning = false,
   children,
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;

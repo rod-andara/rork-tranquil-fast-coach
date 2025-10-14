@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -7,7 +7,7 @@ import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
-import { formatTime, formatDate, calculateProgress, getFastingMessage, getPlanDuration } from '@/utils';
+import { formatTime, formatDate, getFastingMessage, getPlanDuration } from '@/utils';
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function FastScreen() {
@@ -102,10 +102,11 @@ export default function FastScreen() {
             progress={progress}
             color={colors.primary}
             backgroundColor={colors.border}
+            isRunning={currentFast?.isRunning ?? false}
           >
             <View style={styles.timerContent}>
               <Text style={styles.timerValue}>{formatTime(elapsedMs)}</Text>
-              <Text style={styles.timerLabel}>FASTING</Text>
+              <Text style={styles.timerLabel}>{currentFast?.isRunning ? 'FASTING' : 'PAUSED'}</Text>
             </View>
           </CircularProgress>
         </View>
@@ -125,8 +126,20 @@ export default function FastScreen() {
             <Text style={styles.detailLabel}>Progress</Text>
             <Text style={styles.detailValue}>{progress.toFixed(0)}%</Text>
           </View>
-          <View style={styles.progressBar}>
-            <Animated.View style={[styles.progressFill, { width: animatedWidth.interpolate({ inputRange: [0, 100], outputRange: ['0%', '100%'] }) }]} />
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBar}>
+              <Animated.View 
+                style={[
+                  styles.progressFill, 
+                  { 
+                    width: animatedWidth.interpolate({ 
+                      inputRange: [0, 100], 
+                      outputRange: ['0%', '100%'] 
+                    }) 
+                  }
+                ]} 
+              />
+            </View>
           </View>
         </View>
 
@@ -286,12 +299,16 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: colors.text,
   },
+  progressBarContainer: {
+    width: '100%',
+    marginTop: spacing.sm,
+  },
   progressBar: {
     height: 8,
     backgroundColor: colors.border,
     borderRadius: borderRadius.full,
-    marginTop: spacing.sm,
     overflow: 'hidden',
+    width: '100%',
   },
   progressFill: {
     height: '100%',
@@ -308,6 +325,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.lg,
     gap: spacing.sm,
     ...shadows.md,
@@ -315,6 +333,7 @@ const styles = StyleSheet.create({
   pauseButton: {
     flex: 1,
     backgroundColor: colors.primary,
+    minWidth: 0,
   },
   pauseButtonText: {
     ...typography.h3,

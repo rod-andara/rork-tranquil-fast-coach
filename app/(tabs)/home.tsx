@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -8,7 +8,7 @@ import { colors, spacing, typography, borderRadius, shadows } from '@/constants/
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
 import StatCard from '@/components/StatCard';
-import { formatTime, calculateProgress, getPlanDuration } from '@/utils/fastingUtils';
+import { formatTime, getPlanDuration } from '@/utils/fastingUtils';
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function HomeScreen() {
@@ -86,6 +86,7 @@ export default function HomeScreen() {
             progress={progress}
             color={colors.primary}
             backgroundColor={colors.border}
+            isRunning={currentFast?.isRunning ?? false}
           >
             <View style={styles.timerContent}>
               <Text style={styles.timerValue}>{formatTime(elapsedMs)}</Text>
@@ -118,28 +119,30 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <View style={styles.statsSection}>
-          <StatCard
-            icon={Calendar}
-            value={totalFasts}
-            label="Total Fasts"
-            iconColor={colors.primary}
-            iconBgColor="#F3E8FF"
-          />
-          <StatCard
-            icon={TrendingUp}
-            value={dayStreak}
-            label="Day Streak"
-            iconColor={colors.success}
-            iconBgColor="#D1FAE5"
-          />
-          <StatCard
-            icon={Clock}
-            value={avgHours}
-            label="Avg Hours"
-            iconColor={colors.secondary}
-            iconBgColor="#FCE7F3"
-          />
+        <View style={styles.statsContainer}>
+          <View style={styles.statsRow}>
+            <StatCard
+              icon={Calendar}
+              value={totalFasts}
+              label="Total Fasts"
+              iconColor={colors.primary}
+              iconBgColor="#F3E8FF"
+            />
+            <StatCard
+              icon={TrendingUp}
+              value={dayStreak}
+              label="Day Streak"
+              iconColor={colors.success}
+              iconBgColor="#D1FAE5"
+            />
+            <StatCard
+              icon={Clock}
+              value={avgHours}
+              label="Avg Hours"
+              iconColor={colors.secondary}
+              iconBgColor="#FCE7F3"
+            />
+          </View>
         </View>
 
         <View style={styles.tipCard}>
@@ -245,10 +248,14 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: '600' as const,
   },
-  statsSection: {
-    flexDirection: 'row',
-    gap: spacing.md,
+  statsContainer: {
+    width: '100%',
     marginBottom: spacing.xl,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
     width: '100%',
   },
   tipCard: {
