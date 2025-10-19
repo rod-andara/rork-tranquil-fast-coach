@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -15,48 +14,25 @@ function StatCardComponent({
   icon: Icon,
   value,
   label,
-  iconColor = colors.primary,
-  iconBgColor = colors.surface,
+  iconColor = '#7C3AED',
+  iconBgColor = '#F3F4F6',
 }: StatCardProps) {
   return (
-    <View style={styles.container}>
-      <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
+    <View className="bg-neutral-100 dark:bg-neutral-200 p-4 rounded-lg items-center flex-1 min-w-[100px] shadow-sm">
+      <View
+        className="w-12 h-12 rounded-md justify-center items-center mb-2"
+        style={{ backgroundColor: iconBgColor }}
+      >
         <Icon size={24} color={iconColor} strokeWidth={2} />
       </View>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
+      <Text className="text-xl font-bold text-neutral-900 dark:text-neutral-900 mb-1">
+        {value}
+      </Text>
+      <Text className="text-sm text-neutral-500 dark:text-neutral-500 text-center">
+        {label}
+      </Text>
     </View>
   );
 }
 
 export default memo(StatCardComponent);
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 100,
-    ...shadows.sm,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  value: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  label: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-});
