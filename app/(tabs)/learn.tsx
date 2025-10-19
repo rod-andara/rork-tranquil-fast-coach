@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  StyleSheet,
   Text,
   View,
   ScrollView,
@@ -14,7 +13,6 @@ import {
 import { Search, ChevronRight, BookOpen, ShoppingBag, Star } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import Skeleton from '@/components/Skeleton';
 import { Image } from 'expo-image';
 import { contentData, ContentItem } from '@/utils/content';
@@ -25,7 +23,7 @@ const handleOpenLink = async (url: string, title: string) => {
   if (Platform.OS !== 'web') {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
-  
+
   if (url) {
     const canOpen = await Linking.canOpenURL(url);
     if (canOpen) {
@@ -70,17 +68,23 @@ export default function LearnScreen() {
   const tabs: ContentType[] = ['All', 'Recipes', 'Articles', 'Products'];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Learn & Grow</Text>
-        <Text style={styles.subtitle}>Recipes, tips, and expert guidance</Text>
+    <View className="flex-1 bg-white dark:bg-neutral-50">
+      {/* Header Section */}
+      <View className="px-4 pt-6 pb-4 bg-white dark:bg-neutral-50">
+        <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-800 mb-2">
+          Learn & Grow
+        </Text>
+        <Text className="text-base text-neutral-500 dark:text-neutral-500 mb-4">
+          Recipes, tips, and expert guidance
+        </Text>
 
-        <View style={styles.searchContainer}>
-          <Search size={20} color={colors.textSecondary} strokeWidth={2} />
+        {/* Search Bar */}
+        <View className="flex-row items-center bg-white dark:bg-neutral-100 rounded-md px-4 py-2 border border-neutral-200 dark:border-neutral-300 mb-4 gap-2">
+          <Search size={20} color="#6B7280" strokeWidth={2} />
           <TextInput
-            style={styles.searchInput}
+            className="flex-1 text-base text-neutral-800 dark:text-neutral-800 p-0"
             placeholder="Search recipes, articles, and products..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor="#6B7280"
             value={searchQuery}
             onChangeText={setSearchQuery}
             accessible={true}
@@ -88,23 +92,30 @@ export default function LearnScreen() {
           />
         </View>
 
+        {/* Filter Tabs */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.tabsContainer}
-          contentContainerStyle={styles.tabsContent}
+          className="-mx-4 px-4"
+          contentContainerStyle={{ gap: 8 }}
         >
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, selectedTab === tab && styles.tabActive]}
+              className={`px-4 py-2 rounded-full border ${
+                selectedTab === tab
+                  ? 'bg-primary-600 border-primary-600'
+                  : 'bg-white dark:bg-neutral-100 border-neutral-200 dark:border-neutral-300'
+              }`}
               onPress={() => setSelectedTab(tab)}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel={`Filter ${tab}`}
             >
               <Text
-                style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}
+                className={`text-sm font-medium ${
+                  selectedTab === tab ? 'text-white' : 'text-neutral-800 dark:text-neutral-800'
+                }`}
               >
                 {tab}
               </Text>
@@ -113,6 +124,7 @@ export default function LearnScreen() {
         </ScrollView>
       </View>
 
+      {/* Content List */}
       <FlatList
         initialNumToRender={10}
         windowSize={5}
@@ -121,9 +133,9 @@ export default function LearnScreen() {
         renderItem={({ item }: { item: any }) => {
           if (loading || item.type === 'skeleton') {
             return (
-              <View style={styles.skeletonCard}>
+              <View className="bg-white dark:bg-neutral-100 rounded-lg border border-neutral-200 dark:border-neutral-300 mb-4 overflow-hidden shadow-sm">
                 <Skeleton width={'100%'} height={180} />
-                <View style={{ padding: spacing.md, gap: spacing.sm }}>
+                <View style={{ padding: 16, gap: 8 }}>
                   <Skeleton width={'60%'} height={16} />
                   <Skeleton width={'90%'} height={12} />
                 </View>
@@ -139,7 +151,7 @@ export default function LearnScreen() {
           }
           return null;
         }}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={null}
       />
@@ -150,7 +162,7 @@ export default function LearnScreen() {
 function RecipeCard({ recipe }: { recipe: ContentItem }) {
   return (
     <TouchableOpacity
-      style={styles.recipeCard}
+      className="bg-white dark:bg-neutral-100 rounded-lg border border-neutral-200 dark:border-neutral-300 mb-4 overflow-hidden shadow-sm"
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Open recipe ${recipe.title}`}
@@ -159,23 +171,27 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
       {recipe.image && (
         <Image
           source={{ uri: recipe.image }}
-          style={styles.recipeImage}
+          className="w-full h-[180px] bg-neutral-100 dark:bg-neutral-200"
           contentFit="cover"
           cachePolicy="memory-disk"
         />
       )}
-      <View style={styles.recipeContent}>
-        <View style={styles.recipeHeader}>
-          <Text style={styles.recipeTitle}>{recipe.title}</Text>
-          <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2} />
+      <View className="p-4">
+        <View className="flex-row items-center justify-between mb-1">
+          <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800 flex-1">
+            {recipe.title}
+          </Text>
+          <ChevronRight size={20} color="#6B7280" strokeWidth={2} />
         </View>
-        <Text style={styles.recipeDescription}>{recipe.desc}</Text>
+        <Text className="text-sm text-neutral-500 dark:text-neutral-500 mb-2">
+          {recipe.desc}
+        </Text>
         {recipe.tags && recipe.tags.length > 0 && (
-          <View style={styles.recipeTags}>
+          <View className="flex-row flex-wrap gap-1">
             {recipe.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
+              <View key={index} className="bg-neutral-100 dark:bg-neutral-200 px-2 py-1 rounded-sm">
+                <Text className="text-xs text-primary-600 font-medium">{tag}</Text>
+              </View>
             ))}
           </View>
         )}
@@ -187,24 +203,32 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
 function ArticleCard({ article }: { article: ContentItem }) {
   return (
     <TouchableOpacity
-      style={styles.articleCard}
+      className="flex-row items-center bg-white dark:bg-neutral-100 p-4 rounded-lg border border-neutral-200 dark:border-neutral-300 mb-4 gap-4 shadow-sm"
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Open article ${article.title}`}
       onPress={() => handleOpenLink(article.url, article.title)}
     >
-      <View style={styles.articleIcon}>
-        <BookOpen size={20} color={colors.primary} strokeWidth={2} />
+      <View className="w-10 h-10 rounded-md bg-neutral-100 dark:bg-neutral-200 justify-center items-center">
+        <BookOpen size={20} color="#7C3AED" strokeWidth={2} />
       </View>
-      <View style={styles.articleContent}>
-        <View style={styles.articleHeader}>
-          {article.category && <Text style={styles.articleCategory}>{article.category}</Text>}
-          {article.source && <Text style={styles.articleSource}>• {article.source}</Text>}
+      <View className="flex-1">
+        <View className="flex-row items-center mb-1">
+          {article.category && (
+            <Text className="text-xs font-semibold text-primary-600">{article.category}</Text>
+          )}
+          {article.source && (
+            <Text className="text-xs text-neutral-500 dark:text-neutral-500 ml-1">
+              • {article.source}
+            </Text>
+          )}
         </View>
-        <Text style={styles.articleTitle}>{article.title}</Text>
-        <Text style={styles.articleDescription}>{article.desc}</Text>
+        <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800 mb-1">
+          {article.title}
+        </Text>
+        <Text className="text-sm text-neutral-500 dark:text-neutral-500">{article.desc}</Text>
       </View>
-      <ChevronRight size={20} color={colors.textSecondary} strokeWidth={2} />
+      <ChevronRight size={20} color="#6B7280" strokeWidth={2} />
     </TouchableOpacity>
   );
 }
@@ -212,7 +236,7 @@ function ArticleCard({ article }: { article: ContentItem }) {
 function ProductCard({ product }: { product: ContentItem }) {
   return (
     <TouchableOpacity
-      style={styles.productCard}
+      className="bg-white dark:bg-neutral-100 rounded-lg border border-neutral-200 dark:border-neutral-300 mb-4 overflow-hidden shadow-sm"
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`View product ${product.title}`}
@@ -221,37 +245,45 @@ function ProductCard({ product }: { product: ContentItem }) {
       {product.image && (
         <Image
           source={{ uri: product.image }}
-          style={styles.productImage}
+          className="w-full h-[160px] bg-neutral-100 dark:bg-neutral-200"
           contentFit="cover"
           cachePolicy="memory-disk"
         />
       )}
-      <View style={styles.productContent}>
-        <View style={styles.productHeader}>
-          <View style={styles.productTitleContainer}>
-            <Text style={styles.productTitle}>{product.title}</Text>
+      <View className="p-4">
+        <View className="flex-row items-start justify-between mb-1">
+          <View className="flex-1 mr-2">
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800 mb-1">
+              {product.title}
+            </Text>
           </View>
-          <View style={styles.productIcon}>
-            <ShoppingBag size={20} color={colors.primary} strokeWidth={2} />
+          <View className="w-10 h-10 rounded-md bg-neutral-100 dark:bg-neutral-200 justify-center items-center">
+            <ShoppingBag size={20} color="#7C3AED" strokeWidth={2} />
           </View>
         </View>
-        <Text style={styles.productDescription}>{product.desc}</Text>
-        
+        <Text className="text-sm text-neutral-500 dark:text-neutral-500 mb-2">
+          {product.desc}
+        </Text>
+
         {(product.price || product.rating) && (
-          <View style={styles.productMeta}>
-            {product.price && <Text style={styles.productPrice}>{product.price}</Text>}
+          <View className="flex-row items-center justify-between mb-2">
+            {product.price && (
+              <Text className="text-lg font-bold text-primary-600">{product.price}</Text>
+            )}
             {product.rating && (
-              <View style={styles.productRating}>
-                <Star size={14} color={colors.primary} fill={colors.primary} strokeWidth={2} />
-                <Text style={styles.productRatingText}>{product.rating}</Text>
+              <View className="flex-row items-center gap-1">
+                <Star size={14} color="#7C3AED" fill="#7C3AED" strokeWidth={2} />
+                <Text className="text-xs text-neutral-500 dark:text-neutral-500 font-medium">
+                  {product.rating}
+                </Text>
               </View>
             )}
           </View>
         )}
-        
+
         {product.whyRecommended && (
-          <View style={styles.productRecommendation}>
-            <Text style={styles.productRecommendationText}>
+          <View className="bg-neutral-100 dark:bg-neutral-200 p-2 rounded-sm flex-row items-start gap-1">
+            <Text className="text-xs text-neutral-800 dark:text-neutral-800 flex-1">
               💡 {product.whyRecommended}
             </Text>
           </View>
@@ -260,279 +292,3 @@ function ProductCard({ product }: { product: ContentItem }) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.background,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.body,
-    color: colors.text,
-    padding: 0,
-  },
-  tabsContainer: {
-    marginHorizontal: -spacing.lg,
-    paddingHorizontal: spacing.lg,
-  },
-  tabsContent: {
-    gap: spacing.sm,
-  },
-  tab: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  tabActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  tabText: {
-    ...typography.body,
-    fontSize: 14,
-    fontWeight: '500' as const,
-    color: colors.text,
-  },
-  tabTextActive: {
-    color: colors.white,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    fontSize: 18,
-    color: colors.text,
-  },
-  recipeCard: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-    overflow: 'hidden',
-    ...shadows.sm,
-  },
-  recipeImage: {
-    width: '100%',
-    height: 180,
-    backgroundColor: colors.surface,
-  },
-  recipeContent: {
-    padding: spacing.md,
-  },
-  recipeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  recipeTitle: {
-    ...typography.body,
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: colors.text,
-    flex: 1,
-  },
-  recipeDescription: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  recipeTags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  tag: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
-  },
-  tagText: {
-    ...typography.small,
-    color: colors.primary,
-    fontWeight: '500' as const,
-  },
-  articleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-    gap: spacing.md,
-    ...shadows.sm,
-  },
-  articleIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  articleContent: {
-    flex: 1,
-  },
-  articleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  articleCategory: {
-    ...typography.small,
-    color: colors.primary,
-    fontWeight: '600' as const,
-  },
-  articleSource: {
-    ...typography.small,
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-  },
-  articleTitle: {
-    ...typography.body,
-    fontSize: 15,
-    fontWeight: '600' as const,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  articleDescription: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  skeletonCard: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-    overflow: 'hidden',
-    ...shadows.sm,
-  },
-  productCard: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-    overflow: 'hidden',
-    ...shadows.sm,
-  },
-  productImage: {
-    width: '100%',
-    height: 160,
-    backgroundColor: colors.surface,
-  },
-  productContent: {
-    padding: spacing.md,
-  },
-  productHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  productTitleContainer: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  productTitle: {
-    ...typography.body,
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  productDescription: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  productMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  productPrice: {
-    ...typography.body,
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: colors.primary,
-  },
-  productRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  productRatingText: {
-    ...typography.small,
-    color: colors.textSecondary,
-    fontWeight: '500' as const,
-  },
-  productRecommendation: {
-    backgroundColor: colors.surface,
-    padding: spacing.sm,
-    borderRadius: borderRadius.sm,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-  },
-  productRecommendationText: {
-    ...typography.small,
-    color: colors.text,
-    flex: 1,
-  },
-  productIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
