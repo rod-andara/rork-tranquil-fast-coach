@@ -17,21 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.tranquilfastcoach.app",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "background-processing"
-        ],
-        "UIStatusBarStyle": "UIStatusBarStyleDarkContent"
-      },
-      "entitlements": {
-        "com": {
-          "apple": {
-            "developer": {
-              "networking": {
-                "wifi-info": true
-              }
-            }
-          }
-        }
+        "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -59,18 +46,31 @@
       [
         "expo-notifications",
         {
-          "icon": "./local/assets/notification_icon.png",
           "color": "#8B5CF6",
           "defaultChannel": "default",
-          "sounds": [
-            "./local/assets/notification_sound.wav"
-          ],
           "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1",
+            "useFrameworks": "static"
+          }
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://rork.com/"
+      },
+      "eas": {
+        "projectId": "afb33717-bd46-45fa-8379-c849a59d73d6"
+      }
     }
   }
 }
