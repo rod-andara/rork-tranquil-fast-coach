@@ -1,9 +1,8 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, Text, View, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
+import { Text, View, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
 import { Bell, Moon, HelpCircle, Heart, Share2, Clock, LogOut } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 import { useRouter } from 'expo-router';
 import ProfileCard from '@/components/ProfileCard';
@@ -13,12 +12,6 @@ import ListItem from '@/components/ListItem';
 export default function SettingsScreen() {
   const router = useRouter();
   const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan } = useFastStore();
-
-  const bg = isDarkMode ? colors.backgroundDark : colors.background;
-  const text = isDarkMode ? colors.textDark : colors.text;
-  const textSecondary = isDarkMode ? colors.textSecondaryDark : colors.textSecondary;
-  const surface = isDarkMode ? colors.surfaceDark : colors.white;
-  const border = isDarkMode ? colors.borderDark : colors.border;
 
   const onToggleNotifications = useCallback((val: boolean) => {
     if (Platform.OS !== 'web') {
@@ -77,30 +70,37 @@ export default function SettingsScreen() {
   }, [router]);
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]} testID="settings-screen">
-      <ScrollView contentContainerStyle={[styles.scrollContent]} showsVerticalScrollIndicator={false}>
-        <View style={styles.header} testID="settings-header">
-          <Text style={[styles.title, { color: text }]}>Settings</Text>
-          <Text style={[styles.subtitle, { color: textSecondary }]}>Manage your account and preferences</Text>
+    <View className="flex-1 bg-white dark:bg-neutral-50" testID="settings-screen">
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48, gap: 24 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header Section */}
+        <View className="gap-2" testID="settings-header">
+          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-800">Settings</Text>
+          <Text className="text-base text-neutral-500 dark:text-neutral-500">
+            Manage your account and preferences
+          </Text>
         </View>
 
+        {/* Profile Card */}
         <ProfileCard
           testID="profile-card"
           name="John Doe"
           email="john.doe@email.com"
-          backgroundColor={surface}
-          textColor={text}
-          subTextColor={textSecondary}
-          borderColor={border}
+          backgroundColor="#FFFFFF"
+          textColor="#111827"
+          subTextColor="#6B7280"
+          borderColor="#E5E7EB"
           onUpgradePress={() => {
             router.push('/paywall');
           }}
         />
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: text }]}>Preferences</Text>
-          <View style={[styles.card, { backgroundColor: surface, borderColor: border }]}
-            testID="preferences-card">
+        {/* Preferences Section */}
+        <View className="gap-4">
+          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-800">Preferences</Text>
+          <View className="bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-300 rounded-lg p-4 shadow-sm" testID="preferences-card">
             <SwitchRow
               testID="notifications-row"
               Icon={Bell}
@@ -108,11 +108,11 @@ export default function SettingsScreen() {
               description="Receive fasting reminders"
               value={notificationsEnabled}
               onValueChange={onToggleNotifications}
-              iconColor={colors.primary}
-              textColor={text}
-              subTextColor={textSecondary}
+              iconColor="#7C3AED"
+              textColor="#111827"
+              subTextColor="#6B7280"
             />
-            <View style={[styles.divider, { borderBottomColor: border }]} />
+            <View className="border-b border-neutral-200 dark:border-neutral-300 my-4" />
             <SwitchRow
               testID="darkmode-row"
               Icon={Moon}
@@ -120,139 +120,86 @@ export default function SettingsScreen() {
               description="Toggle dark appearance"
               value={isDarkMode}
               onValueChange={onToggleDark}
-              iconColor={colors.primary}
-              textColor={text}
-              subTextColor={textSecondary}
+              iconColor="#7C3AED"
+              textColor="#111827"
+              subTextColor="#6B7280"
             />
           </View>
         </View>
 
-        <View style={styles.section}>
-          <View style={[styles.card, { backgroundColor: surface, borderColor: border }]} testID="fasting-plan-card">
+        {/* Fasting Plan Section */}
+        <View className="gap-4">
+          <View className="bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-300 rounded-lg p-4 shadow-sm" testID="fasting-plan-card">
             <ListItem
               testID="fasting-plan-row"
               Icon={Clock}
               text="Fasting Plan"
               subtitle={`Current: ${selectedPlan}`}
               onPress={handleFastingPlan}
-              iconColor={colors.primary}
-              textColor={text}
-              chevronColor={textSecondary}
-              subTextColor={textSecondary}
+              iconColor="#7C3AED"
+              textColor="#111827"
+              chevronColor="#6B7280"
+              subTextColor="#6B7280"
             />
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: text }]}>Help & Support</Text>
-          <View style={[styles.card, { backgroundColor: surface, borderColor: border }]} testID="help-support-card">
+        {/* Help & Support Section */}
+        <View className="gap-4">
+          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-800">Help & Support</Text>
+          <View className="bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-300 rounded-lg p-4 shadow-sm" testID="help-support-card">
             <ListItem
               testID="help-support-row"
               Icon={HelpCircle}
               text="Help & Support"
               onPress={handleHelpSupport}
-              iconColor={colors.primary}
-              textColor={text}
-              chevronColor={textSecondary}
+              iconColor="#7C3AED"
+              textColor="#111827"
+              chevronColor="#6B7280"
             />
-            <View style={[styles.divider, { borderBottomColor: border }]} />
+            <View className="border-b border-neutral-200 dark:border-neutral-300 my-4" />
             <ListItem
               testID="rate-app-row"
               Icon={Heart}
               text="Rate App"
               onPress={handleRateApp}
-              iconColor={colors.primary}
-              textColor={text}
-              chevronColor={textSecondary}
+              iconColor="#7C3AED"
+              textColor="#111827"
+              chevronColor="#6B7280"
             />
-            <View style={[styles.divider, { borderBottomColor: border }]} />
+            <View className="border-b border-neutral-200 dark:border-neutral-300 my-4" />
             <ListItem
               testID="share-row"
               Icon={Share2}
               text="Share with Friends"
               onPress={handleShare}
-              iconColor={colors.primary}
-              textColor={text}
-              chevronColor={textSecondary}
+              iconColor="#7C3AED"
+              textColor="#111827"
+              chevronColor="#6B7280"
             />
           </View>
         </View>
 
+        {/* Log Out Button */}
         <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: isDarkMode ? '#DC2626' : '#EF4444' }]}
+          className="flex-row items-center justify-center gap-2 py-4 rounded-xl bg-error-500 dark:bg-error-600 shadow-sm active:bg-error-600"
           onPress={handleLogOut}
           activeOpacity={0.8}
           testID="logout-button"
         >
           <LogOut size={20} color="#FFFFFF" />
-          <Text style={styles.logoutText}>Log Out</Text>
+          <Text className="text-base font-bold text-white">Log Out</Text>
         </TouchableOpacity>
 
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: textSecondary }]}>FastTrack v1.0.0</Text>
-          <Text style={[styles.footerText, { color: textSecondary }]}>Made with ❤️ for your wellness journey</Text>
+        {/* Footer */}
+        <View className="items-center gap-2 py-6">
+          <Text className="text-sm text-neutral-500 dark:text-neutral-500">FastTrack v1.0.0</Text>
+          <Text className="text-sm text-neutral-500 dark:text-neutral-500">
+            Made with ❤️ for your wellness journey
+          </Text>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.lg,
-  },
-  header: {
-    gap: spacing.xs,
-  },
-  title: {
-    ...typography.h1,
-  },
-  subtitle: {
-    ...typography.body,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    fontSize: 18,
-  },
-  card: {
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.md,
-    ...shadows.sm,
-  },
-  divider: {
-    borderBottomWidth: 1,
-    marginVertical: spacing.md,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.lg,
-    ...shadows.sm,
-  },
-  logoutText: {
-    ...typography.body,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  footer: {
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.lg,
-  },
-  footerText: {
-    ...typography.caption,
-  },
-});
