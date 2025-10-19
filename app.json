@@ -18,7 +18,21 @@
       "bundleIdentifier": "com.tranquilfastcoach.app",
       "infoPlist": {
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "background-processing"
+        ]
+      },
+      "entitlements": {
+        "com": {
+          "apple": {
+            "developer": {
+              "networking": {
+                "wifi-info": true
+              }
+            }
+          }
+        }
       }
     },
     "android": {
@@ -46,8 +60,12 @@
       [
         "expo-notifications",
         {
+          "icon": "./local/assets/notification_icon.png",
           "color": "#8B5CF6",
           "defaultChannel": "default",
+          "sounds": [
+            "./local/assets/notification_sound.wav"
+          ],
           "enableBackgroundRemoteNotifications": false
         }
       ],
