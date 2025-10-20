@@ -12,6 +12,7 @@ export interface FastPlanCardProps {
   eatHours: number;
   popular?: boolean;
   selected: boolean;
+  isDarkMode?: boolean;
   onPress: () => void;
 }
 
@@ -22,6 +23,7 @@ export default function FastPlanCard({
   eatHours,
   popular = false,
   selected,
+  isDarkMode = false,
   onPress,
 }: FastPlanCardProps) {
   const totalHours = 24;
@@ -30,7 +32,18 @@ export default function FastPlanCard({
 
   return (
     <TouchableOpacity
-      style={[styles.card, selected && styles.cardSelected]}
+      style={[
+        styles.card,
+        selected && styles.cardSelected,
+        {
+          backgroundColor: isDarkMode
+            ? (selected ? '#2D1B4E' : '#1F2937')
+            : (selected ? '#F5F3FF' : '#FFFFFF'),
+          borderColor: isDarkMode
+            ? (selected ? '#7C3AED' : '#4B5563')
+            : (selected ? '#7C3AED' : '#E5E7EB'),
+        },
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -42,7 +55,9 @@ export default function FastPlanCard({
 
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, { color: isDarkMode ? '#F9FAFB' : '#111827' }]}>
+            {title}
+          </Text>
         </View>
         {selected && (
           <View style={styles.checkContainer}>
@@ -51,10 +66,12 @@ export default function FastPlanCard({
         )}
       </View>
 
-      <Text style={styles.description}>{description}</Text>
+      <Text style={[styles.description, { color: isDarkMode ? '#9CA3AF' : '#6B7280' }]}>
+        {description}
+      </Text>
 
       <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
+        <View style={[styles.progressBar, { backgroundColor: isDarkMode ? '#374151' : '#F3F4F6' }]}>
           <View
             style={[
               styles.progressFast,
@@ -64,7 +81,7 @@ export default function FastPlanCard({
           <View
             style={[
               styles.progressEat,
-              { width: `${eatPercentage}%` },
+              { width: `${eatPercentage}%`, backgroundColor: isDarkMode ? '#6D28D9' : '#E9D5FF' },
             ]}
           />
         </View>
