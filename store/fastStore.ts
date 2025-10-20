@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import NetInfo from '@react-native-community/netinfo';
 import { scheduleMilestones } from '@/utils/notificationsUtils';
@@ -79,9 +80,11 @@ export const useFastStore = create<FastState>((set, get) => ({
         console.log('[store] scheduleMilestones error', e);
       }
     }
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } catch {}
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch {}
+    }
     get().saveToStorage();
   },
 
