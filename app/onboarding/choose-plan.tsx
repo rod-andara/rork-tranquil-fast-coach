@@ -1,11 +1,10 @@
 import { router } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Animated, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import FastPlanCard from '@/components/FastPlanCard';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
 
 const PLANS = [
@@ -106,30 +105,32 @@ export default function ChoosePlanScreen() {
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <View className="flex-1 bg-neutral-100 dark:bg-neutral-900">
+      <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          className="flex-1"
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 48 }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.header}>
-            <View style={styles.illustrationContainer}>
+          <View className="items-center mb-8">
+            <View className="mb-6">
               <ClockIllustration />
             </View>
-            <Text style={styles.title}>Choose Your Plan</Text>
-            <Text style={styles.subtitle}>
+            <Text className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 text-center mb-2">
+              Choose Your Plan
+            </Text>
+            <Text className="text-base text-neutral-500 dark:text-neutral-400 text-center mb-6">
               Select a fasting schedule that fits your lifestyle
             </Text>
 
-            <View style={styles.dotsContainer}>
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-              <View style={[styles.dot, styles.dotActive]} />
+            <View className="flex-row gap-2 mt-4">
+              <View className="w-2 h-2 rounded-full bg-purple-300 dark:bg-purple-400" />
+              <View className="w-2 h-2 rounded-full bg-purple-300 dark:bg-purple-400" />
+              <View className="w-6 h-2 rounded-full bg-primary-600" />
             </View>
           </View>
 
-          <View style={styles.plans}>
+          <View className="gap-4">
             {PLANS.map((plan) => (
               <FastPlanCard
                 key={plan.id}
@@ -152,20 +153,18 @@ export default function ChoosePlanScreen() {
         </ScrollView>
 
         <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
+          className="px-6 pb-8 bg-neutral-100 dark:bg-neutral-900"
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }}
         >
           <TouchableOpacity
-            style={styles.button}
+            className="bg-primary-600 dark:bg-primary-500 py-4 px-8 rounded-xl items-center shadow-lg active:bg-primary-700"
             onPress={handleContinue}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>
+            <Text className="text-lg font-semibold text-white">
               Start {selectedPlanData?.title} Plan
             </Text>
           </TouchableOpacity>
@@ -174,77 +173,3 @@ export default function ChoosePlanScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  illustrationContainer: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    ...typography.h1,
-    fontSize: 28,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-    fontWeight: '700' as const,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: borderRadius.full,
-    backgroundColor: '#D8B4FE',
-  },
-  dotActive: {
-    backgroundColor: colors.primary,
-    width: 24,
-  },
-  plans: {
-    gap: spacing.md,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    backgroundColor: '#F3F4F6',
-  },
-  button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md + 2,
-    paddingHorizontal: spacing.xl,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-  },
-  buttonText: {
-    ...typography.h3,
-    fontSize: 18,
-    color: colors.white,
-  },
-});
