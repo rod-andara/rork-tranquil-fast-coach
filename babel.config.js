@@ -3,8 +3,8 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      'nativewind/babel',
-      'react-native-reanimated/plugin',
-    ],
+      // Only load NativeWind plugin for native platforms, not web
+      process.env.EXPO_TARGET === 'web' ? null : 'nativewind/babel'
+    ].filter(Boolean)
   };
 };
