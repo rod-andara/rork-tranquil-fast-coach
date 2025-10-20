@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   value: {
-    fontSize: 48,
+    fontSize: 32,
     fontWeight: '700',
-    letterSpacing: -1,
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
   label: {

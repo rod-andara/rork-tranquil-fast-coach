@@ -79,10 +79,10 @@ export default function HomeScreen() {
       >
         {/* Header Section - 24pt bottom margin */}
         <View className="mb-6">
-          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
+          <Text className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-2">
             Welcome Back!
           </Text>
-          <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+          <Text className="text-base text-neutral-600 dark:text-neutral-400">
             Current Plan: {selectedPlan} Intermittent Fasting
           </Text>
         </View>

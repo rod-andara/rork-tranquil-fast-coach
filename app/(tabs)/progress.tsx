@@ -181,12 +181,16 @@ export default function ProgressScreen() {
                 yAxisLabel=""
                 yAxisSuffix="h"
                 chartConfig={{
-                backgroundColor: '#FFFFFF',
-                backgroundGradientFrom: '#FFFFFF',
-                backgroundGradientTo: '#FFFFFF',
+                backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
+                backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
+                backgroundGradientTo: isDarkMode ? '#1F2937' : '#FFFFFF',
                 decimalPlaces: 0,
-                color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
+                color: (opacity = 1) => isDarkMode
+                  ? `rgba(167, 139, 250, ${opacity})`
+                  : `rgba(124, 58, 237, ${opacity})`,
+                labelColor: (opacity = 1) => isDarkMode
+                  ? `rgba(209, 213, 219, ${opacity})`
+                  : `rgba(107, 114, 128, ${opacity})`,
                 barPercentage: 0.7,
                 propsForBackgroundLines: {
                   strokeWidth: 0,
@@ -201,7 +205,13 @@ export default function ProgressScreen() {
               <View className="flex-row items-end justify-between h-[200px] px-4">
                 {stats.weekData.map((v, idx) => (
                   <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 16 * 2) / 7 - 4 }}>
-                    <View className="w-full bg-primary-600 rounded-md" style={{ height: Math.max(10, (v / 24) * 180) }} />
+                    <View
+                      className="w-full rounded-md"
+                      style={{
+                        height: Math.max(10, (v / 24) * 180),
+                        backgroundColor: isDarkMode ? '#A78BFA' : '#7C3AED'
+                      }}
+                    />
                     <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                       {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
                     </Text>
