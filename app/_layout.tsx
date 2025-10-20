@@ -63,7 +63,7 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const { isDarkMode } = useFastStore();
+  const isDarkMode = useFastStore((state) => state.isDarkMode);
   const { setColorScheme } = useColorScheme();
 
   useEffect(() => {
