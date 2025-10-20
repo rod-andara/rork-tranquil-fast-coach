@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import FastPlanCard from '@/components/FastPlanCard';
+import VideoBackground from '@/components/VideoBackground';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
 import { borderRadius, colors, spacing, typography } from '@/constants/theme';
 
@@ -106,7 +107,10 @@ export default function ChoosePlanScreen() {
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? '#1F2937' : '#F3F4F6' }]}>
+    <VideoBackground
+      source={require('@/assets/videos/choose-plan-bg.mp4')}
+      gradientColors={['rgba(124, 58, 237, 0.6)', 'rgba(31, 41, 55, 0.85)']}
+    >
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <ScrollView
           style={styles.scrollView}
@@ -175,7 +179,7 @@ export default function ChoosePlanScreen() {
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
-    </View>
+    </VideoBackground>
   );
 }
 

@@ -2,47 +2,10 @@ import { router } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import { BlurView } from 'expo-blur';
 
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
-
-function CelebratingIllustration() {
-  return (
-    <Svg width="200" height="200" viewBox="0 0 200 200">
-      <Circle cx="100" cy="60" r="25" fill="#6D28D9" />
-      <Path
-        d="M75 85 Q75 75 85 75 L115 75 Q125 75 125 85 L125 110 Q125 120 115 120 L85 120 Q75 120 75 110 Z"
-        fill="#A78BFA"
-      />
-      <Path
-        d="M60 80 L75 95 L75 110 L60 95 Z"
-        fill="#FDE68A"
-      />
-      <Path
-        d="M125 95 L140 80 L140 95 L125 110 Z"
-        fill="#FDE68A"
-      />
-      <Rect x="50" y="75" width="10" height="10" fill="#A78BFA" />
-      <Rect x="140" y="75" width="10" height="10" fill="#A78BFA" />
-      <Path
-        d="M85 120 L70 145 Q65 155 75 160 L85 155 Z"
-        fill="#A78BFA"
-      />
-      <Path
-        d="M115 120 L130 145 Q135 155 125 160 L115 155 Z"
-        fill="#A78BFA"
-      />
-      <Circle cx="90" cy="55" r="3" fill="#1F2937" />
-      <Circle cx="110" cy="55" r="3" fill="#1F2937" />
-      <Path
-        d="M90 65 Q100 70 110 65"
-        stroke="#1F2937"
-        strokeWidth="2"
-        fill="none"
-      />
-    </Svg>
-  );
-}
+import VideoBackground from '@/components/VideoBackground';
+import { spacing, borderRadius } from '@/constants/theme';
 
 export default function TrackSucceedScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -52,37 +15,48 @@ export default function TrackSucceedScreen() {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 1000,
+        delay: 300,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 800,
+        duration: 1000,
+        delay: 300,
         useNativeDriver: true,
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
 
   return (
-    <View style={styles.container}>
+    <VideoBackground source={require('@/assets/videos/track-succeed.mp4')}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <View style={styles.content}>
-          <View style={styles.illustrationContainer}>
-            <CelebratingIllustration />
-          </View>
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          {/* Glassmorphism Text Container */}
+          <BlurView intensity={20} tint="dark" style={styles.textContainer}>
+            <Text style={styles.title}>Track &{'\n'}Succeed</Text>
+            <Text style={styles.subtitle}>
+              Monitor your progress, build streaks, and celebrate every milestone on your journey
+            </Text>
+          </BlurView>
 
-          <Text style={styles.title}>Track & Succeed</Text>
-          <Text style={styles.subtitle}>
-            Monitor your progress, build streaks, and celebrate every milestone on your journey.
-          </Text>
-
+          {/* Progress Dots */}
           <View style={styles.dotsContainer}>
             <View style={styles.dot} />
             <View style={[styles.dot, styles.dotActive]} />
             <View style={styles.dot} />
           </View>
-        </View>
+        </Animated.View>
 
+        {/* Footer Button */}
         <Animated.View
           style={[
             styles.footer,
@@ -101,15 +75,11 @@ export default function TrackSucceedScreen() {
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
-    </View>
+    </VideoBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F3F4F6',
-  },
   safeArea: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -120,44 +90,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: spacing.xxl,
   },
-  illustrationContainer: {
-    width: 280,
-    height: 280,
-    backgroundColor: '#E9D5FF',
+  textContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: borderRadius.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.xxl,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    padding: spacing.xl,
+    marginHorizontal: spacing.md,
+    overflow: 'hidden',
   },
   title: {
-    ...typography.h1,
-    fontSize: 32,
-    color: colors.text,
+    fontSize: 48,
+    fontWeight: '800',
+    color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: spacing.md,
-    fontWeight: '700' as const,
+    marginBottom: spacing.lg,
+    lineHeight: 56,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
   },
   subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.md,
-    lineHeight: 24,
+    lineHeight: 26,
+    opacity: 0.95,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   dotsContainer: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.lg,
+    marginTop: spacing.xxl,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: borderRadius.full,
-    backgroundColor: '#D8B4FE',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   dotActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#FFFFFF',
     width: 24,
   },
   footer: {
@@ -165,15 +141,20 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md + 2,
+    backgroundColor: '#7C3AED',
+    paddingVertical: spacing.md + 4,
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   buttonText: {
-    ...typography.h3,
     fontSize: 18,
-    color: colors.white,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
