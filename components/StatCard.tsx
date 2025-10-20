@@ -1,6 +1,9 @@
 import React, { memo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useFastStore } from '@/store/fastStore';
+import GlassCard from './GlassCard';
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -10,6 +13,22 @@ interface StatCardProps {
   iconBgColor?: string;
 }
 
+const ICON_GRADIENTS: Record<string, string[]> = {
+  calendar: ['#7C3AED', '#A78BFA'],   // Purple
+  trending: ['#10B981', '#34D399'],   // Green - for TrendingUp
+  trendingup: ['#10B981', '#34D399'],  // Green
+  clock: ['#3B82F6', '#60A5FA'],      // Blue
+  trophy: ['#F59E0B', '#FBBF24'],     // Orange/Gold
+};
+
+function getIconGradient(iconColor: string): string[] {
+  // Try to match by the iconColor hex value to determine which gradient to use
+  if (iconColor === '#10B981') return ICON_GRADIENTS.trending;
+  if (iconColor === '#3B82F6') return ICON_GRADIENTS.clock;
+  if (iconColor === '#F59E0B') return ICON_GRADIENTS.trophy;
+  return ICON_GRADIENTS.calendar; // Default purple
+}
+
 function StatCardComponent({
   icon: Icon,
   value,
@@ -17,22 +36,67 @@ function StatCardComponent({
   iconColor = '#7C3AED',
   iconBgColor = '#F3F4F6',
 }: StatCardProps) {
+  const isDarkMode = useFastStore((state) => state.isDarkMode);
+  const gradientColors = getIconGradient(iconColor);
+
   return (
-    <View className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-lg items-center flex-1 min-w-[100px] shadow-sm">
-      <View
-        className="w-12 h-12 rounded-md justify-center items-center mb-2"
-        style={{ backgroundColor: iconBgColor }}
+    <GlassCard style={styles.card}>
+      <LinearGradient
+        colors={gradientColors}
+        style={styles.iconGradient}
       >
-        <Icon size={24} color={iconColor} strokeWidth={2} />
-      </View>
-      <Text className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-1">
+        <Icon size={28} color="#FFFFFF" strokeWidth={2} />
+      </LinearGradient>
+      <Text style={[
+        styles.value,
+        { color: isDarkMode ? '#FFFFFF' : '#111827' }
+      ]}>
         {value}
       </Text>
-      <Text className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
+      <Text style={[
+        styles.label,
+        { color: isDarkMode ? '#9CA3AF' : '#6B7280' }
+      ]}>
         {label}
       </Text>
-    </View>
+    </GlassCard>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    alignItems: 'center',
+    padding: 20,
+    flex: 1,
+    minWidth: 100,
+  },
+  iconGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  value: {
+    fontSize: 48,
+    fontWeight: '700',
+    letterSpacing: -1,
+    marginBottom: 4,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+});
 
 export default memo(StatCardComponent);

@@ -2,9 +2,11 @@ import React, { useMemo } from 'react';
 import { Text, View, ScrollView, Dimensions, Platform } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { TrendingUp, Clock, Trophy, Calendar } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { useFastStore } from '@/store/fastStore';
 import StatCard from '@/components/StatCard';
+import GlassCard from '@/components/GlassCard';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -16,7 +18,7 @@ interface Achievement {
 }
 
 export default function ProgressScreen() {
-  const { fastHistory } = useFastStore();
+  const { fastHistory, isDarkMode } = useFastStore();
 
   const stats = useMemo(() => {
     const totalFasts = fastHistory.length;
@@ -95,7 +97,10 @@ export default function ProgressScreen() {
   ], [stats]);
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-900">
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+    >
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
@@ -113,15 +118,15 @@ export default function ProgressScreen() {
 
         {/* Stats Grid - 2x2 layout with consistent 12pt gaps */}
         <View className="flex-row flex-wrap -mx-1.5 mb-6">
-          <View className="w-1/2 p-1.5">
-            <StatCard
+            <View className="w-1/2 p-1.5">
+              <StatCard
               icon={Calendar}
               value={stats.totalFasts}
               label="Total Fasts"
               iconColor="#7C3AED"
               iconBgColor="#F3F4F6"
-            />
-          </View>
+              />
+            </View>
           <View className="w-1/2 p-1.5">
             <StatCard
               icon={TrendingUp}
@@ -129,8 +134,8 @@ export default function ProgressScreen() {
               label="Day Streak"
               iconColor="#10B981"
               iconBgColor="#F3F4F6"
-            />
-          </View>
+              />
+            </View>
           <View className="w-1/2 p-1.5">
             <StatCard
               icon={Clock}
@@ -138,8 +143,8 @@ export default function ProgressScreen() {
               label="Avg Hours"
               iconColor="#7C3AED"
               iconBgColor="#F3F4F6"
-            />
-          </View>
+              />
+            </View>
           <View className="w-1/2 p-1.5">
             <StatCard
               icon={Trophy}
@@ -148,17 +153,22 @@ export default function ProgressScreen() {
               iconColor="#7C3AED"
               iconBgColor="#F3F4F6"
             />
+            </View>
           </View>
-        </View>
 
-        {/* Chart Card - 24pt bottom margin */}
-        <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-6 shadow-sm">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
-            This Week
-          </Text>
-          {Platform.OS !== 'web' ? (
-            <BarChart
-              data={{
+          {/* Chart Card - 24pt bottom margin */}
+          <GlassCard style={{ padding: 16, marginBottom: 24 }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: isDarkMode ? '#FFFFFF' : '#111827',
+              marginBottom: 16,
+            }}>
+              This Week
+            </Text>
+            {Platform.OS !== 'web' ? (
+              <BarChart
+                data={{
                 labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 datasets: [
                   {
@@ -166,11 +176,11 @@ export default function ProgressScreen() {
                   },
                 ],
               }}
-              width={screenWidth - 16 * 2 - 16 * 2}
-              height={220}
-              yAxisLabel=""
-              yAxisSuffix="h"
-              chartConfig={{
+                width={screenWidth - 16 * 2 - 16 * 2}
+                height={220}
+                yAxisLabel=""
+                yAxisSuffix="h"
+                chartConfig={{
                 backgroundColor: '#FFFFFF',
                 backgroundGradientFrom: '#FFFFFF',
                 backgroundGradientTo: '#FFFFFF',
@@ -182,50 +192,50 @@ export default function ProgressScreen() {
                   strokeWidth: 0,
                 },
               }}
-              style={{ marginVertical: 8, borderRadius: 12 }}
-              showValuesOnTopOfBars={false}
-              withInnerLines={false}
-              fromZero
-            />
-          ) : (
-            <View className="flex-row items-end justify-between h-[200px] px-4">
-              {stats.weekData.map((v, idx) => (
-                <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 16 * 2) / 7 - 4 }}>
-                  <View className="w-full bg-primary-600 rounded-md" style={{ height: Math.max(10, (v / 24) * 180) }} />
-                  <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
+                style={{ marginVertical: 8, borderRadius: 12 }}
+                showValuesOnTopOfBars={false}
+                withInnerLines={false}
+                fromZero
+              />
+            ) : (
+              <View className="flex-row items-end justify-between h-[200px] px-4">
+                {stats.weekData.map((v, idx) => (
+                  <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 16 * 2) / 7 - 4 }}>
+                    <View className="w-full bg-primary-600 rounded-md" style={{ height: Math.max(10, (v / 24) * 180) }} />
+                    <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+        </GlassCard>
 
         {/* Achievements Section */}
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
-            Achievements
-          </Text>
-          <View className="gap-4">
-            {achievements.map((achievement) => (
-              <AchievementCard
-                key={achievement.id}
-                achievement={achievement}
-              />
-            ))}
-          </View>
+            <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
+              Achievements
+            </Text>
+            <View className="gap-4">
+              {achievements.map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                />
+              ))}
+            </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <View
-      className={`flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border gap-4 ${
+      className={`flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border gap-4 shadow-sm ${
         achievement.unlocked
-          ? 'border-primary-200 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20'
+          ? 'border-primary-200 dark:border-primary-700 bg-primary-100 dark:bg-primary-900/20'
           : 'border-neutral-200 dark:border-neutral-700 opacity-60'
       }`}
     >
