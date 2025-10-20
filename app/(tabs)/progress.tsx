@@ -95,7 +95,7 @@ export default function ProgressScreen() {
   ], [stats]);
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-50">
+    <View className="flex-1 bg-white dark:bg-neutral-900">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
@@ -103,10 +103,10 @@ export default function ProgressScreen() {
       >
         {/* Header Section - 24pt bottom margin */}
         <View className="mb-6">
-          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-800 mb-2">
+          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             Your Progress
           </Text>
-          <Text className="text-base text-neutral-500 dark:text-neutral-500">
+          <Text className="text-base text-neutral-500 dark:text-neutral-400">
             Track your fasting journey
           </Text>
         </View>
@@ -152,8 +152,8 @@ export default function ProgressScreen() {
         </View>
 
         {/* Chart Card - 24pt bottom margin */}
-        <View className="bg-white dark:bg-neutral-100 p-4 rounded-lg border border-neutral-200 dark:border-neutral-300 mb-6 shadow-sm">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-800 mb-4">
+        <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-6 shadow-sm">
+          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
             This Week
           </Text>
           {Platform.OS !== 'web' ? (
@@ -192,7 +192,7 @@ export default function ProgressScreen() {
               {stats.weekData.map((v, idx) => (
                 <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 16 * 2) / 7 - 4 }}>
                   <View className="w-full bg-primary-600 rounded-md" style={{ height: Math.max(10, (v / 24) * 180) }} />
-                  <Text className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">
+                  <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
                   </Text>
                 </View>
@@ -203,7 +203,7 @@ export default function ProgressScreen() {
 
         {/* Achievements Section */}
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-800 mb-4">
+          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
             Achievements
           </Text>
           <View className="gap-4">
@@ -223,15 +223,15 @@ export default function ProgressScreen() {
 function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <View
-      className={`flex-row items-center bg-white dark:bg-neutral-100 p-4 rounded-lg border gap-4 ${
+      className={`flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border gap-4 ${
         achievement.unlocked
-          ? 'border-primary-200 bg-primary-50 dark:bg-primary-100'
-          : 'border-neutral-200 opacity-60'
+          ? 'border-primary-200 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20'
+          : 'border-neutral-200 dark:border-neutral-700 opacity-60'
       }`}
     >
       <View
         className={`w-14 h-14 rounded-md justify-center items-center ${
-          achievement.unlocked ? 'bg-primary-200 dark:bg-primary-300' : 'bg-neutral-100 dark:bg-neutral-200'
+          achievement.unlocked ? 'bg-primary-200 dark:bg-primary-700' : 'bg-neutral-100 dark:bg-neutral-700'
         }`}
       >
         <Trophy
@@ -243,14 +243,14 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       <View className="flex-1">
         <Text
           className={`text-base font-semibold mb-1 ${
-            achievement.unlocked ? 'text-neutral-800 dark:text-neutral-800' : 'text-neutral-500 dark:text-neutral-500'
+            achievement.unlocked ? 'text-neutral-800 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400'
           }`}
         >
           {achievement.title}
         </Text>
         <Text
           className={`text-sm ${
-            achievement.unlocked ? 'text-neutral-700 dark:text-neutral-700' : 'text-neutral-500 dark:text-neutral-500'
+            achievement.unlocked ? 'text-neutral-700 dark:text-neutral-200' : 'text-neutral-500 dark:text-neutral-400'
           }`}
         >
           {achievement.description}

@@ -18,17 +18,17 @@ function StatCardComponent({
   iconBgColor = '#F3F4F6',
 }: StatCardProps) {
   return (
-    <View className="bg-neutral-100 dark:bg-neutral-200 p-4 rounded-lg items-center flex-1 min-w-[100px] shadow-sm">
+    <View className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-lg items-center flex-1 min-w-[100px] shadow-sm">
       <View
         className="w-12 h-12 rounded-md justify-center items-center mb-2"
         style={{ backgroundColor: iconBgColor }}
       >
         <Icon size={24} color={iconColor} strokeWidth={2} />
       </View>
-      <Text className="text-xl font-bold text-neutral-900 dark:text-neutral-900 mb-1">
+      <Text className="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-1">
         {value}
       </Text>
-      <Text className="text-sm text-neutral-500 dark:text-neutral-500 text-center">
+      <Text className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
         {label}
       </Text>
     </View>

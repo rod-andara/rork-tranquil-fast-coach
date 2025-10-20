@@ -70,15 +70,15 @@ export default function SettingsScreen() {
   }, [router]);
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-50" testID="settings-screen">
+    <View className="flex-1 bg-white dark:bg-neutral-900" testID="settings-screen">
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48, gap: 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header Section */}
         <View className="gap-2" testID="settings-header">
-          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-800">Settings</Text>
-          <Text className="text-base text-neutral-500 dark:text-neutral-500">
+          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">Settings</Text>
+          <Text className="text-base text-neutral-500 dark:text-neutral-400">
             Manage your account and preferences
           </Text>
         </View>
@@ -99,8 +99,8 @@ export default function SettingsScreen() {
 
         {/* Preferences Section */}
         <View className="gap-4">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-800">Preferences</Text>
-          <View className="bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-300 rounded-lg p-4 shadow-sm" testID="preferences-card">
+          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Preferences</Text>
+          <View className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm" testID="preferences-card">
             <SwitchRow
               testID="notifications-row"
               Icon={Bell}
@@ -112,7 +112,7 @@ export default function SettingsScreen() {
               textColor="#111827"
               subTextColor="#6B7280"
             />
-            <View className="border-b border-neutral-200 dark:border-neutral-300 my-4" />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
             <SwitchRow
               testID="darkmode-row"
               Icon={Moon}
@@ -129,7 +129,7 @@ export default function SettingsScreen() {
 
         {/* Fasting Plan Section */}
         <View className="gap-4">
-          <View className="bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-300 rounded-lg p-4 shadow-sm" testID="fasting-plan-card">
+          <View className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm" testID="fasting-plan-card">
             <ListItem
               testID="fasting-plan-row"
               Icon={Clock}
@@ -146,8 +146,8 @@ export default function SettingsScreen() {
 
         {/* Help & Support Section */}
         <View className="gap-4">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-800">Help & Support</Text>
-          <View className="bg-white dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-300 rounded-lg p-4 shadow-sm" testID="help-support-card">
+          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Help & Support</Text>
+          <View className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm" testID="help-support-card">
             <ListItem
               testID="help-support-row"
               Icon={HelpCircle}
@@ -157,7 +157,7 @@ export default function SettingsScreen() {
               textColor="#111827"
               chevronColor="#6B7280"
             />
-            <View className="border-b border-neutral-200 dark:border-neutral-300 my-4" />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
             <ListItem
               testID="rate-app-row"
               Icon={Heart}
@@ -167,7 +167,7 @@ export default function SettingsScreen() {
               textColor="#111827"
               chevronColor="#6B7280"
             />
-            <View className="border-b border-neutral-200 dark:border-neutral-300 my-4" />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
             <ListItem
               testID="share-row"
               Icon={Share2}
@@ -193,8 +193,8 @@ export default function SettingsScreen() {
 
         {/* Footer */}
         <View className="items-center gap-2 py-6">
-          <Text className="text-sm text-neutral-500 dark:text-neutral-500">FastTrack v1.0.0</Text>
-          <Text className="text-sm text-neutral-500 dark:text-neutral-500">
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">FastTrack v1.0.0</Text>
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">
             Made with ❤️ for your wellness journey
           </Text>
         </View>

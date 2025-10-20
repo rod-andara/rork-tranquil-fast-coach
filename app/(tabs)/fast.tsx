@@ -44,13 +44,13 @@ export default function FastScreen() {
 
   if (!currentFast) {
     return (
-      <View className="flex-1 bg-white dark:bg-neutral-50">
+      <View className="flex-1 bg-white dark:bg-neutral-900">
         <Stack.Screen options={{ title: 'Your Fast' }} />
         <View className="flex-1 justify-center items-center px-8">
-          <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-800 mb-2">
+          <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             No Active Fast
           </Text>
-          <Text className="text-base text-neutral-500 dark:text-neutral-500 text-center">
+          <Text className="text-base text-neutral-500 dark:text-neutral-400 text-center">
             Start a fast from the Home screen to track your progress here.
           </Text>
         </View>
@@ -59,7 +59,7 @@ export default function FastScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-50">
+    <View className="flex-1 bg-white dark:bg-neutral-900">
       <Stack.Screen
         options={{
           title: 'Your Fast',
@@ -70,7 +70,7 @@ export default function FastScreen() {
           ),
           headerRight: () => (
             <View className="mr-4">
-              <Text className="text-sm text-neutral-500 dark:text-neutral-500">{selectedPlan} Intermittent Fasting</Text>
+              <Text className="text-sm text-neutral-500 dark:text-neutral-400">{selectedPlan} Intermittent Fasting</Text>
             </View>
           ),
         }}
@@ -81,14 +81,14 @@ export default function FastScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Smart Reminders Card - 24pt bottom margin */}
-        <View className="flex-row items-center justify-between bg-white dark:bg-neutral-100 p-4 rounded-lg mb-6 shadow-sm border border-neutral-200 dark:border-neutral-300">
+        <View className="flex-row items-center justify-between bg-white dark:bg-neutral-800 p-4 rounded-lg mb-6 shadow-sm border border-neutral-200 dark:border-neutral-700">
           <View className="flex-row items-center gap-2 flex-1">
             <Bell size={20} color="#6B7280" />
             <View>
-              <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800">
+              <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
                 Smart Reminders
               </Text>
-              <Text className="text-sm text-neutral-500 dark:text-neutral-500">
+              <Text className="text-sm text-neutral-500 dark:text-neutral-400">
                 Get notified at key milestones
               </Text>
             </View>
@@ -113,14 +113,14 @@ export default function FastScreen() {
           >
             <View className="items-center">
               <Text
-                className="text-3xl font-bold text-neutral-900 dark:text-neutral-900 mb-1"
+                className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-1"
                 adjustsFontSizeToFit={true}
                 numberOfLines={1}
                 minimumFontScale={0.5}
               >
                 {formatTime(elapsedMs)}
               </Text>
-              <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-500 tracking-wider">
+              <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider">
                 {currentFast?.isRunning ? 'FASTING' : 'PAUSED'}
               </Text>
             </View>
@@ -128,33 +128,33 @@ export default function FastScreen() {
         </View>
 
         {/* Encouragement Message - 24pt bottom margin, more breathing room */}
-        <Text className="text-lg text-primary-600 dark:text-primary-500 text-center mb-6 font-medium">
+        <Text className="text-lg text-primary-600 dark:text-primary-400 text-center mb-6 font-medium">
           {getFastingMessage(progress)}
         </Text>
 
         {/* Details Card - 24pt bottom margin */}
-        <View className="bg-white dark:bg-neutral-100 p-4 rounded-lg mb-6 shadow-sm border border-neutral-200 dark:border-neutral-300">
+        <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg mb-6 shadow-sm border border-neutral-200 dark:border-neutral-700">
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-base text-neutral-500 dark:text-neutral-500">Started</Text>
-            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800">
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">Started</Text>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
               {formatDate(currentFast.startTime)}
             </Text>
           </View>
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-base text-neutral-500 dark:text-neutral-500">Target End</Text>
-            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800">
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">Target End</Text>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
               {formatDate(targetEndTime)}
             </Text>
           </View>
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-base text-neutral-500 dark:text-neutral-500">Progress</Text>
-            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-800">
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">Progress</Text>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
               {progress.toFixed(0)}%
             </Text>
           </View>
           {/* Progress Bar - true 0% width with visible border */}
           <View className="w-full mt-2">
-            <View className="h-2 bg-neutral-200 dark:bg-neutral-300 rounded-full overflow-hidden w-full border border-neutral-300 dark:border-neutral-400">
+            <View className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden w-full border border-neutral-300 dark:border-neutral-600">
               <Animated.View
                 className="h-full bg-primary-600 rounded-full"
                 style={{
@@ -183,7 +183,7 @@ export default function FastScreen() {
             <Text className="text-lg font-semibold text-white">{isPaused ? 'Resume' : 'Pause'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="w-14 h-14 items-center justify-center rounded-xl bg-white dark:bg-neutral-100 border-2 border-error-500 shadow-lg active:bg-neutral-50"
+            className="w-14 h-14 items-center justify-center rounded-xl bg-white dark:bg-neutral-800 border-2 border-error-500 shadow-lg active:bg-neutral-50"
             onPress={handleEndFast}
             activeOpacity={0.8}
           >
@@ -192,10 +192,10 @@ export default function FastScreen() {
         </View>
 
         {/* Tips Card */}
-        <View className="bg-primary-100 dark:bg-primary-200 p-4 rounded-lg border border-primary-200 dark:border-primary-300">
+        <View className="bg-primary-100 dark:bg-primary-900/20 p-4 rounded-lg border border-primary-200 dark:border-primary-700">
           <View className="flex-row items-center gap-2 mb-4">
             <Lightbulb size={20} color="#7C3AED" />
-            <Text className="text-base font-semibold text-neutral-700 dark:text-neutral-700">
+            <Text className="text-base font-semibold text-neutral-700 dark:text-neutral-200">
               Fasting Tips
             </Text>
           </View>
@@ -214,7 +214,7 @@ function TipItem({ text }: { text: string }) {
   return (
     <View className="flex-row items-start gap-2">
       <View className="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2" />
-      <Text className="text-sm text-neutral-700 dark:text-neutral-700 flex-1 leading-5">
+      <Text className="text-sm text-neutral-700 dark:text-neutral-200 flex-1 leading-5">
         {text}
       </Text>
     </View>

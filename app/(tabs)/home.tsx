@@ -67,7 +67,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-50">
+    <View className="flex-1 bg-white dark:bg-neutral-900">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
@@ -75,10 +75,10 @@ export default function HomeScreen() {
       >
         {/* Header Section - 24pt bottom margin */}
         <View className="mb-6">
-          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-800 mb-2">
+          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             Welcome Back!
           </Text>
-          <Text className="text-sm text-neutral-500 dark:text-neutral-500">
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">
             Current Plan: {selectedPlan} Intermittent Fasting
           </Text>
         </View>
@@ -95,14 +95,14 @@ export default function HomeScreen() {
           >
             <View className="items-center">
               <Text
-                className="text-3xl font-bold text-neutral-900 dark:text-neutral-900 mb-1"
+                className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-1"
                 adjustsFontSizeToFit={true}
                 numberOfLines={1}
                 minimumFontScale={0.5}
               >
                 {formatTime(elapsedMs)}
               </Text>
-              <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-500 tracking-wider">
+              <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider">
                 {currentFast ? 'FASTING' : 'READY TO START'}
               </Text>
             </View>
@@ -160,14 +160,14 @@ export default function HomeScreen() {
         </View>
 
         {/* Tip Card - 24pt bottom margin */}
-        <View className="bg-primary-100 dark:bg-primary-200 p-4 rounded-lg border border-primary-200 dark:border-primary-300 mb-6">
+        <View className="bg-primary-100 dark:bg-primary-900/20 p-4 rounded-lg border border-primary-200 dark:border-primary-700 mb-6">
           <View className="flex-row items-center gap-2 mb-2">
             <Award size={20} color="#7C3AED" />
-            <Text className="text-base font-semibold text-neutral-700 dark:text-neutral-700">
+            <Text className="text-base font-semibold text-neutral-700 dark:text-neutral-200">
               Fasting Tip
             </Text>
           </View>
-          <Text className="text-sm text-neutral-700 dark:text-neutral-700 leading-5" testID="home-tip">
+          <Text className="text-sm text-neutral-700 dark:text-neutral-200 leading-5" testID="home-tip">
             {currentFast
               ? "Stay hydrated! Drink plenty of water, herbal tea, or black coffee during your fast."
               : `Start your ${selectedPlan} fasting journey and track your progress`}
@@ -184,7 +184,7 @@ export default function HomeScreen() {
           }}
           activeOpacity={0.7}
         >
-          <Text className="text-base font-semibold text-primary-600 dark:text-primary-500">
+          <Text className="text-base font-semibold text-primary-600 dark:text-primary-400">
             Change Plan
           </Text>
         </TouchableOpacity>
