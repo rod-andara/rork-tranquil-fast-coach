@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { Text, View, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
 import { Bell, Moon, HelpCircle, Heart, Share2, Clock, LogOut } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFastStore } from '@/store/fastStore';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,9 @@ import ListItem from '@/components/ListItem';
 export default function SettingsScreen() {
   const router = useRouter();
   const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan } = useFastStore();
+
+  // Use selector pattern for ProfileCard to ensure it updates with dark mode
+  const isDark = useFastStore((state) => state.isDarkMode);
 
   const onToggleNotifications = useCallback((val: boolean) => {
     if (Platform.OS !== 'web') {
@@ -70,7 +74,11 @@ export default function SettingsScreen() {
   }, [router]);
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-900" testID="settings-screen">
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+      testID="settings-screen"
+    >
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48, gap: 24 }}
         showsVerticalScrollIndicator={false}
@@ -88,10 +96,10 @@ export default function SettingsScreen() {
           testID="profile-card"
           name="John Doe"
           email="john.doe@email.com"
-          backgroundColor="#FFFFFF"
-          textColor="#111827"
-          subTextColor="#6B7280"
-          borderColor="#E5E7EB"
+          backgroundColor={isDarkMode ? "#1F2937" : "#FFFFFF"}
+          textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+          subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+          borderColor={isDarkMode ? "#374151" : "#E5E7EB"}
           onUpgradePress={() => {
             router.push('/paywall');
           }}
@@ -100,7 +108,7 @@ export default function SettingsScreen() {
         {/* Preferences Section */}
         <View className="gap-4">
           <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Preferences</Text>
-          <View className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm" testID="preferences-card">
+          <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm" testID="preferences-card">
             <SwitchRow
               testID="notifications-row"
               Icon={Bell}
@@ -109,8 +117,8 @@ export default function SettingsScreen() {
               value={notificationsEnabled}
               onValueChange={onToggleNotifications}
               iconColor="#7C3AED"
-              textColor="#111827"
-              subTextColor="#6B7280"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
             <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
             <SwitchRow
@@ -121,15 +129,15 @@ export default function SettingsScreen() {
               value={isDarkMode}
               onValueChange={onToggleDark}
               iconColor="#7C3AED"
-              textColor="#111827"
-              subTextColor="#6B7280"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
           </View>
         </View>
 
         {/* Fasting Plan Section */}
         <View className="gap-4">
-          <View className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm" testID="fasting-plan-card">
+          <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm" testID="fasting-plan-card">
             <ListItem
               testID="fasting-plan-row"
               Icon={Clock}
@@ -137,9 +145,9 @@ export default function SettingsScreen() {
               subtitle={`Current: ${selectedPlan}`}
               onPress={handleFastingPlan}
               iconColor="#7C3AED"
-              textColor="#111827"
-              chevronColor="#6B7280"
-              subTextColor="#6B7280"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+              subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
           </View>
         </View>
@@ -147,15 +155,15 @@ export default function SettingsScreen() {
         {/* Help & Support Section */}
         <View className="gap-4">
           <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Help & Support</Text>
-          <View className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm" testID="help-support-card">
+          <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm" testID="help-support-card">
             <ListItem
               testID="help-support-row"
               Icon={HelpCircle}
               text="Help & Support"
               onPress={handleHelpSupport}
               iconColor="#7C3AED"
-              textColor="#111827"
-              chevronColor="#6B7280"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
             <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
             <ListItem
@@ -164,8 +172,8 @@ export default function SettingsScreen() {
               text="Rate App"
               onPress={handleRateApp}
               iconColor="#7C3AED"
-              textColor="#111827"
-              chevronColor="#6B7280"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
             <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
             <ListItem
@@ -174,21 +182,21 @@ export default function SettingsScreen() {
               text="Share with Friends"
               onPress={handleShare}
               iconColor="#7C3AED"
-              textColor="#111827"
-              chevronColor="#6B7280"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
           </View>
         </View>
 
         {/* Log Out Button */}
         <TouchableOpacity
-          className="flex-row items-center justify-center gap-2 py-4 rounded-xl bg-error-500 dark:bg-error-600 shadow-sm active:bg-error-600"
+          className="flex-row items-center justify-center gap-2 py-4 rounded-xl bg-error-500 dark:bg-error-600 shadow-lg active:bg-error-600"
           onPress={handleLogOut}
           activeOpacity={0.8}
           testID="logout-button"
         >
           <LogOut size={20} color="#FFFFFF" />
-          <Text className="text-base font-bold text-white">Log Out</Text>
+          <Text className="text-base font-semibold text-white">Log Out</Text>
         </TouchableOpacity>
 
         {/* Footer */}
@@ -199,7 +207,7 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 

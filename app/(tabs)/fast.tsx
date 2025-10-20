@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } 
 import { Stack, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
@@ -10,7 +11,7 @@ import { formatTime, formatDate, getFastingMessage, getPlanDuration } from '@/ut
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function FastScreen() {
-  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, pauseFast } = useFastStore();
+  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, pauseFast, isDarkMode } = useFastStore();
   const router = useRouter();
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -44,7 +45,10 @@ export default function FastScreen() {
 
   if (!currentFast) {
     return (
-      <View className="flex-1 bg-white dark:bg-neutral-900">
+      <LinearGradient
+        colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+        style={{ flex: 1 }}
+      >
         <Stack.Screen options={{ title: 'Your Fast' }} />
         <View className="flex-1 justify-center items-center px-8">
           <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
@@ -54,18 +58,21 @@ export default function FastScreen() {
             Start a fast from the Home screen to track your progress here.
           </Text>
         </View>
-      </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-900">
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+    >
       <Stack.Screen
         options={{
           title: 'Your Fast',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} accessibilityRole="button" testID="fast-back">
-              <Text className="text-base font-semibold text-primary-600">Back</Text>
+            <TouchableOpacity className="py-2 px-4" onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" testID="fast-back">
+              <Text className="text-base font-semibold text-primary-600 dark:text-primary-400">Back</Text>
             </TouchableOpacity>
           ),
           headerRight: () => (
@@ -77,11 +84,11 @@ export default function FastScreen() {
       />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 48 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Smart Reminders Card - 24pt bottom margin */}
-        <View className="flex-row items-center justify-between bg-white dark:bg-neutral-800 p-4 rounded-lg mb-6 shadow-sm border border-neutral-200 dark:border-neutral-700">
+        <View className="flex-row items-center justify-between bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm mb-6">
           <View className="flex-row items-center gap-2 flex-1">
             <Bell size={20} color="#6B7280" />
             <View>
@@ -128,12 +135,12 @@ export default function FastScreen() {
         </View>
 
         {/* Encouragement Message - 24pt bottom margin, more breathing room */}
-        <Text className="text-lg text-primary-600 dark:text-primary-400 text-center mb-6 font-medium">
+        <Text className="text-base text-primary-600 dark:text-primary-400 text-center mb-6 font-medium">
           {getFastingMessage(progress)}
         </Text>
 
         {/* Details Card - 24pt bottom margin */}
-        <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg mb-6 shadow-sm border border-neutral-200 dark:border-neutral-700">
+        <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm mb-6">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-base text-neutral-500 dark:text-neutral-400">Started</Text>
             <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
@@ -171,7 +178,7 @@ export default function FastScreen() {
         {/* Action Buttons - 24pt bottom margin */}
         <View className="flex-row gap-4 mb-6">
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center py-4 rounded-xl gap-2 bg-primary-600 shadow-lg active:bg-primary-700"
+            className="flex-1 flex-row items-center justify-center py-4 rounded-xl gap-2 bg-primary-600 dark:bg-primary-500 shadow-lg active:bg-primary-700"
             onPress={handlePauseResume}
             activeOpacity={0.8}
           >
@@ -180,10 +187,10 @@ export default function FastScreen() {
             ) : (
               <Pause size={20} color="#FFFFFF" />
             )}
-            <Text className="text-lg font-semibold text-white">{isPaused ? 'Resume' : 'Pause'}</Text>
+            <Text className="text-base font-semibold text-white">{isPaused ? 'Resume' : 'Pause'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="w-14 h-14 items-center justify-center rounded-xl bg-white dark:bg-neutral-800 border-2 border-error-500 shadow-lg active:bg-neutral-50"
+            className="w-14 h-14 items-center justify-center rounded-xl bg-white dark:bg-neutral-800 border-2 border-error-500 shadow-lg active:bg-neutral-50 dark:active:bg-neutral-700"
             onPress={handleEndFast}
             activeOpacity={0.8}
           >
@@ -206,7 +213,7 @@ export default function FastScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 

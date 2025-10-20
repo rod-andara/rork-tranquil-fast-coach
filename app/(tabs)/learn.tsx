@@ -12,10 +12,12 @@ import {
 } from 'react-native';
 import { Search, ChevronRight, BookOpen, ShoppingBag, Star } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import Skeleton from '@/components/Skeleton';
 import { Image } from 'expo-image';
 import { contentData, ContentItem } from '@/utils/content';
+import { useFastStore } from '@/store/fastStore';
 
 type ContentType = 'All' | 'Recipes' | 'Articles' | 'Products';
 
@@ -37,6 +39,7 @@ const handleOpenLink = async (url: string, title: string) => {
 };
 
 export default function LearnScreen() {
+  const { isDarkMode } = useFastStore();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState<ContentType>('All');
   const [loading, setLoading] = useState<boolean>(true);
@@ -68,7 +71,10 @@ export default function LearnScreen() {
   const tabs: ContentType[] = ['All', 'Recipes', 'Articles', 'Products'];
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-900">
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+    >
       {/* Header Section */}
       <View className="px-4 pt-6 pb-4 bg-white dark:bg-neutral-900">
         <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
@@ -104,7 +110,7 @@ export default function LearnScreen() {
               key={tab}
               className={`px-4 py-2 rounded-full border ${
                 selectedTab === tab
-                  ? 'bg-primary-600 border-primary-600'
+                  ? 'bg-primary-600 dark:bg-primary-500 border-primary-600 dark:border-primary-500'
                   : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'
               }`}
               onPress={() => setSelectedTab(tab)}
@@ -154,8 +160,21 @@ export default function LearnScreen() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={null}
+        ListEmptyComponent={
+          !loading ? (
+            <View className="flex-1 items-center justify-center px-8 py-12">
+              <Search size={48} color="#D1D5DB" strokeWidth={2} />
+              <Text className="text-xl font-semibold text-neutral-800 dark:text-neutral-100 mt-4 text-center">
+                No Results Found
+              </Text>
+              <Text className="text-base text-neutral-500 dark:text-neutral-400 mt-2 text-center">
+                Try adjusting your search or filters.
+              </Text>
+            </View>
+          ) : null
+        }
       />
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -192,7 +211,7 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
         {recipe.tags && recipe.tags.length > 0 && (
           <View className="flex-row flex-wrap gap-1">
             {recipe.tags.map((tag, index) => (
-              <View key={index} className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded-sm">
+              <View key={index} className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded-md">
                 <Text className="text-xs text-primary-600 font-medium">{tag}</Text>
               </View>
             ))}
@@ -278,7 +297,7 @@ function ProductCard({ product }: { product: ContentItem }) {
             )}
             {product.rating && (
               <View className="flex-row items-center gap-1">
-                <Star size={14} color="#7C3AED" fill="#7C3AED" strokeWidth={2} />
+                <Star size={16} color="#7C3AED" fill="#7C3AED" strokeWidth={2} />
                 <Text className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                   {product.rating}
                 </Text>
@@ -288,7 +307,7 @@ function ProductCard({ product }: { product: ContentItem }) {
         )}
 
         {product.whyRecommended && (
-          <View className="bg-neutral-100 dark:bg-neutral-700 p-2 rounded-sm flex-row items-start gap-1">
+          <View className="bg-neutral-100 dark:bg-neutral-700 p-2 rounded-md flex-row items-start gap-1">
             <Text className="text-xs text-neutral-800 dark:text-neutral-200 flex-1">
               💡 {product.whyRecommended}
             </Text>

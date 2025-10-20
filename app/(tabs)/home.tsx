@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Play, Square, Calendar, TrendingUp, Clock, Award } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
@@ -12,7 +13,7 @@ import useFastTimer from '@/hooks/useFastTimer';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { currentFast, selectedPlan, startFast, endFast, fastHistory } = useFastStore();
+  const { currentFast, selectedPlan, startFast, endFast, fastHistory, isDarkMode } = useFastStore();
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
 
   const progress = currentFast ? calc(elapsedMs, getPlanDuration(selectedPlan)) : 0;
@@ -67,7 +68,10 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-neutral-900">
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+    >
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
@@ -113,21 +117,21 @@ export default function HomeScreen() {
         <View className="mb-8">
           {currentFast ? (
             <TouchableOpacity
-              className="flex-row items-center justify-center py-4 rounded-xl gap-2 bg-error-500 shadow-lg active:bg-error-600"
+              className="flex-row items-center justify-center py-4 rounded-xl gap-2 bg-error-500 dark:bg-error-600 shadow-lg active:bg-error-600"
               onPress={handleEndFast}
               activeOpacity={0.8}
             >
               <Square size={20} color="#FFFFFF" />
-              <Text className="text-lg font-semibold text-white">Stop Fast</Text>
+              <Text className="text-base font-semibold text-white">Stop Fast</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              className="flex-row items-center justify-center py-4 rounded-xl gap-2 bg-primary-600 shadow-lg active:bg-primary-700"
+              className="flex-row items-center justify-center py-4 rounded-xl gap-2 bg-primary-600 dark:bg-primary-500 shadow-lg active:bg-primary-700"
               onPress={handleStartFast}
               activeOpacity={0.8}
             >
               <Play size={20} color="#FFFFFF" fill="#FFFFFF" />
-              <Text className="text-lg font-semibold text-white">Start Fast</Text>
+              <Text className="text-base font-semibold text-white">Start Fast</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -177,7 +181,7 @@ export default function HomeScreen() {
         {/* Change Plan Link */}
         <TouchableOpacity
           testID="change-plan-link"
-          className="self-center mt-6"
+          className="self-center mt-6 py-2 px-4"
           onPress={() => {
             console.log('Navigating to choose-plan');
             router.push('/onboarding/choose-plan');
@@ -189,7 +193,7 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
