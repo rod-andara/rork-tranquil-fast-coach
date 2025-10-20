@@ -112,7 +112,12 @@ export default function FastScreen() {
             isRunning={currentFast?.isRunning ?? false}
           >
             <View className="items-center">
-              <Text className="text-4xl font-bold text-neutral-900 dark:text-neutral-900 mb-1">
+              <Text
+                className="text-3xl font-bold text-neutral-900 dark:text-neutral-900 mb-1"
+                adjustsFontSizeToFit={true}
+                numberOfLines={1}
+                minimumFontScale={0.5}
+              >
                 {formatTime(elapsedMs)}
               </Text>
               <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-500 tracking-wider">

@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
 import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useColorScheme } from "nativewind";
 
 import { useFastStore } from "@/store/fastStore";
 import AppSetup from "@/App";
@@ -62,9 +63,16 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const { isDarkMode } = useFastStore();
+  const { setColorScheme } = useColorScheme();
+
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
+
+  useEffect(() => {
+    setColorScheme(isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode, setColorScheme]);
 
   return (
     <QueryClientProvider client={queryClient}>

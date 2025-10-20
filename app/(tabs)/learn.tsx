@@ -173,7 +173,10 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
           source={{ uri: recipe.image }}
           className="w-full h-[180px] bg-neutral-100 dark:bg-neutral-200"
           contentFit="cover"
-          cachePolicy="memory-disk"
+          cachePolicy="disk"
+          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**-oJ-pWB' }}
+          transition={200}
+          onError={(e) => console.log('Recipe Image Error:', recipe.title, e)}
         />
       )}
       <View className="p-4">
@@ -247,7 +250,10 @@ function ProductCard({ product }: { product: ContentItem }) {
           source={{ uri: product.image }}
           className="w-full h-[160px] bg-neutral-100 dark:bg-neutral-200"
           contentFit="cover"
-          cachePolicy="memory-disk"
+          cachePolicy="disk"
+          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**-oJ-pWB' }}
+          transition={200}
+          onError={(e) => console.log('Product Image Error:', product.title, e)}
         />
       )}
       <View className="p-4">
