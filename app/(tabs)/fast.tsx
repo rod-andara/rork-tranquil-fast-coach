@@ -152,15 +152,15 @@ export default function FastScreen() {
               {progress.toFixed(0)}%
             </Text>
           </View>
-          {/* Progress Bar - minimum 4pt height visible even at 0% */}
+          {/* Progress Bar - true 0% width with visible border */}
           <View className="w-full mt-2">
-            <View className="h-2 bg-neutral-200 dark:bg-neutral-300 rounded-full overflow-hidden w-full">
+            <View className="h-2 bg-neutral-200 dark:bg-neutral-300 rounded-full overflow-hidden w-full border border-neutral-300 dark:border-neutral-400">
               <Animated.View
                 className="h-full bg-primary-600 rounded-full"
                 style={{
                   width: animatedWidth.interpolate({
                     inputRange: [0, 100],
-                    outputRange: ['4%', '100%']
+                    outputRange: ['0%', '100%']
                   })
                 }}
               />
