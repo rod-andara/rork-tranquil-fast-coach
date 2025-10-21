@@ -70,7 +70,7 @@ function ClockIllustration() {
 
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
-  const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding, isDarkMode } = useFastStore();
+  const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding, isDarkMode, startFast } = useFastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
@@ -92,12 +92,16 @@ export default function ChoosePlanScreen() {
   const handleContinue = async () => {
     try {
       if (onboardingComplete) {
+        // Changing plan from Settings - just update and go back
         await updatePlan(selectedPlan);
         router.back();
       } else {
+        // Completing onboarding for first time - save plan, complete onboarding, start fast, and navigate to Fast tab
         saveSelectedPlan(selectedPlan);
         completeOnboarding();
-        router.replace('/(tabs)/home');
+        startFast(selectedPlan);
+        router.dismissAll();
+        router.replace('/(tabs)/fast');
       }
     } catch (e) {
       console.log('Failed to apply plan', e);
