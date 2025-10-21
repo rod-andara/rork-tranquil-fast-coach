@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions, Platform } from 'react-native';
+import { Text, View, ScrollView, Dimensions, Platform } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { TrendingUp, Clock, Trophy, Calendar } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 import StatCard from '@/components/StatCard';
+import GlassCard from '@/components/GlassCard';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -17,7 +18,7 @@ interface Achievement {
 }
 
 export default function ProgressScreen() {
-  const { fastHistory } = useFastStore();
+  const { fastHistory, isDarkMode } = useFastStore();
 
   const stats = useMemo(() => {
     const totalFasts = fastHistory.length;
@@ -96,151 +97,181 @@ export default function ProgressScreen() {
   ], [stats]);
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+    >
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Your Progress</Text>
-          <Text style={styles.subtitle}>Track your fasting journey</Text>
+        {/* Header Section - 24pt bottom margin */}
+        <View className="mb-6">
+          <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
+            Your Progress
+          </Text>
+          <Text className="text-base text-neutral-500 dark:text-neutral-400">
+            Track your fasting journey
+          </Text>
         </View>
 
-        <View style={styles.statsGrid}>
-          <View style={styles.statCardWrapper}>
-            <StatCard
+        {/* Stats Grid - 2x2 layout with consistent 12pt gaps */}
+        <View className="flex-row flex-wrap -mx-1.5 mb-6">
+            <View className="w-1/2 p-1.5">
+              <StatCard
               icon={Calendar}
               value={stats.totalFasts}
               label="Total Fasts"
-              iconColor={colors.primary}
-              iconBgColor={colors.surface}
-            />
-          </View>
-          <View style={styles.statCardWrapper}>
+              iconColor="#7C3AED"
+              iconBgColor="#F3F4F6"
+              />
+            </View>
+          <View className="w-1/2 p-1.5">
             <StatCard
               icon={TrendingUp}
               value={stats.dayStreak}
               label="Day Streak"
-              iconColor={colors.success}
-              iconBgColor="#D1FAE5"
-            />
-          </View>
-          <View style={styles.statCardWrapper}>
+              iconColor="#10B981"
+              iconBgColor="#F3F4F6"
+              />
+            </View>
+          <View className="w-1/2 p-1.5">
             <StatCard
               icon={Clock}
               value={stats.avgHours}
               label="Avg Hours"
-              iconColor={colors.primary}
-              iconBgColor={colors.surface}
-            />
-          </View>
-          <View style={styles.statCardWrapper}>
+              iconColor="#7C3AED"
+              iconBgColor="#F3F4F6"
+              />
+            </View>
+          <View className="w-1/2 p-1.5">
             <StatCard
               icon={Trophy}
               value={stats.totalHours}
               label="Total Hours"
-              iconColor={colors.primary}
-              iconBgColor={colors.surface}
+              iconColor="#7C3AED"
+              iconBgColor="#F3F4F6"
             />
+            </View>
           </View>
-        </View>
 
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>This Week</Text>
-          {Platform.OS !== 'web' ? (
-          <BarChart
-            data={{
-              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-              datasets: [
-                {
-                  data: stats.weekData,
+          {/* Chart Card - 24pt bottom margin */}
+          <GlassCard style={{ padding: 16, marginBottom: 24 }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: isDarkMode ? '#FFFFFF' : '#111827',
+              marginBottom: 16,
+            }}>
+              This Week
+            </Text>
+            {Platform.OS !== 'web' ? (
+              <BarChart
+                data={{
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                  {
+                    data: stats.weekData,
+                  },
+                ],
+              }}
+                width={screenWidth - 16 * 2 - 16 * 2}
+                height={220}
+                yAxisLabel=""
+                yAxisSuffix="h"
+                chartConfig={{
+                backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
+                backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
+                backgroundGradientTo: isDarkMode ? '#1F2937' : '#FFFFFF',
+                decimalPlaces: 0,
+                color: (opacity = 1) => isDarkMode
+                  ? `rgba(167, 139, 250, ${opacity})`
+                  : `rgba(124, 58, 237, ${opacity})`,
+                labelColor: (opacity = 1) => isDarkMode
+                  ? `rgba(209, 213, 219, ${opacity})`
+                  : `rgba(107, 114, 128, ${opacity})`,
+                barPercentage: 0.7,
+                propsForBackgroundLines: {
+                  strokeWidth: 0,
                 },
-              ],
-            }}
-            width={screenWidth - spacing.lg * 2 - spacing.md * 2}
-            height={220}
-            yAxisLabel=""
-            yAxisSuffix="h"
-            chartConfig={{
-              backgroundColor: colors.white,
-              backgroundGradientFrom: colors.white,
-              backgroundGradientTo: colors.white,
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-              barPercentage: 0.7,
-              propsForBackgroundLines: {
-                strokeWidth: 0,
-              },
-            }}
-            style={styles.chart}
-            showValuesOnTopOfBars={false}
-            withInnerLines={false}
-            fromZero
-          />
-          ) : (
-            <View style={styles.webBars}>
-              {stats.weekData.map((v, idx) => (
-                <View key={idx} style={styles.webBarItem}>
-                  <View style={[styles.webBar, { height: Math.max(10, (v / 24) * 180) }]} />
-                  <Text style={styles.webBarLabel}>{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][idx]}</Text>
-                </View>
+              }}
+                style={{ marginVertical: 8, borderRadius: 12 }}
+                showValuesOnTopOfBars={false}
+                withInnerLines={false}
+                fromZero
+              />
+            ) : (
+              <View className="flex-row items-end justify-between h-[200px] px-4">
+                {stats.weekData.map((v, idx) => (
+                  <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 16 * 2) / 7 - 4 }}>
+                    <View
+                      className="w-full rounded-md"
+                      style={{
+                        height: Math.max(10, (v / 24) * 180),
+                        backgroundColor: isDarkMode ? '#A78BFA' : '#7C3AED'
+                      }}
+                    />
+                    <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+        </GlassCard>
+
+        {/* Achievements Section */}
+        <View className="mb-6">
+            <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
+              Achievements
+            </Text>
+            <View className="gap-4">
+              {achievements.map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                />
               ))}
             </View>
-          )}
-        </View>
-
-        <View style={styles.achievementsSection}>
-          <Text style={styles.sectionTitle}>Achievements</Text>
-          <View style={styles.achievementsList}>
-            {achievements.map((achievement) => (
-              <AchievementCard
-                key={achievement.id}
-                achievement={achievement}
-              />
-            ))}
-          </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <View
-      style={[
-        styles.achievementCard,
-        achievement.unlocked && styles.achievementCardUnlocked,
-      ]}
+      className={`flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border gap-4 shadow-sm ${
+        achievement.unlocked
+          ? 'border-primary-200 dark:border-primary-700 bg-primary-100 dark:bg-primary-900/20'
+          : 'border-neutral-200 dark:border-neutral-700 opacity-60'
+      }`}
     >
       <View
-        style={[
-          styles.achievementIcon,
-          achievement.unlocked && styles.achievementIconUnlocked,
-        ]}
+        className={`w-14 h-14 rounded-md justify-center items-center ${
+          achievement.unlocked ? 'bg-primary-200 dark:bg-primary-700' : 'bg-neutral-100 dark:bg-neutral-700'
+        }`}
       >
         <Trophy
           size={24}
-          color={achievement.unlocked ? colors.primary : colors.textSecondary}
+          color={achievement.unlocked ? '#7C3AED' : '#6B7280'}
           strokeWidth={2}
         />
       </View>
-      <View style={styles.achievementContent}>
+      <View className="flex-1">
         <Text
-          style={[
-            styles.achievementTitle,
-            !achievement.unlocked && styles.achievementTitleLocked,
-          ]}
+          className={`text-base font-semibold mb-1 ${
+            achievement.unlocked ? 'text-neutral-800 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400'
+          }`}
         >
           {achievement.title}
         </Text>
         <Text
-          style={[
-            styles.achievementDescription,
-            !achievement.unlocked && styles.achievementDescriptionLocked,
-          ]}
+          className={`text-sm ${
+            achievement.unlocked ? 'text-neutral-700 dark:text-neutral-200' : 'text-neutral-500 dark:text-neutral-400'
+          }`}
         >
           {achievement.description}
         </Text>
@@ -249,136 +280,3 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  header: {
-    marginBottom: spacing.lg,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
-    marginBottom: spacing.lg,
-  },
-  statCardWrapper: {
-    width: '50%',
-    padding: spacing.xs,
-  },
-  chartCard: {
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.lg,
-    ...shadows.sm,
-  },
-  chartTitle: {
-    ...typography.h3,
-    fontSize: 18,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  chart: {
-    marginVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  webBars: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 200,
-    paddingHorizontal: spacing.md,
-  },
-  webBarItem: {
-    alignItems: 'center',
-    width: (screenWidth - spacing.lg * 2 - spacing.md * 2) / 7 - 4,
-  },
-  webBar: {
-    width: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.md,
-  },
-  webBarLabel: {
-    ...typography.small,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  achievementsSection: {
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    fontSize: 18,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  achievementsList: {
-    gap: spacing.md,
-  },
-  achievementCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.md,
-    opacity: 0.6,
-  },
-  achievementCardUnlocked: {
-    backgroundColor: '#F3E8FF',
-    opacity: 1,
-  },
-  achievementIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  achievementIconUnlocked: {
-    backgroundColor: '#E9D5FF',
-  },
-  achievementContent: {
-    flex: 1,
-  },
-  achievementTitle: {
-    ...typography.body,
-    fontWeight: '600' as const,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  achievementTitleLocked: {
-    color: colors.textSecondary,
-  },
-  achievementDescription: {
-    ...typography.caption,
-    color: colors.text,
-  },
-  achievementDescriptionLocked: {
-    color: colors.textSecondary,
-  },
-});

@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
 import { formatTime, formatDate, getFastingMessage, getPlanDuration } from '@/utils';
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function FastScreen() {
-  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, pauseFast } = useFastStore();
+  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, pauseFast, isDarkMode } = useFastStore();
   const router = useRouter();
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
   const [isPaused, setIsPaused] = useState<boolean>(false);
@@ -45,347 +45,186 @@ export default function FastScreen() {
 
   if (!currentFast) {
     return (
-      <View style={styles.container}>
+      <LinearGradient
+        colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+        style={{ flex: 1 }}
+      >
         <Stack.Screen options={{ title: 'Your Fast' }} />
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>No Active Fast</Text>
-          <Text style={styles.emptyText}>
+        <View className="flex-1 justify-center items-center px-8">
+          <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
+            No Active Fast
+          </Text>
+          <Text className="text-base text-neutral-500 dark:text-neutral-400 text-center">
             Start a fast from the Home screen to track your progress here.
           </Text>
         </View>
-      </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={isDarkMode ? ['#1a1625', '#1F2937'] : ['#FAFBFC', '#F3F4F6']}
+      style={{ flex: 1 }}
+    >
       <Stack.Screen
         options={{
           title: 'Your Fast',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} accessibilityRole="button" testID="fast-back">
-              <Text style={{ color: colors.primary }}>Back</Text>
+            <TouchableOpacity className="py-2 px-4" onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" testID="fast-back">
+              <Text className="text-base font-semibold text-primary-600 dark:text-primary-400">Back</Text>
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <View style={styles.headerRight}>
-              <Text style={styles.headerPlan}>{selectedPlan} Intermittent Fasting</Text>
+            <View className="mr-4">
+              <Text className="text-sm text-neutral-500 dark:text-neutral-400">{selectedPlan} Intermittent Fasting</Text>
             </View>
           ),
         }}
       />
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.reminderCard}>
-          <View style={styles.reminderLeft}>
-            <Bell size={20} color={colors.textSecondary} />
+        {/* Smart Reminders Card - 24pt bottom margin */}
+        <View className="flex-row items-center justify-between bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm mb-6">
+          <View className="flex-row items-center gap-2 flex-1">
+            <Bell size={20} color="#6B7280" />
             <View>
-              <Text style={styles.reminderTitle}>Smart Reminders</Text>
-              <Text style={styles.reminderSubtitle}>Get notified at key milestones</Text>
+              <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
+                Smart Reminders
+              </Text>
+              <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+                Get notified at key milestones
+              </Text>
             </View>
           </View>
           <Switch
             value={notificationsEnabled}
             onValueChange={setNotificationsEnabled}
-            trackColor={{ false: colors.border, true: colors.primary }}
-            thumbColor={colors.white}
+            trackColor={{ false: '#E5E7EB', true: '#7C3AED' }}
+            thumbColor="#FFFFFF"
           />
         </View>
 
-        <View style={styles.timerSection}>
+        {/* Timer Section - 24pt bottom margin */}
+        <View className="items-center mb-6">
           <CircularProgress
             size={250}
             strokeWidth={16}
             progress={progress}
-            color={colors.primary}
-            backgroundColor={colors.border}
+            color="#7C3AED"
+            backgroundColor="#E5E7EB"
             isRunning={currentFast?.isRunning ?? false}
           >
-            <View style={styles.timerContent}>
-              <Text style={styles.timerValue}>{formatTime(elapsedMs)}</Text>
-              <Text style={styles.timerLabel}>{currentFast?.isRunning ? 'FASTING' : 'PAUSED'}</Text>
+            <View className="items-center">
+              <Text
+                className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-1"
+                adjustsFontSizeToFit={true}
+                numberOfLines={1}
+                minimumFontScale={0.5}
+              >
+                {formatTime(elapsedMs)}
+              </Text>
+              <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider">
+                {currentFast?.isRunning ? 'FASTING' : 'PAUSED'}
+              </Text>
             </View>
           </CircularProgress>
         </View>
 
-        <Text style={styles.message}>{getFastingMessage(progress)}</Text>
+        {/* Encouragement Message - 24pt bottom margin, more breathing room */}
+        <Text className="text-base text-primary-600 dark:text-primary-400 text-center mb-6 font-medium">
+          {getFastingMessage(progress)}
+        </Text>
 
-        <View style={styles.detailsCard}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Started</Text>
-            <Text style={styles.detailValue}>{formatDate(currentFast.startTime)}</Text>
+        {/* Details Card - 24pt bottom margin */}
+        <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm mb-6">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">Started</Text>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
+              {formatDate(currentFast.startTime)}
+            </Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Target End</Text>
-            <Text style={styles.detailValue}>{formatDate(targetEndTime)}</Text>
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">Target End</Text>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
+              {formatDate(targetEndTime)}
+            </Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Progress</Text>
-            <Text style={styles.detailValue}>{progress.toFixed(0)}%</Text>
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">Progress</Text>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
+              {progress.toFixed(0)}%
+            </Text>
           </View>
-          <View style={styles.progressBarContainer}>
-            <View style={styles.progressBar}>
-              <Animated.View 
-                style={[
-                  styles.progressFill, 
-                  { 
-                    width: animatedWidth.interpolate({ 
-                      inputRange: [0, 100], 
-                      outputRange: ['0%', '100%'] 
-                    }) 
-                  }
-                ]} 
+          {/* Progress Bar - true 0% width with visible border */}
+          <View className="w-full mt-2">
+            <View className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden w-full border border-neutral-300 dark:border-neutral-600">
+              <Animated.View
+                className="h-full bg-primary-600 rounded-full"
+                style={{
+                  width: animatedWidth.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ['0%', '100%']
+                  })
+                }}
               />
             </View>
           </View>
         </View>
 
-        <View style={styles.buttonRow}>
+        {/* Action Buttons - 24pt bottom margin */}
+        <View className="flex-row gap-4 mb-6">
           <TouchableOpacity
-            style={[styles.button, styles.pauseButton]}
+            className="flex-1 flex-row items-center justify-center py-4 rounded-xl gap-2 bg-primary-600 dark:bg-primary-500 shadow-lg active:bg-primary-700"
             onPress={handlePauseResume}
             activeOpacity={0.8}
           >
             {isPaused ? (
-              <Play size={20} color={colors.white} fill={colors.white} />
+              <Play size={20} color="#FFFFFF" fill="#FFFFFF" />
             ) : (
-              <Pause size={20} color={colors.white} />
+              <Pause size={20} color="#FFFFFF" />
             )}
-            <Text style={styles.pauseButtonText}>{isPaused ? 'Resume' : 'Pause'}</Text>
+            <Text className="text-base font-semibold text-white">{isPaused ? 'Resume' : 'Pause'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, styles.endButton]}
+            className="w-14 h-14 items-center justify-center rounded-xl bg-white dark:bg-neutral-800 border-2 border-error-500 shadow-lg active:bg-neutral-50 dark:active:bg-neutral-700"
             onPress={handleEndFast}
             activeOpacity={0.8}
           >
-            <XCircle size={20} color={colors.error} />
+            <XCircle size={24} color="#EF4444" />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.tipsCard}>
-          <View style={styles.tipsHeader}>
-            <Lightbulb size={20} color={colors.primary} />
-            <Text style={styles.tipsTitle}>Fasting Tips</Text>
+        {/* Tips Card */}
+        <View className="bg-primary-100 dark:bg-primary-900/20 p-4 rounded-lg border border-primary-200 dark:border-primary-700">
+          <View className="flex-row items-center gap-2 mb-4">
+            <Lightbulb size={20} color="#7C3AED" />
+            <Text className="text-base font-semibold text-neutral-700 dark:text-neutral-200">
+              Fasting Tips
+            </Text>
           </View>
-          <View style={styles.tips}>
+          <View className="gap-2">
             <TipItem text="Stay hydrated with water, tea, or black coffee" />
             <TipItem text="Listen to your body and rest when needed" />
             <TipItem text="Break your fast with nutritious whole foods" />
           </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 function TipItem({ text }: { text: string }) {
   return (
-    <View style={styles.tipItem}>
-      <View style={styles.tipDot} />
-      <Text style={styles.tipText}>{text}</Text>
+    <View className="flex-row items-start gap-2">
+      <View className="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2" />
+      <Text className="text-sm text-neutral-700 dark:text-neutral-200 flex-1 leading-5">
+        {text}
+      </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  emptyTitle: {
-    ...typography.h2,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  headerRight: {
-    marginRight: spacing.md,
-  },
-  headerPlan: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  reminderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.xl,
-    ...shadows.sm,
-  },
-  reminderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    flex: 1,
-  },
-  reminderTitle: {
-    ...typography.body,
-    fontWeight: '600' as const,
-    color: colors.text,
-  },
-  reminderSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  timerSection: {
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  timerContent: {
-    alignItems: 'center',
-  },
-  timerValue: {
-    ...typography.h1,
-    fontSize: 48,
-    color: colors.text,
-    fontWeight: '700' as const,
-    marginBottom: spacing.xs,
-  },
-  timerLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '600' as const,
-    letterSpacing: 1,
-  },
-  message: {
-    ...typography.bodyLarge,
-    color: colors.primary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  detailsCard: {
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.lg,
-    ...shadows.sm,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  detailLabel: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  detailValue: {
-    ...typography.body,
-    fontWeight: '600' as const,
-    color: colors.text,
-  },
-  progressBarContainer: {
-    width: '100%',
-    marginTop: spacing.sm,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: colors.border,
-    borderRadius: borderRadius.full,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.full,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.lg,
-    gap: spacing.sm,
-    ...shadows.md,
-  },
-  pauseButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    minWidth: 0,
-  },
-  pauseButtonText: {
-    ...typography.h3,
-    fontSize: 18,
-    color: colors.white,
-    fontWeight: '600' as const,
-  },
-  endButton: {
-    width: 56,
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.error,
-  },
-  tipsCard: {
-    backgroundColor: '#F3E8FF',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: '#E9D5FF',
-  },
-  tipsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  tipsTitle: {
-    ...typography.h3,
-    fontSize: 16,
-    color: colors.text,
-    fontWeight: '600' as const,
-  },
-  tips: {
-    gap: spacing.sm,
-  },
-  tipItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  tipDot: {
-    width: 6,
-    height: 6,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
-    marginTop: 8,
-  },
-  tipText: {
-    ...typography.body,
-    fontSize: 14,
-    color: colors.text,
-    flex: 1,
-    lineHeight: 20,
-  },
-});

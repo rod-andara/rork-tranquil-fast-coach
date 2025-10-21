@@ -5,8 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import FastPlanCard from '@/components/FastPlanCard';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
+import { borderRadius, colors, spacing, typography } from '@/constants/theme';
 
 const PLANS = [
   {
@@ -69,7 +69,7 @@ function ClockIllustration() {
 
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
-  const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding } = useFastStore();
+  const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding, isDarkMode } = useFastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
@@ -106,7 +106,7 @@ export default function ChoosePlanScreen() {
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#1F2937' : '#F3F4F6' }]}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <ScrollView
           style={styles.scrollView}
@@ -117,8 +117,10 @@ export default function ChoosePlanScreen() {
             <View style={styles.illustrationContainer}>
               <ClockIllustration />
             </View>
-            <Text style={styles.title}>Choose Your Plan</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: isDarkMode ? '#F9FAFB' : '#111827' }]}>
+              Choose Your Plan
+            </Text>
+            <Text style={[styles.subtitle, { color: isDarkMode ? '#9CA3AF' : '#6B7280' }]}>
               Select a fasting schedule that fits your lifestyle
             </Text>
 
@@ -140,6 +142,7 @@ export default function ChoosePlanScreen() {
                 eatHours={plan.eatHours}
                 popular={plan.popular}
                 selected={selectedPlan === plan.id}
+                isDarkMode={isDarkMode}
                 onPress={async () => {
                   setSelectedPlan(plan.id);
                   if (onboardingComplete) {
@@ -157,6 +160,7 @@ export default function ChoosePlanScreen() {
             {
               opacity: fadeAnim,
               transform: [{ translateY: slideAnim }],
+              backgroundColor: isDarkMode ? '#1F2937' : '#F3F4F6',
             },
           ]}
         >
@@ -178,7 +182,7 @@ export default function ChoosePlanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F3F4F6', // Will be overridden by inline style
   },
   safeArea: {
     flex: 1,
@@ -201,14 +205,12 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h1,
     fontSize: 28,
-    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.sm,
     fontWeight: '700' as const,
   },
   subtitle: {
     ...typography.body,
-    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
   },
@@ -233,7 +235,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
-    backgroundColor: '#F3F4F6',
   },
   button: {
     backgroundColor: colors.primary,
