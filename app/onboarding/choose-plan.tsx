@@ -111,9 +111,9 @@ export default function ChoosePlanScreen() {
         console.log('[ChoosePlan] Step 3: Starting fast with plan:', selectedPlan);
         startFast(selectedPlan);
 
-        console.log('[ChoosePlan] Step 4: Navigating to index for declarative redirect');
-        // Navigate to index route so it can read the updated state and redirect appropriately
-        router.replace('/')
+        console.log('[ChoosePlan] Step 4: Navigating to Fast tab');
+        // Navigate directly to Fast tab to show the running timer
+        router.replace('/(tabs)/fast')
       }
     } catch (e) {
       console.error('[ChoosePlan] ERROR in handleContinue:', e);
