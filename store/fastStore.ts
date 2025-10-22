@@ -30,7 +30,8 @@ export interface FastState {
   isDarkMode: boolean;
   onboardingComplete: boolean;
   isPremium: boolean;
-  
+  hasHydrated: boolean;
+
   startFast: (planOrDuration: number | string) => void;
   pauseFast: () => void;
   endFast: () => void;
@@ -56,12 +57,18 @@ export const useFastStore = create<FastState>((set, get) => ({
   isDarkMode: false,
   onboardingComplete: false,
   isPremium: false,
+  hasHydrated: false,
 
   startFast: (planOrDuration: number | string) => {
+    console.log('[FastStore] startFast called with:', planOrDuration);
     const state = get();
     const isPlanString = typeof planOrDuration === 'string';
     const plannedDuration = isPlanString ? getPlanDuration(planOrDuration) : planOrDuration;
     const planName = isPlanString ? (planOrDuration as string) : state.selectedPlan;
+
+    console.log('[FastStore] plannedDuration:', plannedDuration);
+    console.log('[FastStore] planName:', planName);
+
     const newFast: FastSession = {
       id: Date.now().toString(),
       startTime: Date.now(),
@@ -72,10 +79,15 @@ export const useFastStore = create<FastState>((set, get) => ({
       elapsedMs: 0,
       isRunning: true,
     };
+
+    console.log('[FastStore] Created new fast session:', newFast);
     set({ currentFast: newFast });
+    console.log('[FastStore] currentFast state updated');
+
     if (state.notificationsEnabled) {
       try {
         scheduleMilestones(Math.floor(plannedDuration / 1000), true);
+        console.log('[FastStore] Milestones scheduled');
       } catch (e) {
         console.log('[store] scheduleMilestones error', e);
       }
@@ -86,6 +98,7 @@ export const useFastStore = create<FastState>((set, get) => ({
       } catch {}
     }
     get().saveToStorage();
+    console.log('[FastStore] startFast completed successfully');
   },
 
   pauseFast: () => {
@@ -166,10 +179,15 @@ export const useFastStore = create<FastState>((set, get) => ({
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
         const data = JSON.parse(stored);
-        set(data);
+        set({ ...data, hasHydrated: true });
+      } else {
+        // No stored data - still mark as hydrated
+        set({ hasHydrated: true });
       }
     } catch (error) {
       console.error('Failed to load from storage:', error);
+      // Even on error, mark as hydrated to prevent infinite loading
+      set({ hasHydrated: true });
     }
   },
 
