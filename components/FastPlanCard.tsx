@@ -86,8 +86,22 @@ export default function FastPlanCard({
           />
         </View>
         <View style={styles.progressLabels}>
-          <Text style={styles.progressLabel}>{fastHours}h Fast</Text>
-          <Text style={styles.progressLabel}>{eatHours}h Eat</Text>
+          <Text
+            style={[
+              styles.progressLabel,
+              isDarkMode && styles.progressLabelDark,
+            ]}
+          >
+            {fastHours}h Fast
+          </Text>
+          <Text
+            style={[
+              styles.progressLabel,
+              isDarkMode && styles.progressLabelDark,
+            ]}
+          >
+            {eatHours}h Eat
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -173,5 +187,10 @@ const styles = StyleSheet.create({
     ...typography.small,
     color: colors.primary,
     fontWeight: '600' as const,
+  },
+  progressLabelDark: {
+    color: '#F9FAFB',
+    fontWeight: '700' as const,
+    fontSize: 13,
   },
 });

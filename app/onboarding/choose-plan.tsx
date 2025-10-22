@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -70,6 +70,8 @@ function ClockIllustration() {
 
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
+  const [hasStartedPlan, setHasStartedPlan] = useState(false);
+  const router = useRouter();
   const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding, isDarkMode, startFast } = useFastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -88,6 +90,13 @@ export default function ChoosePlanScreen() {
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
+
+  useEffect(() => {
+    if (hasStartedPlan) {
+      router.replace('/(tabs)/fast');
+      setHasStartedPlan(false);
+    }
+  }, [hasStartedPlan, router]);
 
   const handleContinue = () => {
     console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
@@ -113,7 +122,7 @@ export default function ChoosePlanScreen() {
 
         console.log('[ChoosePlan] Step 4: Navigating to Fast tab');
         // Navigate directly to Fast tab to show the running timer
-        router.replace('/(tabs)/fast')
+        setHasStartedPlan(true);
       }
     } catch (e) {
       console.error('[ChoosePlan] ERROR in handleContinue:', e);

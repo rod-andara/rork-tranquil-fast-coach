@@ -251,7 +251,9 @@ function ArticleCard({ article }: { article: ContentItem }) {
       <View className="flex-1">
         <View className="flex-row items-center mb-1">
           {article.category && (
-            <Text className="text-xs font-semibold text-primary-600">{article.category}</Text>
+            <Text className="text-xs font-semibold text-primary-600 dark:text-neutral-100">
+              {article.category}
+            </Text>
           )}
           {article.source && (
             <Text className="text-xs text-neutral-500 dark:text-neutral-400 ml-1">
@@ -321,7 +323,9 @@ function ProductCard({ product }: { product: ContentItem }) {
         {(product.price || product.rating) && (
           <View className="flex-row items-center justify-between mb-2">
             {product.price && (
-              <Text className="text-lg font-bold text-primary-600">{product.price}</Text>
+              <Text className="text-lg font-bold text-primary-600 dark:text-neutral-100">
+                {product.price}
+              </Text>
             )}
             {product.rating && (
               <View className="flex-row items-center gap-1">
