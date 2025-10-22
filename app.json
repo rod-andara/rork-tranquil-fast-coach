@@ -29,6 +29,10 @@
         "NSCameraUsageDescription": "We need camera access to let you take profile pictures.",
         "NSHealthShareUsageDescription": "We need access to read your weight from Apple Health to automatically track your progress and provide personalized insights.",
         "NSHealthUpdateUsageDescription": "We need access to write your weight and fasting data to Apple Health for a complete health picture and seamless integration with your other health apps."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
       }
     },
     "android": {
