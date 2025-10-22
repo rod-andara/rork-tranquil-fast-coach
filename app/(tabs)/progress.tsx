@@ -1,12 +1,16 @@
-import React, { useMemo } from 'react';
-import { Text, View, ScrollView, Dimensions, Platform } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Text, View, ScrollView, Dimensions, Platform, TouchableOpacity } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
-import { TrendingUp, Clock, Trophy, Calendar } from 'lucide-react-native';
+import { TrendingUp, Clock, Trophy, Calendar, Plus, Target, Scale } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { useFastStore } from '@/store/fastStore';
+import { useWeightStore } from '@/store/weightStore';
 import StatCard from '@/components/StatCard';
 import GlassCard from '@/components/GlassCard';
+import WeightChart from '@/components/WeightChart';
+import AppleHealthCard from '@/components/AppleHealthCard';
+import WeightEntryModal from '@/components/WeightEntryModal';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -19,6 +23,8 @@ interface Achievement {
 
 export default function ProgressScreen() {
   const { fastHistory, isDarkMode } = useFastStore();
+  const { getCurrentWeight, getWeightChange, getProgressPercentage, goal, unit } = useWeightStore();
+  const [showWeightModal, setShowWeightModal] = useState(false);
 
   const stats = useMemo(() => {
     const totalFasts = fastHistory.length;
@@ -115,6 +121,127 @@ export default function ProgressScreen() {
             Track your fasting journey
           </Text>
         </View>
+
+        {/* Weight Tracking Section */}
+        <View className="mb-6">
+          {/* Section Header with Add Button */}
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100">
+              Weight
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowWeightModal(true)}
+              className="flex-row items-center gap-2 bg-primary-600 px-4 py-2 rounded-lg"
+              activeOpacity={0.8}
+            >
+              <Plus size={18} color="#FFFFFF" />
+              <Text className="text-white text-sm font-semibold">
+                Add Weight
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Weight Stats Cards */}
+          {getCurrentWeight() !== null && (
+            <View className="flex-row gap-3 mb-4">
+              <View className="flex-1">
+                <GlassCard style={{ padding: 16 }}>
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Scale size={18} color="#7C3AED" />
+                    <Text
+                      className={`text-sm font-medium ${
+                        isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
+                      }`}
+                    >
+                      Current
+                    </Text>
+                  </View>
+                  <Text
+                    className={`text-2xl font-bold ${
+                      isDarkMode ? 'text-neutral-50' : 'text-neutral-900'
+                    }`}
+                  >
+                    {getCurrentWeight()?.toFixed(1)} {unit}
+                  </Text>
+                </GlassCard>
+              </View>
+
+              {getWeightChange() !== null && (
+                <View className="flex-1">
+                  <GlassCard style={{ padding: 16 }}>
+                    <View className="flex-row items-center gap-2 mb-2">
+                      <TrendingUp size={18} color="#10B981" />
+                      <Text
+                        className={`text-sm font-medium ${
+                          isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
+                        }`}
+                      >
+                        Change
+                      </Text>
+                    </View>
+                    <Text
+                      className={`text-2xl font-bold ${
+                        getWeightChange()! < 0 ? 'text-success-500' : 'text-neutral-500'
+                      }`}
+                    >
+                      {getWeightChange()! > 0 ? '+' : ''}
+                      {getWeightChange()?.toFixed(1)} {unit}
+                    </Text>
+                  </GlassCard>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Goal Progress Card */}
+          {goal && getProgressPercentage() !== null && (
+            <GlassCard style={{ padding: 16, marginBottom: 16 }}>
+              <View className="flex-row items-center gap-2 mb-3">
+                <Target size={18} color="#7C3AED" />
+                <Text
+                  className={`text-base font-bold ${
+                    isDarkMode ? 'text-neutral-100' : 'text-neutral-900'
+                  }`}
+                >
+                  Goal: {goal.targetWeight} {goal.unit}
+                </Text>
+              </View>
+
+              {/* Progress Bar */}
+              <View
+                className={`h-3 rounded-full overflow-hidden mb-2 ${
+                  isDarkMode ? 'bg-neutral-700' : 'bg-neutral-200'
+                }`}
+              >
+                <View
+                  className="h-full bg-primary-600 rounded-full"
+                  style={{ width: `${Math.min(100, getProgressPercentage() || 0)}%` }}
+                />
+              </View>
+
+              <Text
+                className={`text-sm ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
+                }`}
+              >
+                {getProgressPercentage()?.toFixed(0)}% complete
+              </Text>
+            </GlassCard>
+          )}
+
+          {/* Weight Chart */}
+          <WeightChart />
+
+          {/* Apple Health Card */}
+          <View className="mt-4">
+            <AppleHealthCard />
+          </View>
+        </View>
+
+        {/* Fasting Section Header */}
+        <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-4">
+          Fasting
+        </Text>
 
         {/* Stats Grid - 2x2 layout with consistent 12pt gaps */}
         <View className="flex-row flex-wrap -mx-1.5 mb-6">
@@ -236,6 +363,12 @@ export default function ProgressScreen() {
             </View>
         </View>
       </ScrollView>
+
+      {/* Weight Entry Modal */}
+      <WeightEntryModal
+        visible={showWeightModal}
+        onClose={() => setShowWeightModal(false)}
+      />
     </LinearGradient>
   );
 }
