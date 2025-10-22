@@ -1,18 +1,21 @@
 import React, { useCallback } from 'react';
 import { Text, View, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
-import { Bell, Moon, HelpCircle, Heart, Share2, Clock, LogOut } from 'lucide-react-native';
+import { Bell, Moon, HelpCircle, Heart, Share2, Clock, LogOut, Scale } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFastStore } from '@/store/fastStore';
+import { useWeightStore } from '@/store/weightStore';
 import { useRouter } from 'expo-router';
 import ProfileCard from '@/components/ProfileCard';
 import SwitchRow from '@/components/SwitchRow';
+import UnitSelectorRow from '@/components/UnitSelectorRow';
 import ListItem from '@/components/ListItem';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan } = useFastStore();
+  const { unit, setUnit } = useWeightStore();
 
   // Use selector pattern for ProfileCard to ensure it updates with dark mode
   const isDark = useFastStore((state) => state.isDarkMode);
@@ -34,6 +37,15 @@ export default function SettingsScreen() {
     }
     setDarkMode(val);
   }, [setDarkMode]);
+
+  const onChangeUnit = useCallback((val: 'lbs' | 'kg') => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    } else {
+      console.log('Haptics not available on web');
+    }
+    setUnit(val);
+  }, [setUnit]);
 
   const handleFastingPlan = useCallback(() => {
     router.push('/onboarding/choose-plan');
@@ -128,6 +140,18 @@ export default function SettingsScreen() {
               description="Toggle dark appearance"
               value={isDarkMode}
               onValueChange={onToggleDark}
+              iconColor="#7C3AED"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+            />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
+            <UnitSelectorRow
+              testID="weight-unit-row"
+              Icon={Scale}
+              label="Weight Unit"
+              description="Choose your preferred unit"
+              value={unit}
+              onValueChange={onChangeUnit}
               iconColor="#7C3AED"
               textColor={isDarkMode ? "#F9FAFB" : "#111827"}
               subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
