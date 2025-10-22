@@ -379,24 +379,24 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       className={`flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border gap-4 shadow-sm ${
         achievement.unlocked
           ? 'border-primary-200 dark:border-primary-700 bg-primary-100 dark:bg-primary-900/20'
-          : 'border-neutral-200 dark:border-neutral-700 opacity-60'
+          : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900'
       }`}
     >
       <View
         className={`w-14 h-14 rounded-md justify-center items-center ${
-          achievement.unlocked ? 'bg-primary-200 dark:bg-primary-700' : 'bg-neutral-100 dark:bg-neutral-700'
+          achievement.unlocked ? 'bg-primary-200 dark:bg-primary-700' : 'bg-neutral-200 dark:bg-neutral-800'
         }`}
       >
         <Trophy
           size={24}
-          color={achievement.unlocked ? '#7C3AED' : '#6B7280'}
+          color={achievement.unlocked ? '#7C3AED' : '#94A3B8'}
           strokeWidth={2}
         />
       </View>
       <View className="flex-1">
         <Text
           className={`text-base font-semibold mb-1 ${
-            achievement.unlocked ? 'text-neutral-800 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400'
+            achievement.unlocked ? 'text-neutral-800 dark:text-neutral-100' : 'text-neutral-600 dark:text-neutral-300'
           }`}
         >
           {achievement.title}
