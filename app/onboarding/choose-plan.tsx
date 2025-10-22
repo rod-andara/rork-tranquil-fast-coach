@@ -89,22 +89,36 @@ export default function ChoosePlanScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
+    console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
+    console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
+    console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
+
     try {
       if (onboardingComplete) {
         // Changing plan from Settings - just update and go back
-        await updatePlan(selectedPlan);
+        console.log('[ChoosePlan] Updating plan from Settings');
+        updatePlan(selectedPlan);
         router.back();
       } else {
-        // Completing onboarding for first time - save plan, complete onboarding, start fast, and navigate to Fast tab
+        // Completing onboarding for first time
+        console.log('[ChoosePlan] Step 1: Saving selected plan');
         saveSelectedPlan(selectedPlan);
+
+        console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
         completeOnboarding();
+
+        console.log('[ChoosePlan] Step 3: Starting fast with plan:', selectedPlan);
         startFast(selectedPlan);
-        router.dismissAll();
-        router.replace('/(tabs)/fast');
+
+        console.log('[ChoosePlan] Step 4: Navigating to index for declarative redirect');
+        // Navigate to index route so it can read the updated state and redirect appropriately
+        router.replace('/')
       }
     } catch (e) {
-      console.log('Failed to apply plan', e);
+      console.error('[ChoosePlan] ERROR in handleContinue:', e);
+      console.error('[ChoosePlan] Error stack:', (e as Error).stack);
+      alert(`Error: ${(e as Error).message}`);
     }
   };
 
@@ -168,7 +182,6 @@ export default function ChoosePlanScreen() {
             {
               opacity: fadeAnim,
               transform: [{ translateY: slideAnim }],
-              backgroundColor: isDarkMode ? '#1F2937' : '#F3F4F6',
             },
           ]}
         >
@@ -242,6 +255,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
     paddingBottom: spacing.xl,
   },
   button: {

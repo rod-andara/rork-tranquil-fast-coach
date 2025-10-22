@@ -225,8 +225,8 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
         {recipe.tags && recipe.tags.length > 0 && (
           <View className="flex-row flex-wrap gap-1">
             {recipe.tags.map((tag, index) => (
-              <View key={index} className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded-md">
-                <Text className="text-xs text-primary-600 font-medium">{tag}</Text>
+              <View key={index} className="bg-purple-500/20 dark:bg-purple-500/20 px-3 py-1 rounded-full border border-purple-400/30 dark:border-purple-400/30">
+                <Text className="text-xs text-purple-700 dark:text-purple-200 font-medium">{tag}</Text>
               </View>
             ))}
           </View>
