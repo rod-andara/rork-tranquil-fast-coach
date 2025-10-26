@@ -48,7 +48,7 @@ export default function SettingsScreen() {
   }, [setUnit]);
 
   const handleFastingPlan = useCallback(() => {
-    router.push('/onboarding/choose-plan');
+    router.push('/onboarding/choose-plan?fromSettings=true');
   }, [router]);
 
   const handleHelpSupport = useCallback(() => {

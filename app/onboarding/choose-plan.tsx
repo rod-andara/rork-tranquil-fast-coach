@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -70,8 +70,9 @@ function ClockIllustration() {
 
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
-  const [hasStartedPlan, setHasStartedPlan] = useState(false);
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const fromSettings = params.fromSettings === 'true';
   const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding, isDarkMode, startFast } = useFastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -91,20 +92,14 @@ export default function ChoosePlanScreen() {
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  useEffect(() => {
-    if (hasStartedPlan) {
-      router.replace('/(tabs)/fast');
-      setHasStartedPlan(false);
-    }
-  }, [hasStartedPlan, router]);
-
   const handleContinue = () => {
     console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
     console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
     console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
+    console.log('[ChoosePlan] fromSettings:', fromSettings);
 
     try {
-      if (onboardingComplete) {
+      if (fromSettings) {
         // Changing plan from Settings - just update and go back
         console.log('[ChoosePlan] Updating plan from Settings');
         updatePlan(selectedPlan);
@@ -121,8 +116,8 @@ export default function ChoosePlanScreen() {
         startFast(selectedPlan);
 
         console.log('[ChoosePlan] Step 4: Navigating to Fast tab');
-        // Navigate directly to Fast tab to show the running timer
-        setHasStartedPlan(true);
+        // Replace the entire onboarding stack with the Fast tab
+        router.replace('/(tabs)/fast');
       }
     } catch (e) {
       console.error('[ChoosePlan] ERROR in handleContinue:', e);
@@ -176,7 +171,7 @@ export default function ChoosePlanScreen() {
                 isDarkMode={isDarkMode}
                 onPress={async () => {
                   setSelectedPlan(plan.id);
-                  if (onboardingComplete) {
+                  if (fromSettings) {
                     await updatePlan(plan.id);
                   }
                 }}
