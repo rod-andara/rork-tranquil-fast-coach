@@ -6,23 +6,22 @@ import AppleHealthKit, {
 import { Platform } from 'react-native';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
-// Check if HealthKit is available (iOS only, not simulator)
+// Check if HealthKit is available (iOS only)
+// This is a simple platform check - actual availability is checked during init
 export const isHealthKitAvailable = (): boolean => {
-  if (Platform.OS !== 'ios') {
-    return false;
-  }
-  // Note: HealthKit is available on simulator in newer iOS versions,
-  // but some features may not work properly
-  return true;
+  return Platform.OS === 'ios';
 };
 
 // Initialize HealthKit and request permissions
 export const initHealthKit = (): Promise<boolean> => {
   return new Promise((resolve) => {
     if (!isHealthKitAvailable()) {
+      console.log('[HealthKit] Not available - not on iOS platform');
       resolve(false);
       return;
     }
+
+    console.log('[HealthKit] Requesting permissions...');
 
     const permissions: HealthKitPermissions = {
       permissions: {
@@ -31,12 +30,18 @@ export const initHealthKit = (): Promise<boolean> => {
       },
     };
 
-    AppleHealthKit.initHealthKit(permissions, (error: string) => {
+    AppleHealthKit.initHealthKit(permissions, (error: string, result: any) => {
+      console.log('[HealthKit] initHealthKit callback fired');
+      console.log('[HealthKit] error:', error);
+      console.log('[HealthKit] result:', result);
+
       if (error) {
-        console.error('[ERROR] Cannot grant HealthKit permissions:', error);
+        console.error('[HealthKit] Cannot grant permissions:', error);
         resolve(false);
         return;
       }
+
+      console.log('[HealthKit] Successfully initialized and permissions granted');
       resolve(true);
     });
   });
@@ -83,6 +88,12 @@ export const getWeightFromHealth = (
           return;
         }
 
+        if (!results || results.length === 0) {
+          console.log('[HealthKit] No weight samples found');
+          resolve([]);
+          return;
+        }
+
         const userUnit = useWeightStore.getState().unit;
 
         const entries: WeightEntry[] = results.map((sample) => {
@@ -102,6 +113,7 @@ export const getWeightFromHealth = (
           };
         });
 
+        console.log(`[HealthKit] Retrieved ${entries.length} weight samples`);
         resolve(entries);
       }
     );
@@ -134,6 +146,7 @@ export const saveWeightToHealth = (
         reject(err);
         return;
       }
+      console.log('[HealthKit] Successfully saved weight to Health');
       resolve(result);
     });
   });
@@ -146,12 +159,19 @@ export const syncWeightData = async (
   let imported = 0;
   let exported = 0;
 
+  if (!isHealthKitAvailable()) {
+    throw new Error('HealthKit is not available on this device');
+  }
+
   try {
+    console.log(`[HealthKit] Starting sync, direction: ${direction}`);
+
     if (direction === 'import' || direction === 'both') {
       // Import from Apple Health
       const lastSync = useWeightStore.getState().lastHealthSync;
       const startDate = lastSync ? new Date(lastSync) : undefined;
 
+      console.log('[HealthKit] Importing from Apple Health...');
       const healthEntries = await getWeightFromHealth(startDate);
 
       // Filter out entries that already exist (by date)
@@ -174,6 +194,7 @@ export const syncWeightData = async (
       });
 
       imported = newEntries.length;
+      console.log(`[HealthKit] Imported ${imported} new entries`);
     }
 
     if (direction === 'export' || direction === 'both') {
@@ -186,15 +207,18 @@ export const syncWeightData = async (
             e.source === 'manual' && (!lastSync || e.date > lastSync)
         );
 
+      console.log(`[HealthKit] Exporting ${manualEntries.length} manual entries to Apple Health...`);
       for (const entry of manualEntries) {
         await saveWeightToHealth(entry.weight, entry.unit, new Date(entry.date));
         exported++;
       }
+      console.log(`[HealthKit] Exported ${exported} entries`);
     }
 
     // Update last sync timestamp
     useWeightStore.getState().setLastHealthSync(Date.now());
 
+    console.log(`[HealthKit] Sync completed: ${imported} imported, ${exported} exported`);
     return { imported, exported };
   } catch (error) {
     console.error('[ERROR] Failed to sync weight data:', error);

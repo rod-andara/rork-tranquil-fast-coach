@@ -24,20 +24,30 @@ export default function AppleHealthCard() {
   }
 
   const handleConnect = async () => {
+    console.log('[AppleHealthCard] ===== CONNECT BUTTON PRESSED =====');
+    console.log('[AppleHealthCard] Platform:', Platform.OS);
+    console.log('[AppleHealthCard] isHealthKitAvailable():', isHealthKitAvailable());
+
     setIsConnecting(true);
     setSyncError(null);
 
     try {
+      console.log('[AppleHealthCard] Calling initHealthKit()...');
       const success = await initHealthKit();
+      console.log('[AppleHealthCard] initHealthKit() returned:', success);
+
       if (success) {
+        console.log('[AppleHealthCard] Connection successful, marking as connected');
         setHealthConnected(true);
         // Auto-sync after connecting
         handleSync();
       } else {
+        console.error('[AppleHealthCard] Connection returned false');
         setSyncError('Failed to connect to Apple Health');
       }
     } catch (error) {
-      console.error('[ERROR] Failed to connect to Health:', error);
+      console.error('[AppleHealthCard] Exception during connect:', error);
+      console.error('[AppleHealthCard] Error details:', JSON.stringify(error, null, 2));
       setSyncError('Failed to connect to Apple Health');
     } finally {
       setIsConnecting(false);
