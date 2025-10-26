@@ -15,13 +15,19 @@ export const isHealthKitAvailable = (): boolean => {
 // Initialize HealthKit and request permissions
 export const initHealthKit = (): Promise<boolean> => {
   return new Promise((resolve) => {
+    console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
+    console.log('[HealthKit] Platform:', Platform.OS);
+    console.log('[HealthKit] AppleHealthKit module:', typeof AppleHealthKit);
+    console.log('[HealthKit] AppleHealthKit.Constants:', typeof AppleHealthKit?.Constants);
+    console.log('[HealthKit] AppleHealthKit.initHealthKit:', typeof AppleHealthKit?.initHealthKit);
+
     if (!isHealthKitAvailable()) {
       console.log('[HealthKit] Not available - not on iOS platform');
       resolve(false);
       return;
     }
 
-    console.log('[HealthKit] Requesting permissions...');
+    console.log('[HealthKit] Platform check passed, requesting permissions...');
 
     const permissions: HealthKitPermissions = {
       permissions: {
@@ -30,13 +36,16 @@ export const initHealthKit = (): Promise<boolean> => {
       },
     };
 
-    AppleHealthKit.initHealthKit(permissions, (error: string, result: any) => {
+    console.log('[HealthKit] Permissions object:', JSON.stringify(permissions));
+
+    AppleHealthKit.initHealthKit(permissions, (error: string) => {
       console.log('[HealthKit] initHealthKit callback fired');
       console.log('[HealthKit] error:', error);
-      console.log('[HealthKit] result:', result);
+      console.log('[HealthKit] error type:', typeof error);
 
       if (error) {
         console.error('[HealthKit] Cannot grant permissions:', error);
+        console.error('[HealthKit] Full error details:', JSON.stringify(error));
         resolve(false);
         return;
       }
