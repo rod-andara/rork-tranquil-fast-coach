@@ -48,7 +48,14 @@ export default function AppleHealthCard() {
     } catch (error) {
       console.error('[AppleHealthCard] Exception during connect:', error);
       console.error('[AppleHealthCard] Error details:', JSON.stringify(error, null, 2));
-      setSyncError('Failed to connect to Apple Health');
+
+      // Check if this is a native module linking error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('not properly linked') || errorMessage.includes('Rebuild required')) {
+        setSyncError('App needs to be rebuilt with Apple Health support. Please contact support.');
+      } else {
+        setSyncError('Failed to connect to Apple Health');
+      }
     } finally {
       setIsConnecting(false);
     }

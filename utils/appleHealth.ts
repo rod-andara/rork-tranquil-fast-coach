@@ -12,9 +12,19 @@ export const isHealthKitAvailable = (): boolean => {
   return Platform.OS === 'ios';
 };
 
+// Check if native module is properly linked
+const isNativeModuleAvailable = (): boolean => {
+  return !!(
+    AppleHealthKit &&
+    typeof AppleHealthKit === 'object' &&
+    typeof AppleHealthKit.initHealthKit === 'function' &&
+    AppleHealthKit.Constants
+  );
+};
+
 // Initialize HealthKit and request permissions
 export const initHealthKit = (): Promise<boolean> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
     console.log('[HealthKit] Platform:', Platform.OS);
     console.log('[HealthKit] AppleHealthKit module:', typeof AppleHealthKit);
@@ -24,6 +34,23 @@ export const initHealthKit = (): Promise<boolean> => {
     if (!isHealthKitAvailable()) {
       console.log('[HealthKit] Not available - not on iOS platform');
       resolve(false);
+      return;
+    }
+
+    // Check if native module is properly linked
+    if (!isNativeModuleAvailable()) {
+      const errorMsg =
+        'Apple Health native module is not properly linked. ' +
+        'The app needs to be rebuilt with `npx expo prebuild --clean` and ' +
+        'a fresh native build to include the react-native-health module.';
+      console.error('[HealthKit] CRITICAL:', errorMsg);
+      console.error('[HealthKit] Module details:', {
+        moduleType: typeof AppleHealthKit,
+        hasConstants: typeof AppleHealthKit?.Constants,
+        hasInitMethod: typeof AppleHealthKit?.initHealthKit,
+        hasGetWeight: typeof AppleHealthKit?.getWeightSamples,
+      });
+      reject(new Error(errorMsg));
       return;
     }
 
@@ -79,6 +106,15 @@ export const getWeightFromHealth = (
   return new Promise((resolve, reject) => {
     if (!isHealthKitAvailable()) {
       reject(new Error('HealthKit is not available'));
+      return;
+    }
+
+    if (!isNativeModuleAvailable()) {
+      reject(
+        new Error(
+          'Apple Health native module is not properly linked. Rebuild required.'
+        )
+      );
       return;
     }
 
@@ -138,6 +174,15 @@ export const saveWeightToHealth = (
   return new Promise((resolve, reject) => {
     if (!isHealthKitAvailable()) {
       reject(new Error('HealthKit is not available'));
+      return;
+    }
+
+    if (!isNativeModuleAvailable()) {
+      reject(
+        new Error(
+          'Apple Health native module is not properly linked. Rebuild required.'
+        )
+      );
       return;
     }
 
