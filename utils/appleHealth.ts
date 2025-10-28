@@ -73,8 +73,11 @@ export const isHealthKitAvailable = (): boolean => {
 
 // Initialize HealthKit and request permissions
 export const initHealthKit = async (): Promise<boolean> => {
+  const { setHealthConnected } = useWeightStore.getState();
+
   if (!isHealthKitAvailable()) {
     console.log('[HealthKit] Not available - not on iOS platform');
+    setHealthConnected(false);
     return false;
   }
 
@@ -105,6 +108,7 @@ export const initHealthKit = async (): Promise<boolean> => {
 
     if (typeof AppleHealthKit?.initHealthKit !== 'function') {
       console.error('[HealthKit] initHealthKit is not a function on the native module');
+      setHealthConnected(false);
       resolve(false);
       return;
     }
@@ -117,17 +121,20 @@ export const initHealthKit = async (): Promise<boolean> => {
       if (error) {
         console.error('[HealthKit] Cannot grant permissions:', error);
         console.error('[HealthKit] Full error details:', JSON.stringify(error));
+        setHealthConnected(false);
         resolve(false);
         return;
       }
 
       if (result === false) {
         console.error('[HealthKit] initHealthKit returned a false result');
+        setHealthConnected(false);
         resolve(false);
         return;
       }
 
       console.log('[HealthKit] Successfully initialized and permissions granted');
+      setHealthConnected(true);
       resolve(true);
     });
   });
