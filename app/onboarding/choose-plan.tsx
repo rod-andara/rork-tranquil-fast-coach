@@ -112,12 +112,10 @@ export default function ChoosePlanScreen() {
         console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
         completeOnboarding();
 
-        console.log('[ChoosePlan] Step 3: Starting fast with plan:', selectedPlan);
-        startFast(selectedPlan);
-
-        console.log('[ChoosePlan] Step 4: Navigating to Fast tab');
-        // Replace the entire onboarding stack with the Fast tab
-        router.replace('/(tabs)/fast');
+        console.log('[ChoosePlan] Step 3: Navigating to Home tab (user will manually start fast)');
+        // Replace the entire onboarding stack with the Home tab
+        // User will manually start the fast from the Home screen
+        router.replace('/(tabs)/home');
       }
     } catch (e) {
       console.error('[ChoosePlan] ERROR in handleContinue:', e);
