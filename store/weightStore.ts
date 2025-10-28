@@ -62,13 +62,13 @@ export const useWeightStore = create<WeightState>()(
           id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         };
         set((state) => ({
-          entries: [...state.entries, newEntry].sort((a, b) => b.date - a.date),
+          entries: [...(state.entries || []), newEntry].sort((a, b) => b.date - a.date),
         }));
       },
 
       updateEntry: (id, updates) => {
         set((state) => ({
-          entries: state.entries.map((entry) =>
+          entries: (state.entries || []).map((entry) =>
             entry.id === id ? { ...entry, ...updates } : entry
           ),
         }));
@@ -76,7 +76,7 @@ export const useWeightStore = create<WeightState>()(
 
       deleteEntry: (id) => {
         set((state) => ({
-          entries: state.entries.filter((entry) => entry.id !== id),
+          entries: (state.entries || []).filter((entry) => entry.id !== id),
         }));
       },
 
@@ -96,7 +96,7 @@ export const useWeightStore = create<WeightState>()(
           const KG_TO_LBS = 2.20462;
 
           // Convert weight entries
-          const convertedEntries = state.entries.map((entry) => {
+          const convertedEntries = (state.entries || []).map((entry) => {
             let convertedWeight = entry.weight;
 
             if (oldUnit === 'lbs' && newUnit === 'kg') {

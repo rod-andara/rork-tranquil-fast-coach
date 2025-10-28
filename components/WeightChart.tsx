@@ -11,7 +11,7 @@ export default function WeightChart() {
   const { isDarkMode } = useFastStore();
   const { entries, goal, unit } = useWeightStore();
 
-  // Prepare chart data (last 30 days)
+  // Prepare chart data (last 30 days, or all data if less than 30 days)
   const chartData = useMemo(() => {
     if (entries.length === 0) {
       return null;
@@ -19,12 +19,15 @@ export default function WeightChart() {
 
     // Get last 30 days of data
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const recentEntries = entries
+    let recentEntries = entries
       .filter((e) => e.date >= thirtyDaysAgo)
       .sort((a, b) => a.date - b.date); // Sort ascending for chart
 
+    // If no entries in last 30 days, show all available entries
     if (recentEntries.length === 0) {
-      return null;
+      recentEntries = entries
+        .slice()
+        .sort((a, b) => a.date - b.date);
     }
 
     // Create labels (dates)
@@ -64,6 +67,13 @@ export default function WeightChart() {
       legend: goal ? ['Weight', 'Goal'] : ['Weight'],
     };
   }, [entries, goal, isDarkMode, unit]);
+
+  // Check if we're showing recent data (last 30 days) or all data
+  const isRecentData = useMemo(() => {
+    if (entries.length === 0) return true;
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return entries.some((e) => e.date >= thirtyDaysAgo);
+  }, [entries]);
 
   // Empty state
   if (!chartData) {
@@ -111,7 +121,7 @@ export default function WeightChart() {
             isDarkMode ? 'text-neutral-100' : 'text-neutral-900'
           }`}
         >
-          30-Day Trend
+          {isRecentData ? '30-Day Trend' : 'Weight History'}
         </Text>
         <Text
           className={`text-sm ${
