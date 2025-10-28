@@ -28,10 +28,11 @@ const resolveWeightPermission = (): HealthPermission => {
 };
 
 const resolvePoundUnit = (): HealthUnit => {
+  const units = AppleHealthKit?.Constants?.Units as any;
   return (
-    (AppleHealthKit?.Constants?.Units?.pound as HealthUnit | undefined) ??
-    (AppleHealthKit?.Constants?.Units?.pounds as HealthUnit | undefined) ??
-    (AppleHealthKit?.Constants?.Units?.lb as HealthUnit | undefined) ??
+    units?.pound ??
+    units?.pounds ??
+    units?.lb ??
     ('lb' as HealthUnit)
   );
 };
@@ -42,7 +43,7 @@ const ensureNativeAvailability = async (): Promise<boolean> => {
   }
 
   return new Promise((resolve) => {
-    AppleHealthKit.isAvailable((error: string | null, available: boolean) => {
+    (AppleHealthKit.isAvailable as any)((error: string | null, available: boolean) => {
       if (error) {
         console.error('[HealthKit] isAvailable reported an error:', error);
         // Continue with the init flow so we can still surface the permission prompt.
@@ -113,7 +114,7 @@ export const initHealthKit = async (): Promise<boolean> => {
       return;
     }
 
-    AppleHealthKit.initHealthKit(permissions, (error: string | null, result?: boolean) => {
+    (AppleHealthKit.initHealthKit as any)(permissions, (error: string | null, result?: boolean) => {
       console.log('[HealthKit] initHealthKit callback fired');
       console.log('[HealthKit] error:', error);
       console.log('[HealthKit] error type:', typeof error);
