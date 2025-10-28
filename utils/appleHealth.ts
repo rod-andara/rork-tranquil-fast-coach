@@ -169,6 +169,11 @@ export const getWeightFromHealth = (
 
     console.log('[HealthKit] Getting weight samples with options:', options);
 
+    if (typeof AppleHealthKit?.getWeightSamples !== 'function') {
+      reject(new Error('getWeightSamples is not available on the native module'));
+      return;
+    }
+
     AppleHealthKit.getWeightSamples(
       options,
       (err: Object, results: HealthValue[]) => {
@@ -230,6 +235,11 @@ export const saveWeightToHealth = (
       unit: resolvePoundUnit(),
       date: date ? date.toISOString() : new Date().toISOString(),
     };
+
+    if (typeof AppleHealthKit?.saveWeight !== 'function') {
+      reject(new Error('saveWeight is not available on the native module'));
+      return;
+    }
 
     AppleHealthKit.saveWeight(options, (err: string | null, result: HealthValue) => {
       if (err) {

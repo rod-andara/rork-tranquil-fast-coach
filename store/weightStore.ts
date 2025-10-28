@@ -187,24 +187,26 @@ export const useWeightStore = create<WeightState>()(
     {
       name: 'weight-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
+      version: 2,
       migrate: (persistedState: any, version) => {
         if (!persistedState) {
           return { ...defaultState };
         }
 
-        if (version < 1) {
-          return {
-            ...defaultState,
-            ...persistedState,
-            lastHealthSync: null,
-          };
-        }
-
-        return {
+        const stateWithDefaults = {
           ...defaultState,
           ...persistedState,
         };
+
+        if (version < 1) {
+          stateWithDefaults.lastHealthSync = null;
+        }
+
+        if (version < 2) {
+          stateWithDefaults.lastHealthSync = null;
+        }
+
+        return stateWithDefaults;
       },
     }
   )
