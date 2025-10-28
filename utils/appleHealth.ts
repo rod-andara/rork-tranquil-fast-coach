@@ -6,6 +6,59 @@ import AppleHealthKit, {
 import { Platform } from 'react-native';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
+const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+
+type HealthPermission = HealthKitPermissions['permissions']['read'][number];
+
+const resolveWeightPermission = (): HealthPermission | null => {
+  const permission =
+    (AppleHealthKit?.Constants?.Permissions?.Weight as HealthPermission | undefined) ??
+    null;
+
+  if (!permission) {
+    console.error(
+      '[HealthKit] Weight permission constant is unavailable. Is the native module linked?'
+    );
+  }
+
+  return permission;
+};
+
+const resolvePoundUnit = (): HealthUnit => {
+  return (
+    (AppleHealthKit?.Constants?.Units?.pound as HealthUnit | undefined) ??
+    (AppleHealthKit?.Constants?.Units?.pounds as HealthUnit | undefined) ??
+    (AppleHealthKit?.Constants?.Units?.lb as HealthUnit | undefined) ??
+    ('lb' as HealthUnit)
+  );
+};
+
+const ensureNativeAvailability = async (): Promise<boolean> => {
+  if (typeof AppleHealthKit?.isAvailable !== 'function') {
+    return true;
+  }
+
+  return new Promise((resolve) => {
+    AppleHealthKit.isAvailable((error: string, available: boolean) => {
+      if (error) {
+        console.error('[HealthKit] isAvailable reported an error:', error);
+        resolve(false);
+        return;
+      }
+
+      if (!available) {
+        console.warn('[HealthKit] Native module reports HealthKit is not available on device');
+      }
+
+      resolve(available);
+    });
+  });
+};
+
+const getDefaultStartDate = (): Date => {
+  return new Date(Date.now() - TEN_YEARS_IN_MS);
+};
+
 // Check if HealthKit is available (iOS only)
 // This is a simple platform check - actual availability is checked during init
 export const isHealthKitAvailable = (): boolean => {
@@ -13,7 +66,22 @@ export const isHealthKitAvailable = (): boolean => {
 };
 
 // Initialize HealthKit and request permissions
-export const initHealthKit = (): Promise<boolean> => {
+export const initHealthKit = async (): Promise<boolean> => {
+  if (!isHealthKitAvailable()) {
+    console.log('[HealthKit] Not available - not on iOS platform');
+    return false;
+  }
+
+  const available = await ensureNativeAvailability();
+  if (!available) {
+    return false;
+  }
+
+  const weightPermission = resolveWeightPermission();
+  if (!weightPermission) {
+    return false;
+  }
+
   return new Promise((resolve) => {
     console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
     console.log('[HealthKit] Platform:', Platform.OS);
@@ -21,24 +89,24 @@ export const initHealthKit = (): Promise<boolean> => {
     console.log('[HealthKit] AppleHealthKit.Constants:', typeof AppleHealthKit?.Constants);
     console.log('[HealthKit] AppleHealthKit.initHealthKit:', typeof AppleHealthKit?.initHealthKit);
 
-    if (!isHealthKitAvailable()) {
-      console.log('[HealthKit] Not available - not on iOS platform');
-      resolve(false);
-      return;
-    }
-
     console.log('[HealthKit] Platform check passed, requesting permissions...');
 
     const permissions: HealthKitPermissions = {
       permissions: {
-        read: [AppleHealthKit.Constants.Permissions.Weight],
-        write: [AppleHealthKit.Constants.Permissions.Weight],
+        read: [weightPermission],
+        write: [weightPermission],
       },
     };
 
     console.log('[HealthKit] Permissions object:', JSON.stringify(permissions));
 
-    AppleHealthKit.initHealthKit(permissions, (error: string) => {
+    if (typeof AppleHealthKit?.initHealthKit !== 'function') {
+      console.error('[HealthKit] initHealthKit is not a function on the native module');
+      resolve(false);
+      return;
+    }
+
+    AppleHealthKit.initHealthKit(permissions, (error: string | null, result?: boolean) => {
       console.log('[HealthKit] initHealthKit callback fired');
       console.log('[HealthKit] error:', error);
       console.log('[HealthKit] error type:', typeof error);
@@ -46,6 +114,12 @@ export const initHealthKit = (): Promise<boolean> => {
       if (error) {
         console.error('[HealthKit] Cannot grant permissions:', error);
         console.error('[HealthKit] Full error details:', JSON.stringify(error));
+        resolve(false);
+        return;
+      }
+
+      if (result === false) {
+        console.error('[HealthKit] initHealthKit returned a false result');
         resolve(false);
         return;
       }
@@ -82,11 +156,15 @@ export const getWeightFromHealth = (
       return;
     }
 
+    const effectiveStartDate = startDate ?? getDefaultStartDate();
+
     const options = {
-      startDate: startDate ? startDate.toISOString() : undefined,
+      startDate: effectiveStartDate.toISOString(),
       limit: limit || 100,
       ascending: false,
     };
+
+    console.log('[HealthKit] Getting weight samples with options:', options);
 
     AppleHealthKit.getWeightSamples(
       options,
@@ -146,17 +224,18 @@ export const saveWeightToHealth = (
 
     const options = {
       value: weightInLbs,
+      unit: resolvePoundUnit(),
       date: date ? date.toISOString() : new Date().toISOString(),
     };
 
-    AppleHealthKit.saveWeight(options, (err: Object, result: boolean) => {
+    AppleHealthKit.saveWeight(options, (err: string | null, result: HealthValue) => {
       if (err) {
         console.error('[ERROR] Failed to save weight to Health:', err);
         reject(err);
         return;
       }
       console.log('[HealthKit] Successfully saved weight to Health');
-      resolve(result);
+      resolve(Boolean(result));
     });
   });
 };
@@ -178,7 +257,10 @@ export const syncWeightData = async (
     if (direction === 'import' || direction === 'both') {
       // Import from Apple Health
       const lastSync = useWeightStore.getState().lastHealthSync;
-      const startDate = lastSync ? new Date(lastSync) : undefined;
+      const startDate =
+        typeof lastSync === 'number' && Number.isFinite(lastSync)
+          ? new Date(lastSync)
+          : undefined;
 
       console.log('[HealthKit] Importing from Apple Health...');
       const healthEntries = await getWeightFromHealth(startDate);
@@ -224,8 +306,12 @@ export const syncWeightData = async (
       console.log(`[HealthKit] Exported ${exported} entries`);
     }
 
-    // Update last sync timestamp
-    useWeightStore.getState().setLastHealthSync(Date.now());
+    if (imported > 0 || exported > 0) {
+      useWeightStore.getState().setLastHealthSync(Date.now());
+      console.log('[HealthKit] Updated last sync timestamp');
+    } else {
+      console.log('[HealthKit] Skipping last sync update - no changes detected');
+    }
 
     console.log(`[HealthKit] Sync completed: ${imported} imported, ${exported} exported`);
     return { imported, exported };

@@ -32,7 +32,7 @@ interface WeightState {
   setGoal: (goal: WeightGoal | null) => void;
   setUnit: (unit: 'lbs' | 'kg') => void;
   setHealthConnected: (connected: boolean) => void;
-  setLastHealthSync: (timestamp: number) => void;
+  setLastHealthSync: (timestamp: number | null) => void;
 
   // Computed methods
   getCurrentWeight: () => number | null;
@@ -42,14 +42,18 @@ interface WeightState {
   getAverageWeeklyChange: () => number | null;
 }
 
+const defaultState = {
+  entries: [] as WeightEntry[],
+  goal: null as WeightGoal | null,
+  unit: 'lbs' as const,
+  isHealthConnected: false,
+  lastHealthSync: null as number | null,
+};
+
 export const useWeightStore = create<WeightState>()(
   persist(
     (set, get) => ({
-      entries: [],
-      goal: null,
-      unit: 'lbs',
-      isHealthConnected: false,
-      lastHealthSync: null,
+      ...defaultState,
 
       // Actions
       addEntry: (entry) => {
@@ -183,6 +187,25 @@ export const useWeightStore = create<WeightState>()(
     {
       name: 'weight-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      migrate: (persistedState: any, version) => {
+        if (!persistedState) {
+          return { ...defaultState };
+        }
+
+        if (version < 1) {
+          return {
+            ...defaultState,
+            ...persistedState,
+            lastHealthSync: null,
+          };
+        }
+
+        return {
+          ...defaultState,
+          ...persistedState,
+        };
+      },
     }
   )
 );
