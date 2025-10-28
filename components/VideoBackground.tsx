@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface VideoBackgroundProps {
   source: any; // Video source (require() result)
   children?: React.ReactNode;
-  gradientColors?: string[];
+  gradientColors?: readonly [string, string, ...string[]];
   gradientOpacity?: number;
 }
 
@@ -15,7 +15,7 @@ const { width, height } = Dimensions.get('window');
 export default function VideoBackground({
   source,
   children,
-  gradientColors = ['rgba(124, 58, 237, 0.7)', 'rgba(31, 41, 55, 0.8)'], // Purple to dark gray
+  gradientColors = ['rgba(124, 58, 237, 0.7)', 'rgba(31, 41, 55, 0.8)'] as const, // Purple to dark gray
   gradientOpacity = 1,
 }: VideoBackgroundProps) {
   const videoRef = useRef<Video>(null);
@@ -46,7 +46,7 @@ export default function VideoBackground({
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#1a1625', '#1F2937', '#7C3AED']}
+          colors={['#1a1625', '#1F2937', '#7C3AED'] as const}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.fallbackGradient}

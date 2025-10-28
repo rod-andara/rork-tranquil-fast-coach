@@ -25,7 +25,7 @@ export default function Skeleton({ width, height, borderRadius = 8 }: SkeletonPr
   }, [translateX]);
 
   return (
-    <View style={[styles.container, { width, height, borderRadius }]}>
+    <View style={[styles.container, { width: width as any, height: height as any, borderRadius }]}>
       <Animated.View
         style={[
           styles.shimmer,
@@ -35,7 +35,7 @@ export default function Skeleton({ width, height, borderRadius = 8 }: SkeletonPr
         ]}
       >
         <LinearGradient
-          colors={["rgba(0,0,0,0)", "rgba(255,255,255,0.45)", "rgba(0,0,0,0)"]}
+          colors={["rgba(0,0,0,0)", "rgba(255,255,255,0.45)", "rgba(0,0,0,0)"] as const}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}

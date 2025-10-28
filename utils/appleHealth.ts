@@ -8,6 +8,60 @@ import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
 const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
 
+type HealthPermission = HealthKitPermissions['permissions']['read'][number];
+
+const resolveWeightPermission = (): HealthPermission => {
+  const fallback = 'Weight' as HealthPermission;
+
+  const permission =
+    (AppleHealthKit?.Constants?.Permissions?.Weight as HealthPermission | undefined) ??
+    (AppleHealthKit?.Constants?.Permissions?.BodyMass as HealthPermission | undefined);
+
+  if (!permission) {
+    console.warn(
+      '[HealthKit] Weight permission constant is unavailable on the native module, falling back to string literal'
+    );
+    return fallback;
+  }
+
+  return permission;
+};
+
+const resolvePoundUnit = (): HealthUnit => {
+  const units = AppleHealthKit?.Constants?.Units as any;
+  return (
+    units?.pound ??
+    units?.pounds ??
+    units?.lb ??
+    ('lb' as HealthUnit)
+  );
+};
+
+const ensureNativeAvailability = async (): Promise<boolean> => {
+  if (typeof AppleHealthKit?.isAvailable !== 'function') {
+    return true;
+  }
+
+  return new Promise((resolve) => {
+    (AppleHealthKit.isAvailable as any)((error: string | null, available: boolean) => {
+      if (error) {
+        console.error('[HealthKit] isAvailable reported an error:', error);
+        // Continue with the init flow so we can still surface the permission prompt.
+        resolve(true);
+        return;
+      }
+
+      if (!available) {
+        console.warn(
+          '[HealthKit] Native module reports HealthKit is not available on device — continuing to request permissions'
+        );
+      }
+
+      resolve(available);
+    });
+  });
+};
+
 const getDefaultStartDate = (): Date => {
   return new Date(Date.now() - TEN_YEARS_IN_MS);
 };
@@ -19,7 +73,22 @@ export const isHealthKitAvailable = (): boolean => {
 };
 
 // Initialize HealthKit and request permissions
-export const initHealthKit = (): Promise<boolean> => {
+export const initHealthKit = async (): Promise<boolean> => {
+  const { setHealthConnected } = useWeightStore.getState();
+
+  if (!isHealthKitAvailable()) {
+    console.log('[HealthKit] Not available - not on iOS platform');
+    setHealthConnected(false);
+    return false;
+  }
+
+  const available = await ensureNativeAvailability();
+  if (!available) {
+    console.warn('[HealthKit] Proceeding with init even though availability check returned false');
+  }
+
+  const weightPermission = resolveWeightPermission();
+
   return new Promise((resolve) => {
     console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
     console.log('[HealthKit] Platform:', Platform.OS);
@@ -27,24 +96,25 @@ export const initHealthKit = (): Promise<boolean> => {
     console.log('[HealthKit] AppleHealthKit.Constants:', typeof AppleHealthKit?.Constants);
     console.log('[HealthKit] AppleHealthKit.initHealthKit:', typeof AppleHealthKit?.initHealthKit);
 
-    if (!isHealthKitAvailable()) {
-      console.log('[HealthKit] Not available - not on iOS platform');
-      resolve(false);
-      return;
-    }
-
     console.log('[HealthKit] Platform check passed, requesting permissions...');
 
     const permissions: HealthKitPermissions = {
       permissions: {
-        read: [AppleHealthKit.Constants.Permissions.Weight],
-        write: [AppleHealthKit.Constants.Permissions.Weight],
+        read: [weightPermission],
+        write: [weightPermission],
       },
     };
 
     console.log('[HealthKit] Permissions object:', JSON.stringify(permissions));
 
-    AppleHealthKit.initHealthKit(permissions, (error: string) => {
+    if (typeof AppleHealthKit?.initHealthKit !== 'function') {
+      console.error('[HealthKit] initHealthKit is not a function on the native module');
+      setHealthConnected(false);
+      resolve(false);
+      return;
+    }
+
+    (AppleHealthKit.initHealthKit as any)(permissions, (error: string | null, result?: boolean) => {
       console.log('[HealthKit] initHealthKit callback fired');
       console.log('[HealthKit] error:', error);
       console.log('[HealthKit] error type:', typeof error);
@@ -52,11 +122,20 @@ export const initHealthKit = (): Promise<boolean> => {
       if (error) {
         console.error('[HealthKit] Cannot grant permissions:', error);
         console.error('[HealthKit] Full error details:', JSON.stringify(error));
+        setHealthConnected(false);
+        resolve(false);
+        return;
+      }
+
+      if (result === false) {
+        console.error('[HealthKit] initHealthKit returned a false result');
+        setHealthConnected(false);
         resolve(false);
         return;
       }
 
       console.log('[HealthKit] Successfully initialized and permissions granted');
+      setHealthConnected(true);
       resolve(true);
     });
   });
@@ -97,6 +176,11 @@ export const getWeightFromHealth = (
     };
 
     console.log('[HealthKit] Getting weight samples with options:', options);
+
+    if (typeof AppleHealthKit?.getWeightSamples !== 'function') {
+      reject(new Error('getWeightSamples is not available on the native module'));
+      return;
+    }
 
     AppleHealthKit.getWeightSamples(
       options,
@@ -156,10 +240,16 @@ export const saveWeightToHealth = (
 
     const options = {
       value: weightInLbs,
+      unit: resolvePoundUnit(),
       date: date ? date.toISOString() : new Date().toISOString(),
     };
 
-    AppleHealthKit.saveWeight(options, (err: string, result: HealthValue) => {
+    if (typeof AppleHealthKit?.saveWeight !== 'function') {
+      reject(new Error('saveWeight is not available on the native module'));
+      return;
+    }
+
+    AppleHealthKit.saveWeight(options, (err: string | null, result: HealthValue) => {
       if (err) {
         console.error('[ERROR] Failed to save weight to Health:', err);
         reject(err);
