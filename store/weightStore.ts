@@ -59,7 +59,7 @@ export const useWeightStore = create<WeightState>()(
       addEntry: (entry) => {
         const newEntry: WeightEntry = {
           ...entry,
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
         };
         set((state) => ({
           entries: [...state.entries, newEntry].sort((a, b) => b.date - a.date),
@@ -84,8 +84,59 @@ export const useWeightStore = create<WeightState>()(
         set({ goal });
       },
 
-      setUnit: (unit) => {
-        set({ unit });
+      setUnit: (newUnit) => {
+        set((state) => {
+          const oldUnit = state.unit;
+
+          // If unit hasn't changed, no conversion needed
+          if (oldUnit === newUnit) return state;
+
+          // Conversion factors
+          const LBS_TO_KG = 0.453592;
+          const KG_TO_LBS = 2.20462;
+
+          // Convert weight entries
+          const convertedEntries = state.entries.map((entry) => {
+            let convertedWeight = entry.weight;
+
+            if (oldUnit === 'lbs' && newUnit === 'kg') {
+              convertedWeight = entry.weight * LBS_TO_KG;
+            } else if (oldUnit === 'kg' && newUnit === 'lbs') {
+              convertedWeight = entry.weight * KG_TO_LBS;
+            }
+
+            return {
+              ...entry,
+              weight: Math.round(convertedWeight * 10) / 10, // Round to 1 decimal
+              unit: newUnit,
+            };
+          });
+
+          // Convert goal weight if exists
+          let convertedGoal = state.goal;
+          if (convertedGoal) {
+            let convertedTargetWeight = convertedGoal.targetWeight;
+
+            if (oldUnit === 'lbs' && newUnit === 'kg') {
+              convertedTargetWeight = convertedGoal.targetWeight * LBS_TO_KG;
+            } else if (oldUnit === 'kg' && newUnit === 'lbs') {
+              convertedTargetWeight = convertedGoal.targetWeight * KG_TO_LBS;
+            }
+
+            convertedGoal = {
+              ...convertedGoal,
+              targetWeight: Math.round(convertedTargetWeight * 10) / 10, // Round to 1 decimal
+              unit: newUnit,
+            };
+          }
+
+          return {
+            ...state,
+            unit: newUnit,
+            entries: convertedEntries,
+            goal: convertedGoal,
+          };
+        });
       },
 
       setHealthConnected: (connected) => {
