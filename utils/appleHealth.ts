@@ -10,15 +10,18 @@ const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
 
 type HealthPermission = HealthKitPermissions['permissions']['read'][number];
 
-const resolveWeightPermission = (): HealthPermission | null => {
+const resolveWeightPermission = (): HealthPermission => {
+  const fallback = 'Weight' as HealthPermission;
+
   const permission =
     (AppleHealthKit?.Constants?.Permissions?.Weight as HealthPermission | undefined) ??
-    null;
+    (AppleHealthKit?.Constants?.Permissions?.BodyMass as HealthPermission | undefined);
 
   if (!permission) {
-    console.error(
-      '[HealthKit] Weight permission constant is unavailable. Is the native module linked?'
+    console.warn(
+      '[HealthKit] Weight permission constant is unavailable on the native module, falling back to string literal'
     );
+    return fallback;
   }
 
   return permission;
@@ -39,15 +42,18 @@ const ensureNativeAvailability = async (): Promise<boolean> => {
   }
 
   return new Promise((resolve) => {
-    AppleHealthKit.isAvailable((error: string, available: boolean) => {
+    AppleHealthKit.isAvailable((error: string | null, available: boolean) => {
       if (error) {
         console.error('[HealthKit] isAvailable reported an error:', error);
-        resolve(false);
+        // Continue with the init flow so we can still surface the permission prompt.
+        resolve(true);
         return;
       }
 
       if (!available) {
-        console.warn('[HealthKit] Native module reports HealthKit is not available on device');
+        console.warn(
+          '[HealthKit] Native module reports HealthKit is not available on device — continuing to request permissions'
+        );
       }
 
       resolve(available);
@@ -74,13 +80,10 @@ export const initHealthKit = async (): Promise<boolean> => {
 
   const available = await ensureNativeAvailability();
   if (!available) {
-    return false;
+    console.warn('[HealthKit] Proceeding with init even though availability check returned false');
   }
 
   const weightPermission = resolveWeightPermission();
-  if (!weightPermission) {
-    return false;
-  }
 
   return new Promise((resolve) => {
     console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
