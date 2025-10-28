@@ -13,15 +13,15 @@ interface StatCardProps {
   iconBgColor?: string;
 }
 
-const ICON_GRADIENTS: Record<string, string[]> = {
-  calendar: ['#7C3AED', '#A78BFA'],   // Purple
-  trending: ['#10B981', '#34D399'],   // Green - for TrendingUp
-  trendingup: ['#10B981', '#34D399'],  // Green
-  clock: ['#3B82F6', '#60A5FA'],      // Blue
-  trophy: ['#F59E0B', '#FBBF24'],     // Orange/Gold
-};
+const ICON_GRADIENTS = {
+  calendar: ['#7C3AED', '#A78BFA'] as const,   // Purple
+  trending: ['#10B981', '#34D399'] as const,   // Green - for TrendingUp
+  trendingup: ['#10B981', '#34D399'] as const,  // Green
+  clock: ['#3B82F6', '#60A5FA'] as const,      // Blue
+  trophy: ['#F59E0B', '#FBBF24'] as const,     // Orange/Gold
+} as const;
 
-function getIconGradient(iconColor: string): string[] {
+function getIconGradient(iconColor: string): readonly [string, string] {
   // Try to match by the iconColor hex value to determine which gradient to use
   if (iconColor === '#10B981') return ICON_GRADIENTS.trending;
   if (iconColor === '#3B82F6') return ICON_GRADIENTS.clock;
