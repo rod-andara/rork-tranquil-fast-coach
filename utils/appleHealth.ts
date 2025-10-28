@@ -6,6 +6,12 @@ import AppleHealthKit, {
 import { Platform } from 'react-native';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
+const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+
+const getDefaultStartDate = (): Date => {
+  return new Date(Date.now() - TEN_YEARS_IN_MS);
+};
+
 // Check if HealthKit is available (iOS only)
 // This is a simple platform check - actual availability is checked during init
 export const isHealthKitAvailable = (): boolean => {
@@ -82,11 +88,15 @@ export const getWeightFromHealth = (
       return;
     }
 
+    const effectiveStartDate = startDate ?? getDefaultStartDate();
+
     const options = {
-      startDate: startDate ? startDate.toISOString() : undefined,
+      startDate: effectiveStartDate.toISOString(),
       limit: limit || 100,
       ascending: false,
     };
+
+    console.log('[HealthKit] Getting weight samples with options:', options);
 
     AppleHealthKit.getWeightSamples(
       options,
@@ -149,14 +159,14 @@ export const saveWeightToHealth = (
       date: date ? date.toISOString() : new Date().toISOString(),
     };
 
-    AppleHealthKit.saveWeight(options, (err: Object, result: boolean) => {
+    AppleHealthKit.saveWeight(options, (err: string, result: HealthValue) => {
       if (err) {
         console.error('[ERROR] Failed to save weight to Health:', err);
         reject(err);
         return;
       }
       console.log('[HealthKit] Successfully saved weight to Health');
-      resolve(result);
+      resolve(Boolean(result));
     });
   });
 };
@@ -178,7 +188,10 @@ export const syncWeightData = async (
     if (direction === 'import' || direction === 'both') {
       // Import from Apple Health
       const lastSync = useWeightStore.getState().lastHealthSync;
-      const startDate = lastSync ? new Date(lastSync) : undefined;
+      const startDate =
+        typeof lastSync === 'number' && Number.isFinite(lastSync)
+          ? new Date(lastSync)
+          : undefined;
 
       console.log('[HealthKit] Importing from Apple Health...');
       const healthEntries = await getWeightFromHealth(startDate);
@@ -224,8 +237,12 @@ export const syncWeightData = async (
       console.log(`[HealthKit] Exported ${exported} entries`);
     }
 
-    // Update last sync timestamp
-    useWeightStore.getState().setLastHealthSync(Date.now());
+    if (imported > 0 || exported > 0) {
+      useWeightStore.getState().setLastHealthSync(Date.now());
+      console.log('[HealthKit] Updated last sync timestamp');
+    } else {
+      console.log('[HealthKit] Skipping last sync update - no changes detected');
+    }
 
     console.log(`[HealthKit] Sync completed: ${imported} imported, ${exported} exported`);
     return { imported, exported };
