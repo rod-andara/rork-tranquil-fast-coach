@@ -8,6 +8,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "nativewind";
 
 import { useFastStore } from "@/store/fastStore";
+import { useWeightStore } from "@/store/weightStore";
+import { initHealthKit } from "@/utils/appleHealth";
 import AppSetup from "@/App";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -22,7 +24,21 @@ function RootLayoutNav() {
 
   useEffect(() => {
     const loadData = async () => {
+      // Load store data from storage
       await useFastStore.getState().loadFromStorage();
+
+      // If user has previously connected to Apple Health, reinitialize on app startup
+      const isHealthConnected = useWeightStore.getState().isHealthConnected;
+      if (isHealthConnected && Platform.OS === 'ios') {
+        console.log('[App] User previously connected to Apple Health, reinitializing...');
+        try {
+          await initHealthKit();
+          console.log('[App] HealthKit reinitialized successfully');
+        } catch (error) {
+          console.error('[App] Failed to reinitialize HealthKit:', error);
+        }
+      }
+
       setIsReady(true);
     };
     loadData();
