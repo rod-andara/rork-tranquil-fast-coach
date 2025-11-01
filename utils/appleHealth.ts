@@ -27,14 +27,14 @@ const resolveWeightPermission = (): HealthPermission => {
   return permission;
 };
 
-const resolvePoundUnit = (): HealthUnit => {
-  const units = AppleHealthKit?.Constants?.Units as any;
-  return (
-    units?.pound ??
-    units?.pounds ??
-    units?.lb ??
-    ('lb' as HealthUnit)
-  );
+// Get canonical HealthKit unit constant for weight
+const getHKWeightUnit = (unit: 'lbs' | 'kg'): HealthUnit => {
+  const Units = AppleHealthKit?.Constants?.Units;
+  if (!Units) {
+    throw new Error('[HealthKit] Unit constants not available');
+  }
+  // Use canonical HKUnit constants from the library
+  return unit === 'kg' ? (Units as any).kilogram ?? (Units as any).Kilogram : (Units as any).pound ?? (Units as any).Pound;
 };
 
 const ensureNativeAvailability = async (): Promise<boolean> => {
@@ -235,29 +235,35 @@ export const saveWeightToHealth = (
       return;
     }
 
-    // Convert to pounds (Apple Health's preferred unit)
-    const weightInLbs = unit === 'kg' ? convertWeight(weight, 'kg', 'lbs') : weight;
+    try {
+      // Pass the actual value with the canonical unit constant
+      // Don't pre-convert - let HealthKit handle the value with the correct unit
+      const options = {
+        value: weight,
+        unit: getHKWeightUnit(unit),
+        date: (date ?? new Date()).toISOString(),
+      };
 
-    const options = {
-      value: weightInLbs,
-      unit: resolvePoundUnit(),
-      date: date ? date.toISOString() : new Date().toISOString(),
-    };
+      console.log(`[HealthKit] Saving weight: ${weight} ${unit} (HKUnit: ${options.unit})`);
 
-    if (typeof AppleHealthKit?.saveWeight !== 'function') {
-      reject(new Error('saveWeight is not available on the native module'));
-      return;
-    }
-
-    AppleHealthKit.saveWeight(options, (err: string | null, result: HealthValue) => {
-      if (err) {
-        console.error('[ERROR] Failed to save weight to Health:', err);
-        reject(err);
+      if (typeof AppleHealthKit?.saveWeight !== 'function') {
+        reject(new Error('saveWeight is not available on the native module'));
         return;
       }
-      console.log('[HealthKit] Successfully saved weight to Health');
-      resolve(Boolean(result));
-    });
+
+      AppleHealthKit.saveWeight(options, (err: string | null, result: HealthValue) => {
+        if (err) {
+          console.error('[HealthKit] Error saving weight:', err);
+          reject(new Error(String(err)));
+          return;
+        }
+        console.log('[HealthKit] Successfully saved weight to Health');
+        resolve(Boolean(result));
+      });
+    } catch (error) {
+      console.error('[HealthKit] Exception in saveWeightToHealth:', error);
+      reject(error);
+    }
   });
 };
 

@@ -50,9 +50,11 @@ export default function WeightEntryModal({
   }, [editEntry, visible, isHealthConnected]);
 
   const handleSave = async () => {
-    // Validate weight
-    const weightNum = parseFloat(weight);
-    if (isNaN(weightNum) || weightNum <= 0) {
+    // Validate weight - normalize comma to dot for locales that use comma as decimal separator
+    const normalizedWeight = (weight ?? '').replace(',', '.').trim();
+    const weightNum = parseFloat(normalizedWeight);
+
+    if (!Number.isFinite(weightNum) || weightNum <= 0) {
       setError('Please enter a valid weight');
       return;
     }
