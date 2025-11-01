@@ -79,6 +79,13 @@
         {
           "isMedicalDevice": false
         }
+      ],
+      [
+        "@sentry/react-native",
+        {
+          "organization": "rod-andara",
+          "project": "rork-tranquil-fast-coach"
+        }
       ]
     ],
     "experiments": {
