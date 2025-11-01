@@ -8,6 +8,9 @@ import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
 const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
 
+// Track if HealthKit has been successfully initialized
+let healthKitInitialized = false;
+
 type HealthPermission = HealthKitPermissions['permissions']['read'][number];
 
 const resolveWeightPermission = (): HealthPermission => {
@@ -31,10 +34,18 @@ const resolveWeightPermission = (): HealthPermission => {
 const getHKWeightUnit = (unit: 'lbs' | 'kg'): HealthUnit => {
   const Units = AppleHealthKit?.Constants?.Units;
   if (!Units) {
-    throw new Error('[HealthKit] Unit constants not available');
+    throw new Error('[HealthKit] Unit constants not available - HealthKit may not be initialized');
   }
-  // Use canonical HKUnit constants from the library
-  return unit === 'kg' ? (Units as any).kilogram ?? (Units as any).Kilogram : (Units as any).pound ?? (Units as any).Pound;
+  // Use canonical HKUnit constants from the library (try both casing variations)
+  const hkUnit = unit === 'kg'
+    ? ((Units as any).kilogram ?? (Units as any).Kilogram)
+    : ((Units as any).pound ?? (Units as any).Pound);
+
+  if (!hkUnit) {
+    throw new Error(`[HealthKit] Could not resolve unit constant for "${unit}"`);
+  }
+
+  return hkUnit;
 };
 
 const ensureNativeAvailability = async (): Promise<boolean> => {
@@ -66,19 +77,19 @@ const getDefaultStartDate = (): Date => {
   return new Date(Date.now() - TEN_YEARS_IN_MS);
 };
 
-// Check if HealthKit is available (iOS only)
-// This is a simple platform check - actual availability is checked during init
+// Check if HealthKit is available AND initialized
 export const isHealthKitAvailable = (): boolean => {
-  return Platform.OS === 'ios';
+  return Platform.OS === 'ios' && healthKitInitialized;
 };
 
 // Initialize HealthKit and request permissions
 export const initHealthKit = async (): Promise<boolean> => {
   const { setHealthConnected } = useWeightStore.getState();
 
-  if (!isHealthKitAvailable()) {
+  if (Platform.OS !== 'ios') {
     console.log('[HealthKit] Not available - not on iOS platform');
     setHealthConnected(false);
+    healthKitInitialized = false;
     return false;
   }
 
@@ -123,6 +134,7 @@ export const initHealthKit = async (): Promise<boolean> => {
         console.error('[HealthKit] Cannot grant permissions:', error);
         console.error('[HealthKit] Full error details:', JSON.stringify(error));
         setHealthConnected(false);
+        healthKitInitialized = false;
         resolve(false);
         return;
       }
@@ -130,12 +142,14 @@ export const initHealthKit = async (): Promise<boolean> => {
       if (result === false) {
         console.error('[HealthKit] initHealthKit returned a false result');
         setHealthConnected(false);
+        healthKitInitialized = false;
         resolve(false);
         return;
       }
 
       console.log('[HealthKit] Successfully initialized and permissions granted');
       setHealthConnected(true);
+      healthKitInitialized = true;  // ✅ Critical: mark as initialized
       resolve(true);
     });
   });
@@ -230,24 +244,38 @@ export const saveWeightToHealth = (
   date?: Date
 ): Promise<boolean> => {
   return new Promise((resolve, reject) => {
-    if (!isHealthKitAvailable()) {
-      reject(new Error('HealthKit is not available'));
+    // Check if HealthKit is initialized first
+    if (!healthKitInitialized) {
+      const errorMsg = 'HealthKit is not initialized. Call initHealthKit() first.';
+      console.error(`[HealthKit] ${errorMsg}`);
+      reject(new Error(errorMsg));
+      return;
+    }
+
+    if (Platform.OS !== 'ios') {
+      const errorMsg = 'HealthKit is only available on iOS';
+      console.error(`[HealthKit] ${errorMsg}`);
+      reject(new Error(errorMsg));
       return;
     }
 
     try {
       // Pass the actual value with the canonical unit constant
       // Don't pre-convert - let HealthKit handle the value with the correct unit
+      const hkUnit = getHKWeightUnit(unit);
+
       const options = {
         value: weight,
-        unit: getHKWeightUnit(unit),
+        unit: hkUnit,
         date: (date ?? new Date()).toISOString(),
       };
 
-      console.log(`[HealthKit] Saving weight: ${weight} ${unit} (HKUnit: ${options.unit})`);
+      console.log(`[HealthKit] Saving weight: ${weight} ${unit} (HKUnit: ${hkUnit})`);
 
       if (typeof AppleHealthKit?.saveWeight !== 'function') {
-        reject(new Error('saveWeight is not available on the native module'));
+        const errorMsg = 'saveWeight is not available on the native module';
+        console.error(`[HealthKit] ${errorMsg}`);
+        reject(new Error(errorMsg));
         return;
       }
 
@@ -262,7 +290,7 @@ export const saveWeightToHealth = (
       });
     } catch (error) {
       console.error('[HealthKit] Exception in saveWeightToHealth:', error);
-      reject(error);
+      reject(error instanceof Error ? error : new Error(String(error)));
     }
   });
 };
