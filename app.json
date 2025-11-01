@@ -83,8 +83,8 @@
       [
         "@sentry/react-native",
         {
-          "organization": "rod-andara",
-          "project": "rork-tranquil-fast-coach"
+          "organization": "rodrigo-andara",
+          "project": "tranquil-fast"
         }
       ]
     ],
