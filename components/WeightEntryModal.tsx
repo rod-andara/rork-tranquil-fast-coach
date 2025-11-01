@@ -77,23 +77,25 @@ export default function WeightEntryModal({
           source: 'manual',
         });
 
-        // Sync to Apple Health if enabled
+        // Wait for Apple Health sync to complete
         if (syncToHealth && isHealthKitAvailable()) {
           try {
             await saveWeightToHealth(weightNum, unit);
+            console.log('[SUCCESS] Weight saved to Apple Health');
           } catch (healthError) {
             console.error('[ERROR] Failed to sync to Health:', healthError);
-            // Don't fail the save if Health sync fails
+            // Continue - don't block on Health sync failure
           }
         }
       }
 
-      // Close modal and reset form
+      // ✅ CORRECT: Set isSaving to false BEFORE closing modal
+      // This ensures all state updates complete while component is still mounted
+      setIsSaving(false);
       onClose();
     } catch (err) {
       console.error('[ERROR] Failed to save weight:', err);
       setError('Failed to save weight. Please try again.');
-    } finally {
       setIsSaving(false);
     }
   };
