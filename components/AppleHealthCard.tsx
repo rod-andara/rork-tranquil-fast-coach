@@ -6,7 +6,8 @@ import { useWeightStore } from '@/store/weightStore';
 import {
   initHealthKit,
   syncWeightData,
-  isHealthKitAvailable,
+  isHealthKitSupported,
+  isHealthKitReady,
 } from '@/utils/appleHealth';
 
 export default function AppleHealthCard() {
@@ -18,15 +19,15 @@ export default function AppleHealthCard() {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState(false);
 
-  // Don't show on Android or web
-  if (Platform.OS !== 'ios' || !isHealthKitAvailable()) {
+  // Don't show on Android or web - show on iOS even if not yet initialized
+  if (!isHealthKitSupported()) {
     return null;
   }
 
   const handleConnect = async () => {
     console.log('[AppleHealthCard] ===== CONNECT BUTTON PRESSED =====');
     console.log('[AppleHealthCard] Platform:', Platform.OS);
-    console.log('[AppleHealthCard] isHealthKitAvailable():', isHealthKitAvailable());
+    console.log('[AppleHealthCard] isHealthKitReady():', isHealthKitReady());
 
     setIsConnecting(true);
     setSyncError(null);

@@ -77,9 +77,20 @@ const getDefaultStartDate = (): Date => {
   return new Date(Date.now() - TEN_YEARS_IN_MS);
 };
 
-// Check if HealthKit is available AND initialized
+// Check if device supports HealthKit (mirrors library's capability check)
+export const isHealthKitSupported = (): boolean => {
+  return Platform.OS === 'ios';
+};
+
+// Check if HealthKit is both supported AND initialized (ready to use)
+export const isHealthKitReady = (): boolean => {
+  return isHealthKitSupported() && healthKitInitialized;
+};
+
+// Deprecated: Use isHealthKitReady() instead
+// Kept for backward compatibility
 export const isHealthKitAvailable = (): boolean => {
-  return Platform.OS === 'ios' && healthKitInitialized;
+  return isHealthKitReady();
 };
 
 // Initialize HealthKit and request permissions
@@ -176,8 +187,8 @@ export const getWeightFromHealth = (
   limit?: number
 ): Promise<WeightEntry[]> => {
   return new Promise((resolve, reject) => {
-    if (!isHealthKitAvailable()) {
-      reject(new Error('HealthKit is not available'));
+    if (!isHealthKitReady()) {
+      reject(new Error('HealthKit is not ready. Ensure it is initialized first.'));
       return;
     }
 
@@ -302,8 +313,8 @@ export const syncWeightData = async (
   let imported = 0;
   let exported = 0;
 
-  if (!isHealthKitAvailable()) {
-    throw new Error('HealthKit is not available on this device');
+  if (!isHealthKitReady()) {
+    throw new Error('HealthKit is not ready. Ensure it is initialized first.');
   }
 
   try {
