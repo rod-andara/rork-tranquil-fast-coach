@@ -67,7 +67,7 @@ export default function WeightEntryModal({
         // Update existing entry
         updateEntry(editEntry.id, {
           weight: weightNum,
-          note: note.trim() || undefined,
+          note: (note ?? '').trim() || undefined,
         });
       } else {
         // Add new entry
@@ -75,7 +75,7 @@ export default function WeightEntryModal({
           weight: weightNum,
           date: Date.now(),
           unit: unit,
-          note: note.trim() || undefined,
+          note: (note ?? '').trim() || undefined,
           source: 'manual',
         });
 
