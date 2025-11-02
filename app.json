@@ -21,7 +21,9 @@
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": [
-          "remote-notification"
+          "remote-notification",
+          "audio",
+          "background-processing"
         ],
         "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based fasting reminders and insights.",
         "NSUserNotificationsUsageDescription": "We need permission to send you fasting reminders and milestone notifications.",
@@ -36,11 +38,21 @@
               "NSExceptionRequiresForwardSecrecy": false
             }
           }
-        }
+        },
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
-        "com.apple.developer.healthkit.access": []
+        "com.apple.developer.healthkit.access": [],
+        "com": {
+          "apple": {
+            "developer": {
+              "networking": {
+                "wifi-info": true
+              }
+            }
+          }
+        }
       }
     },
     "android": {
@@ -52,7 +64,8 @@
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.SCHEDULE_EXACT_ALARM"
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "RECORD_AUDIO"
       ]
     },
     "web": {
@@ -68,8 +81,12 @@
       [
         "expo-notifications",
         {
+          "icon": "./local/assets/notification_icon.png",
           "color": "#8B5CF6",
           "defaultChannel": "default",
+          "sounds": [
+            "./local/assets/notification_sound.wav"
+          ],
           "enableBackgroundRemoteNotifications": false
         }
       ],
@@ -93,6 +110,12 @@
         {
           "organization": "rodrigo-andara",
           "project": "tranquil-fast"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ]
     ],
