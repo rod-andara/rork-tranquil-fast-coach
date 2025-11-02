@@ -31,13 +31,9 @@
         "NSHealthUpdateUsageDescription": "We need access to write your weight and fasting data to Apple Health for a complete health picture and seamless integration with your other health apps.",
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
-            "unsplash.com": {
-              "NSExceptionAllowsInsecureHTTPLoads": true,
-              "NSIncludesSubdomains": true
-            },
             "images.unsplash.com": {
-              "NSExceptionAllowsInsecureHTTPLoads": true,
-              "NSIncludesSubdomains": true
+              "NSIncludesSubdomains": true,
+              "NSExceptionRequiresForwardSecrecy": false
             }
           }
         }
