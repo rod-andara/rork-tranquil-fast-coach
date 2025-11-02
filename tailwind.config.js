@@ -10,17 +10,31 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Brand colors (purple #7C63E6)
+        brand: {
+          50: '#f5f3ff',   // Lightest - chip backgrounds (light mode)
+          100: '#ede9fe',
+          200: '#ddd6fe',  // Light text on dark chips
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#7C63E6',  // PRIMARY BRAND
+          600: '#6d5bd0',
+          700: '#5b4ab5',  // Dark text on light chips
+          800: '#4c3d95',
+          900: '#3d2f75',  // Darkest - dark mode chip backgrounds
+        },
+        // Primary colors (same as brand for consistency)
         primary: {
-          50: '#FAF5FF',
-          100: '#F3E8FF',
-          200: '#E9D5FF',
-          300: '#D8B4FE',
-          400: '#C084FC',
-          500: '#A855F7',
+          50: '#f5f3ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#7C63E6',
           600: '#7C3AED',
-          700: '#6D28D9',
-          800: '#5B21B6',
-          900: '#4C1D95',
+          700: '#5b4ab5',
+          800: '#4c3d95',
+          900: '#3d2f75',
         },
         neutral: {
           50: '#F9FAFB',
