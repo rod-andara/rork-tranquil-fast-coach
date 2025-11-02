@@ -1,3 +1,7 @@
+// CRITICAL: Import reanimated BEFORE global.css
+// NativeWind's CSS transforms use Reanimated for animations
+// Reanimated must be available when global.css initializes
+import 'react-native-reanimated';
 import "../global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
