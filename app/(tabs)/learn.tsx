@@ -76,16 +76,16 @@ export default function LearnScreen() {
       style={{ flex: 1 }}
     >
       {/* Header Section */}
-      <View className="px-4 pt-6 pb-4 bg-white dark:bg-neutral-900">
-        <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
+      <View className="px-4 pt-4 pb-3 bg-white dark:bg-neutral-900">
+        <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">
           Learn & Grow
         </Text>
-        <Text className="text-base text-neutral-500 dark:text-neutral-400 mb-4">
+        <Text className="text-base text-neutral-500 dark:text-neutral-400 mb-3">
           Recipes, tips, and expert guidance
         </Text>
 
         {/* Search Bar */}
-        <View className="flex-row items-center bg-white dark:bg-neutral-800 rounded-md px-4 py-2 border border-neutral-200 dark:border-neutral-700 mb-4 gap-2">
+        <View className="flex-row items-center bg-white dark:bg-neutral-800 rounded-md px-4 py-2 border border-neutral-200 dark:border-neutral-700 mb-3 gap-2">
           <Search size={20} color="#6B7280" strokeWidth={2} />
           <TextInput
             className="flex-1 text-base text-neutral-800 dark:text-neutral-100 p-0"
@@ -139,9 +139,9 @@ export default function LearnScreen() {
         renderItem={({ item }: { item: any }) => {
           if (loading || item.type === 'skeleton') {
             return (
-              <View className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-4 overflow-hidden shadow-sm">
-                <Skeleton width={'100%'} height={180} />
-                <View style={{ padding: 16, gap: 8 }}>
+              <View className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-3 overflow-hidden shadow-sm">
+                <Skeleton width={'100%'} height={160} />
+                <View style={{ padding: 12, gap: 6 }}>
                   <Skeleton width={'60%'} height={16} />
                   <Skeleton width={'90%'} height={12} />
                 </View>
@@ -183,7 +183,7 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
 
   return (
     <TouchableOpacity
-      className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-4 overflow-hidden shadow-sm"
+      className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-3 overflow-hidden shadow-sm"
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Open recipe ${recipe.title}`}
@@ -192,7 +192,7 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
       {recipe.image && !imageError ? (
         <Image
           source={{ uri: recipe.image }}
-          className="w-full h-[180px] bg-neutral-100 dark:bg-neutral-700"
+          className="w-full h-[160px] bg-neutral-100 dark:bg-neutral-700"
           contentFit="cover"
           cachePolicy="disk"
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**-oJ-pWB' }}
@@ -207,25 +207,25 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
           colors={['#7C3AED', '#A78BFA']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={{ width: '100%', height: 180, alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: '100%', height: 160, alignItems: 'center', justifyContent: 'center' }}
         >
           <BookOpen size={56} color="#FFFFFF" strokeWidth={1.5} />
         </LinearGradient>
       )}
-      <View className="p-4">
+      <View className="p-3">
         <View className="flex-row items-center justify-between mb-1">
-          <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 flex-1">
+          <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 flex-1" numberOfLines={2}>
             {recipe.title}
           </Text>
           <ChevronRight size={20} color="#6B7280" strokeWidth={2} />
         </View>
-        <Text className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
+        <Text className="text-sm text-neutral-500 dark:text-neutral-400 mb-1.5" numberOfLines={2}>
           {recipe.desc}
         </Text>
         {recipe.tags && recipe.tags.length > 0 && (
-          <View className="flex-row flex-wrap gap-1">
+          <View className="flex-row flex-wrap gap-1.5">
             {recipe.tags.map((tag, index) => (
-              <View key={index} className="bg-purple-500/20 dark:bg-purple-500/20 px-3 py-1 rounded-full border border-purple-400/30 dark:border-purple-400/30">
+              <View key={index} className="bg-purple-50 dark:bg-purple-900/30 px-3 py-1 rounded-full">
                 <Text className="text-xs text-purple-700 dark:text-purple-200 font-medium">{tag}</Text>
               </View>
             ))}
@@ -239,7 +239,7 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
 function ArticleCard({ article }: { article: ContentItem }) {
   return (
     <TouchableOpacity
-      className="flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-4 gap-4 shadow-sm"
+      className="flex-row items-center bg-white dark:bg-neutral-800 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-3 gap-3 shadow-sm"
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`Open article ${article.title}`}
@@ -249,7 +249,7 @@ function ArticleCard({ article }: { article: ContentItem }) {
         <BookOpen size={20} color="#7C3AED" strokeWidth={2} />
       </View>
       <View className="flex-1">
-        <View className="flex-row items-center mb-1">
+        <View className="flex-row items-center mb-0.5">
           {article.category && (
             <Text className="text-xs font-semibold text-primary-600 dark:text-neutral-100">
               {article.category}
@@ -261,10 +261,10 @@ function ArticleCard({ article }: { article: ContentItem }) {
             </Text>
           )}
         </View>
-        <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+        <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 mb-0.5" numberOfLines={2}>
           {article.title}
         </Text>
-        <Text className="text-sm text-neutral-500 dark:text-neutral-400">{article.desc}</Text>
+        <Text className="text-sm text-neutral-500 dark:text-neutral-400" numberOfLines={2}>{article.desc}</Text>
       </View>
       <ChevronRight size={20} color="#6B7280" strokeWidth={2} />
     </TouchableOpacity>
@@ -276,7 +276,7 @@ function ProductCard({ product }: { product: ContentItem }) {
 
   return (
     <TouchableOpacity
-      className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-4 overflow-hidden shadow-sm"
+      className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-3 overflow-hidden shadow-sm"
       activeOpacity={0.7}
       accessibilityRole="button"
       accessibilityLabel={`View product ${product.title}`}
@@ -285,7 +285,7 @@ function ProductCard({ product }: { product: ContentItem }) {
       {product.image && !imageError ? (
         <Image
           source={{ uri: product.image }}
-          className="w-full h-[160px] bg-neutral-100 dark:bg-neutral-700"
+          className="w-full h-[140px] bg-neutral-100 dark:bg-neutral-700"
           contentFit="cover"
           cachePolicy="disk"
           placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**-oJ-pWB' }}
@@ -300,15 +300,15 @@ function ProductCard({ product }: { product: ContentItem }) {
           colors={['#10B981', '#34D399']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={{ width: '100%', height: 160, alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: '100%', height: 140, alignItems: 'center', justifyContent: 'center' }}
         >
           <ShoppingBag size={56} color="#FFFFFF" strokeWidth={1.5} />
         </LinearGradient>
       )}
-      <View className="p-4">
-        <View className="flex-row items-start justify-between mb-1">
+      <View className="p-3">
+        <View className="flex-row items-start justify-between mb-0.5">
           <View className="flex-1 mr-2">
-            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 mb-1">
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 mb-0.5" numberOfLines={2}>
               {product.title}
             </Text>
           </View>
@@ -316,12 +316,12 @@ function ProductCard({ product }: { product: ContentItem }) {
             <ShoppingBag size={20} color="#7C3AED" strokeWidth={2} />
           </View>
         </View>
-        <Text className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
+        <Text className="text-sm text-neutral-500 dark:text-neutral-400 mb-1.5" numberOfLines={2}>
           {product.desc}
         </Text>
 
         {(product.price || product.rating) && (
-          <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center justify-between mb-1.5">
             {product.price && (
               <Text className="text-lg font-bold text-primary-600 dark:text-neutral-100">
                 {product.price}
@@ -339,8 +339,8 @@ function ProductCard({ product }: { product: ContentItem }) {
         )}
 
         {product.whyRecommended && (
-          <View className="bg-neutral-100 dark:bg-neutral-700 p-2 rounded-md flex-row items-start gap-1">
-            <Text className="text-xs text-neutral-800 dark:text-neutral-200 flex-1">
+          <View className="bg-neutral-100 dark:bg-neutral-700 p-1.5 rounded-md flex-row items-start gap-1">
+            <Text className="text-xs text-neutral-800 dark:text-neutral-200 flex-1" numberOfLines={2}>
               💡 {product.whyRecommended}
             </Text>
           </View>
