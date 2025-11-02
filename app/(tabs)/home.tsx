@@ -99,7 +99,8 @@ export default function HomeScreen() {
           >
             <View className="items-center">
               <Text
-                className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-1"
+                className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-1"
+                allowFontScaling={true}
                 adjustsFontSizeToFit={true}
                 numberOfLines={1}
                 minimumFontScale={0.5}
