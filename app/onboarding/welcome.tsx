@@ -42,7 +42,7 @@ export default function WelcomeScreen() {
         >
           {/* Glassmorphism Text Container */}
           <BlurView intensity={20} tint="dark" style={styles.textContainer}>
-            <Text style={styles.title}>Welcome to{'\n'}Tranquil Fast</Text>
+            <Text style={styles.title}>Welcome to Tranquil Fast</Text>
             <Text style={styles.subtitle}>
               Your personal fasting coach to help you reach your wellness goals with ease
             </Text>

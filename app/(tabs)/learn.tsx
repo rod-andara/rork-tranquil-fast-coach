@@ -15,7 +15,6 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import Skeleton from '@/components/Skeleton';
-import { Image } from 'expo-image';
 import { contentData, ContentItem } from '@/utils/content';
 import { useFastStore } from '@/store/fastStore';
 
@@ -179,8 +178,6 @@ export default function LearnScreen() {
 }
 
 function RecipeCard({ recipe }: { recipe: ContentItem }) {
-  const [imageError, setImageError] = useState(false);
-
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-3 overflow-hidden shadow-sm"
@@ -189,29 +186,14 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
       accessibilityLabel={`Open recipe ${recipe.title}`}
       onPress={() => handleOpenLink(recipe.url, recipe.title)}
     >
-      {recipe.image && !imageError ? (
-        <Image
-          source={{ uri: recipe.image }}
-          className="w-full h-[160px] bg-neutral-100 dark:bg-neutral-700"
-          contentFit="cover"
-          cachePolicy="disk"
-          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**-oJ-pWB' }}
-          transition={200}
-          onError={(e) => {
-            console.log('Recipe Image Error:', recipe.title, e);
-            setImageError(true);
-          }}
-        />
-      ) : (
-        <LinearGradient
-          colors={['#7C3AED', '#A78BFA']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ width: '100%', height: 160, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <BookOpen size={56} color="#FFFFFF" strokeWidth={1.5} />
-        </LinearGradient>
-      )}
+      <LinearGradient
+        colors={recipe.gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ width: '100%', height: 160, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <BookOpen size={56} color="#FFFFFF" strokeWidth={1.5} opacity={0.9} />
+      </LinearGradient>
       <View className="p-3">
         <View className="flex-row items-center justify-between mb-1">
           <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100 flex-1" numberOfLines={2}>
@@ -272,8 +254,6 @@ function ArticleCard({ article }: { article: ContentItem }) {
 }
 
 function ProductCard({ product }: { product: ContentItem }) {
-  const [imageError, setImageError] = useState(false);
-
   return (
     <TouchableOpacity
       className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 mb-3 overflow-hidden shadow-sm"
@@ -282,29 +262,14 @@ function ProductCard({ product }: { product: ContentItem }) {
       accessibilityLabel={`View product ${product.title}`}
       onPress={() => handleOpenLink(product.url, product.title)}
     >
-      {product.image && !imageError ? (
-        <Image
-          source={{ uri: product.image }}
-          className="w-full h-[140px] bg-neutral-100 dark:bg-neutral-700"
-          contentFit="cover"
-          cachePolicy="disk"
-          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**-oJ-pWB' }}
-          transition={200}
-          onError={(e) => {
-            console.log('Product Image Error:', product.title, e);
-            setImageError(true);
-          }}
-        />
-      ) : (
-        <LinearGradient
-          colors={['#10B981', '#34D399']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ width: '100%', height: 140, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <ShoppingBag size={56} color="#FFFFFF" strokeWidth={1.5} />
-        </LinearGradient>
-      )}
+      <LinearGradient
+        colors={product.gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ width: '100%', height: 140, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <ShoppingBag size={56} color="#FFFFFF" strokeWidth={1.5} opacity={0.9} />
+      </LinearGradient>
       <View className="p-3">
         <View className="flex-row items-start justify-between mb-0.5">
           <View className="flex-1 mr-2">
