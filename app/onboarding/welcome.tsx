@@ -42,7 +42,7 @@ export default function WelcomeScreen() {
         >
           {/* Glassmorphism Text Container */}
           <BlurView intensity={20} tint="dark" style={styles.textContainer}>
-            <Text style={styles.title}>Welcome to Tranquil Fast</Text>
+            <Text style={styles.title}>Welcome to{'\n'}Tranquil Fast</Text>
             <Text style={styles.subtitle}>
               Your personal fasting coach to help you reach your wellness goals with ease
             </Text>
@@ -109,12 +109,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   title: {
-    fontSize: 48,
+    fontSize: 40,
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: spacing.lg,
-    lineHeight: 56,
+    lineHeight: 48,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 10,
