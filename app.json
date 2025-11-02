@@ -21,9 +21,7 @@
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": [
-          "remote-notification",
-          "audio",
-          "background-processing"
+          "remote-notification"
         ],
         "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based fasting reminders and insights.",
         "NSUserNotificationsUsageDescription": "We need permission to send you fasting reminders and milestone notifications.",
@@ -38,8 +36,7 @@
               "NSExceptionRequiresForwardSecrecy": false
             }
           }
-        },
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
+        }
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
@@ -55,8 +52,7 @@
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.SCHEDULE_EXACT_ALARM",
-        "RECORD_AUDIO"
+        "android.permission.SCHEDULE_EXACT_ALARM"
       ]
     },
     "web": {
@@ -97,12 +93,6 @@
         {
           "organization": "rodrigo-andara",
           "project": "tranquil-fast"
-        }
-      ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ]
     ],
