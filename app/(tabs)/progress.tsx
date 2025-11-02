@@ -140,11 +140,11 @@ export default function ProgressScreen() {
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 48 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Section - 24pt bottom margin */}
-        <View className="mb-6">
+        {/* Header Section */}
+        <View className="mb-4">
           <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             Your Progress
           </Text>
@@ -154,9 +154,9 @@ export default function ProgressScreen() {
         </View>
 
         {/* Weight Tracking Section */}
-        <View className="mb-6">
+        <View className="mb-4">
           {/* Section Header with Add Button */}
-          <View className="flex-row justify-between items-center mb-4">
+          <View className="flex-row justify-between items-center mb-3">
             <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100">
               Weight
             </Text>
@@ -174,9 +174,9 @@ export default function ProgressScreen() {
 
           {/* Weight Stats Cards */}
           {getCurrentWeight() !== null && (
-            <View className="flex-row gap-3 mb-4">
+            <View className="flex-row gap-2 mb-3">
               <View className="flex-1">
-                <GlassCard style={{ padding: 16 }}>
+                <GlassCard style={{ padding: 12 }}>
                   <View className="flex-row items-center gap-2 mb-2">
                     <Scale size={18} color="#7C3AED" />
                     <Text
@@ -199,7 +199,7 @@ export default function ProgressScreen() {
 
               {getWeightChange() !== null && (
                 <View className="flex-1">
-                  <GlassCard style={{ padding: 16 }}>
+                  <GlassCard style={{ padding: 12 }}>
                     <View className="flex-row items-center gap-2 mb-2">
                       <TrendingUp size={18} color="#10B981" />
                       <Text
@@ -226,8 +226,8 @@ export default function ProgressScreen() {
 
           {/* Goal Progress Card */}
           {goal && getProgressPercentage() !== null && (
-            <GlassCard style={{ padding: 16, marginBottom: 16 }}>
-              <View className="flex-row items-center gap-2 mb-3">
+            <GlassCard style={{ padding: 12, marginBottom: 12 }}>
+              <View className="flex-row items-center gap-2 mb-2">
                 <Target size={18} color="#7C3AED" />
                 <Text
                   className={`text-base font-bold ${
@@ -270,12 +270,12 @@ export default function ProgressScreen() {
         </View>
 
         {/* Fasting Section Header */}
-        <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-4">
+        <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-3">
           Fasting
         </Text>
 
-        {/* Stats Grid - 2x2 layout with consistent 12pt gaps */}
-        <View className="flex-row flex-wrap -mx-1.5 mb-6">
+        {/* Stats Grid - 2x2 layout with consistent gaps */}
+        <View className="flex-row flex-wrap -mx-1.5 mb-4">
             <View className="w-1/2 p-1.5">
               <StatCard
               icon={Calendar}
@@ -314,13 +314,13 @@ export default function ProgressScreen() {
             </View>
           </View>
 
-          {/* Chart Card - 24pt bottom margin */}
-          <GlassCard style={{ padding: 16, marginBottom: 24 }}>
+          {/* Chart Card */}
+          <GlassCard style={{ padding: 12, marginBottom: 16 }}>
             <Text style={{
               fontSize: 20,
               fontWeight: '700',
               color: isDarkMode ? '#FFFFFF' : '#111827',
-              marginBottom: 16,
+              marginBottom: 12,
             }}>
               This Week
             </Text>
@@ -334,8 +334,8 @@ export default function ProgressScreen() {
                   },
                 ],
               }}
-                width={screenWidth - 16 * 2 - 16 * 2}
-                height={220}
+                width={screenWidth - 16 * 2 - 12 * 2}
+                height={175}
                 yAxisLabel=""
                 yAxisSuffix="h"
                 chartConfig={{
@@ -360,13 +360,13 @@ export default function ProgressScreen() {
                 fromZero
               />
             ) : (
-              <View className="flex-row items-end justify-between h-[200px] px-4">
+              <View className="flex-row items-end justify-between h-[160px] px-4">
                 {stats.weekData.map((v, idx) => (
-                  <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 16 * 2) / 7 - 4 }}>
+                  <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 12 * 2) / 7 - 4 }}>
                     <View
                       className="w-full rounded-md"
                       style={{
-                        height: Math.max(10, (v / 24) * 180),
+                        height: Math.max(10, (v / 24) * 140),
                         backgroundColor: isDarkMode ? '#A78BFA' : '#7C3AED'
                       }}
                     />
@@ -380,11 +380,11 @@ export default function ProgressScreen() {
         </GlassCard>
 
         {/* Achievements Section */}
-        <View className="mb-6">
-            <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
+        <View className="mb-4">
+            <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-3">
               Achievements
             </Text>
-            <View className="gap-4">
+            <View className="gap-3">
               {achievements.map((achievement) => (
                 <AchievementCard
                   key={achievement.id}
@@ -407,7 +407,7 @@ export default function ProgressScreen() {
 function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <View
-      className={`flex-row items-center bg-white dark:bg-neutral-800 p-4 rounded-lg border gap-4 shadow-sm ${
+      className={`flex-row items-center bg-white dark:bg-neutral-800 p-3 rounded-lg border gap-3 shadow-sm ${
         achievement.unlocked
           ? 'border-primary-200 dark:border-primary-700 bg-primary-100 dark:bg-primary-900/20'
           : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900'
