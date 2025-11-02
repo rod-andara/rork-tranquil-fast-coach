@@ -103,7 +103,7 @@ export default function HomeScreen() {
                 allowFontScaling={true}
                 adjustsFontSizeToFit={true}
                 numberOfLines={1}
-                minimumFontScale={0.5}
+                minimumFontScale={0.8}
               >
                 {formatTime(elapsedMs)}
               </Text>
