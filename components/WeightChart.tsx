@@ -136,7 +136,7 @@ export default function WeightChart() {
       <LineChart
         data={chartData}
         width={screenWidth - 64} // Padding
-        height={220}
+        height={175}
         chartConfig={{
           backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
           backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
