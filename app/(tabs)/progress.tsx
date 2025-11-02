@@ -11,6 +11,7 @@ import GlassCard from '@/components/GlassCard';
 import WeightChart from '@/components/WeightChart';
 import AppleHealthCard from '@/components/AppleHealthCard';
 import WeightEntryModal from '@/components/WeightEntryModal';
+import WeightGoalModal from '@/components/WeightGoalModal';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -25,6 +26,7 @@ export default function ProgressScreen() {
   const { fastHistory, isDarkMode } = useFastStore();
   const { getCurrentWeight, getWeightChange, getProgressPercentage, goal, unit } = useWeightStore();
   const [showWeightModal, setShowWeightModal] = useState(false);
+  const [showGoalModal, setShowGoalModal] = useState(false);
 
   const stats = useMemo(() => {
     const totalFasts = fastHistory.length;
@@ -160,16 +162,45 @@ export default function ProgressScreen() {
             <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100">
               Weight
             </Text>
-            <TouchableOpacity
-              onPress={() => setShowWeightModal(true)}
-              className="flex-row items-center gap-2 bg-primary-600 px-4 py-2 rounded-lg"
-              activeOpacity={0.8}
-            >
-              <Plus size={18} color="#FFFFFF" />
-              <Text className="text-white text-sm font-semibold">
-                Add Weight
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+              {/* Set/Edit Goal Button */}
+              <TouchableOpacity
+                onPress={() => setShowGoalModal(true)}
+                className={`flex-row items-center gap-2 px-4 py-2 rounded-lg ${
+                  goal
+                    ? 'bg-brand-50 dark:bg-brand-900/30'
+                    : 'bg-primary-600'
+                }`}
+                style={{ minHeight: 44, minWidth: 44 }}
+                activeOpacity={0.8}
+                accessibilityLabel={goal ? 'Edit goal' : 'Set goal'}
+                accessibilityRole="button"
+              >
+                <Target size={18} color={goal ? '#5b4ab5' : '#FFFFFF'} />
+                <Text className={`text-sm font-semibold ${
+                  goal
+                    ? 'text-brand-700 dark:text-brand-200'
+                    : 'text-white'
+                }`}>
+                  {goal ? 'Edit Goal' : 'Set Goal'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Add Weight Button */}
+              <TouchableOpacity
+                onPress={() => setShowWeightModal(true)}
+                className="flex-row items-center gap-2 bg-primary-600 px-4 py-2 rounded-lg"
+                style={{ minHeight: 44, minWidth: 44 }}
+                activeOpacity={0.8}
+                accessibilityLabel="Add weight"
+                accessibilityRole="button"
+              >
+                <Plus size={18} color="#FFFFFF" />
+                <Text className="text-white text-sm font-semibold">
+                  Add Weight
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Weight Stats Cards */}
@@ -399,6 +430,15 @@ export default function ProgressScreen() {
       <WeightEntryModal
         visible={showWeightModal}
         onClose={() => setShowWeightModal(false)}
+      />
+
+      {/* Weight Goal Modal */}
+      <WeightGoalModal
+        visible={showGoalModal}
+        onClose={() => setShowGoalModal(false)}
+        currentGoal={goal}
+        currentWeight={getCurrentWeight()}
+        unit={unit}
       />
     </LinearGradient>
   );
