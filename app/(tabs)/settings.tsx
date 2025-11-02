@@ -14,11 +14,30 @@ import ListItem from '@/components/ListItem';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan } = useFastStore();
+  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan, customDuration } = useFastStore();
   const { unit, setUnit } = useWeightStore();
 
   // Use selector pattern for ProfileCard to ensure it updates with dark mode
   const isDark = useFastStore((state) => state.isDarkMode);
+
+  // Format custom duration for display
+  const formatCustomDuration = useCallback(() => {
+    const hours = Math.floor(customDuration);
+    const minutes = Math.round((customDuration - hours) * 60);
+
+    if (minutes === 0) {
+      return `${hours}h`;
+    }
+    return `${hours}h ${minutes}m`;
+  }, [customDuration]);
+
+  // Get display text for current plan
+  const getPlanDisplayText = useCallback(() => {
+    if (selectedPlan === 'custom') {
+      return `Custom (${formatCustomDuration()})`;
+    }
+    return selectedPlan;
+  }, [selectedPlan, formatCustomDuration]);
 
   const onToggleNotifications = useCallback((val: boolean) => {
     if (Platform.OS !== 'web') {
@@ -166,7 +185,7 @@ export default function SettingsScreen() {
               testID="fasting-plan-row"
               Icon={Clock}
               text="Fasting Plan"
-              subtitle={`Current: ${selectedPlan}`}
+              subtitle={`Current: ${getPlanDisplayText()}`}
               onPress={handleFastingPlan}
               iconColor="#7C3AED"
               textColor={isDarkMode ? "#F9FAFB" : "#111827"}

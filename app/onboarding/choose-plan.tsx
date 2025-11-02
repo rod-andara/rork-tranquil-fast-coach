@@ -6,6 +6,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import FastPlanCard from '@/components/FastPlanCard';
 import VideoBackground from '@/components/VideoBackground';
+import { CustomDurationModal } from '@/components/CustomDurationModal';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
 import { borderRadius, colors, spacing, typography } from '@/constants/theme';
 
@@ -50,6 +51,14 @@ const PLANS = [
     eatHours: 10,
     popular: false,
   },
+  {
+    id: 'custom' as FastingPlan,
+    title: 'Custom',
+    description: 'Create your own fasting schedule between 4 and 48 hours.',
+    fastHours: 16,
+    eatHours: 8,
+    popular: false,
+  },
 ];
 
 function ClockIllustration() {
@@ -70,10 +79,20 @@ function ClockIllustration() {
 
 export default function ChoosePlanScreen() {
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
+  const [showCustomModal, setShowCustomModal] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
   const fromSettings = params.fromSettings === 'true';
-  const { setSelectedPlan: saveSelectedPlan, updatePlan, onboardingComplete, completeOnboarding, isDarkMode, startFast } = useFastStore();
+  const {
+    setSelectedPlan: saveSelectedPlan,
+    updatePlan,
+    onboardingComplete,
+    completeOnboarding,
+    isDarkMode,
+    startFast,
+    customDuration,
+    setCustomDuration,
+  } = useFastStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
@@ -91,6 +110,27 @@ export default function ChoosePlanScreen() {
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
+
+  const handleSaveCustomDuration = (hours: number, minutes: number) => {
+    // Convert hours and minutes to total hours (decimal)
+    const totalHours = hours + minutes / 60;
+    setCustomDuration(totalHours);
+    setSelectedPlan('custom');
+
+    if (fromSettings) {
+      updatePlan('custom');
+    }
+  };
+
+  const formatCustomDuration = () => {
+    const hours = Math.floor(customDuration);
+    const minutes = Math.round((customDuration - hours) * 60);
+
+    if (minutes === 0) {
+      return `${hours}h`;
+    }
+    return `${hours}h ${minutes}m`;
+  };
 
   const handleContinue = () => {
     console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
@@ -160,7 +200,7 @@ export default function ChoosePlanScreen() {
               <FastPlanCard
                 key={plan.id}
                 id={plan.id}
-                title={plan.title}
+                title={plan.id === 'custom' && selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : plan.title}
                 description={plan.description}
                 fastHours={plan.fastHours}
                 eatHours={plan.eatHours}
@@ -168,9 +208,13 @@ export default function ChoosePlanScreen() {
                 selected={selectedPlan === plan.id}
                 isDarkMode={isDarkMode}
                 onPress={async () => {
-                  setSelectedPlan(plan.id);
-                  if (fromSettings) {
-                    await updatePlan(plan.id);
+                  if (plan.id === 'custom') {
+                    setShowCustomModal(true);
+                  } else {
+                    setSelectedPlan(plan.id);
+                    if (fromSettings) {
+                      await updatePlan(plan.id);
+                    }
                   }
                 }}
               />
@@ -193,10 +237,18 @@ export default function ChoosePlanScreen() {
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>
-              Start {selectedPlanData?.title} Plan
+              Start {selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan
             </Text>
           </TouchableOpacity>
         </Animated.View>
+
+        <CustomDurationModal
+          visible={showCustomModal}
+          onClose={() => setShowCustomModal(false)}
+          onSave={handleSaveCustomDuration}
+          initialHours={Math.floor(customDuration)}
+          initialMinutes={Math.round((customDuration - Math.floor(customDuration)) * 60)}
+        />
       </SafeAreaView>
     </VideoBackground>
   );
