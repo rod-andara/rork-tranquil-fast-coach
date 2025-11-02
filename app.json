@@ -28,7 +28,19 @@
         "NSPhotoLibraryUsageDescription": "We need access to your photo library to let you choose profile pictures.",
         "NSCameraUsageDescription": "We need camera access to let you take profile pictures.",
         "NSHealthShareUsageDescription": "We need access to read your weight from Apple Health to automatically track your progress and provide personalized insights.",
-        "NSHealthUpdateUsageDescription": "We need access to write your weight and fasting data to Apple Health for a complete health picture and seamless integration with your other health apps."
+        "NSHealthUpdateUsageDescription": "We need access to write your weight and fasting data to Apple Health for a complete health picture and seamless integration with your other health apps.",
+        "NSAppTransportSecurity": {
+          "NSExceptionDomains": {
+            "unsplash.com": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSIncludesSubdomains": true
+            },
+            "images.unsplash.com": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSIncludesSubdomains": true
+            }
+          }
+        }
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
