@@ -119,7 +119,7 @@ export default function SettingsScreen() {
 
         {/* Preferences Section */}
         <View className="gap-4">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Preferences</Text>
+          <Text className="text-sm font-medium text-gray-700 dark:text-gray-100">PREFERENCES</Text>
           <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm" testID="preferences-card">
             <SwitchRow
               testID="notifications-row"
@@ -178,7 +178,7 @@ export default function SettingsScreen() {
 
         {/* Help & Support Section */}
         <View className="gap-4">
-          <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">Help & Support</Text>
+          <Text className="text-sm font-medium text-gray-700 dark:text-gray-100">HELP & SUPPORT</Text>
           <View className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm" testID="help-support-card">
             <ListItem
               testID="help-support-row"
