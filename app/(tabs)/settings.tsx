@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
-import { Text, View, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
+import { Text, View, ScrollView, Platform, TouchableOpacity, Alert, Linking, Share } from 'react-native';
 import { Bell, Moon, HelpCircle, Heart, Share2, Clock, LogOut, Scale } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import * as StoreReview from 'expo-store-review';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFastStore } from '@/store/fastStore';
@@ -70,16 +71,73 @@ export default function SettingsScreen() {
     router.push('/onboarding/choose-plan?fromSettings=true');
   }, [router]);
 
-  const handleHelpSupport = useCallback(() => {
-    Alert.alert('Help & Support', 'Contact us at support@fasttrack.com or visit our FAQ section.');
+  const handleHelpSupport = useCallback(async () => {
+    const email = 'support@tranquilfastcoach.com';
+    const subject = 'Help & Support - Tranquil Fast Coach';
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(mailtoUrl);
+      if (canOpen) {
+        await Linking.openURL(mailtoUrl);
+      } else {
+        Alert.alert(
+          'Email Not Available',
+          `Please contact us at ${email}`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error Opening Email',
+        `Please contact us at ${email}`,
+        [{ text: 'OK' }]
+      );
+    }
   }, []);
 
-  const handleRateApp = useCallback(() => {
-    Alert.alert('Rate App', 'Thank you for your support! Please rate us on the App Store.');
+  const handleRateApp = useCallback(async () => {
+    try {
+      const isAvailable = await StoreReview.isAvailableAsync();
+      if (isAvailable) {
+        await StoreReview.requestReview();
+      } else {
+        Alert.alert(
+          'Rate App',
+          'Thank you for your support! Please rate us on the App Store.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error requesting review:', error);
+      Alert.alert(
+        'Rate App',
+        'Thank you for your support! Please rate us on the App Store.',
+        [{ text: 'OK' }]
+      );
+    }
   }, []);
 
-  const handleShare = useCallback(() => {
-    Alert.alert('Share with Friends', 'Share FastTrack with your friends and help them on their wellness journey!');
+  const handleShare = useCallback(async () => {
+    try {
+      const result = await Share.share({
+        message: 'Check out Tranquil Fast Coach! A simple and effective intermittent fasting tracker that helps you achieve your wellness goals. Download it now!',
+        title: 'Tranquil Fast Coach',
+      });
+
+      if (result.action === Share.sharedAction) {
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      Alert.alert(
+        'Share Failed',
+        'Unable to share at this time. Please try again later.',
+        [{ text: 'OK' }]
+      );
+    }
   }, []);
 
   const handleLogOut = useCallback(() => {
