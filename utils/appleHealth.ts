@@ -336,17 +336,26 @@ export const saveWeightToHealth = (
     }
 
     try {
-      // Pass the actual value with the canonical unit constant
-      // Don't pre-convert - let HealthKit handle the value with the correct unit
       const hkUnit = getHKWeightUnit(unit);
 
+      // Convert weight to the correct unit for HealthKit
+      // Units.gram expects grams, Units.pound expects pounds
+      let valueToSave = weight;
+
+      if (unit === 'kg') {
+        // Convert kg to grams (HealthKit uses grams for metric weight)
+        valueToSave = weight * 1000;
+        console.log(`[HealthKit] Converting ${weight} kg to ${valueToSave} grams`);
+      }
+      // For lbs, no conversion needed (Units.pound expects pounds)
+
       const options = {
-        value: weight,
+        value: valueToSave,
         unit: hkUnit,
         date: (date ?? new Date()).toISOString(),
       };
 
-      console.log(`[HealthKit] Saving weight: ${weight} ${unit} (HKUnit: ${hkUnit})`);
+      console.log(`[HealthKit] Saving weight: ${weight} ${unit} → ${valueToSave} (HKUnit: ${hkUnit})`);
 
       if (typeof AppleHealthKit?.saveWeight !== 'function') {
         const errorMsg = 'saveWeight is not available on the native module';

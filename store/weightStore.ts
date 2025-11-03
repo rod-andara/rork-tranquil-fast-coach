@@ -172,21 +172,46 @@ export const useWeightStore = create<WeightState>()(
         if (!state.goal || state.entries.length === 0) return null;
 
         const currentWeight = state.entries[0].weight;
-        const startWeight = state.entries.find((e) => e.date >= state.goal!.startDate)?.weight ||
-          state.entries[state.entries.length - 1].weight;
         const goalWeight = state.goal.targetWeight;
+
+        // Find the weight entry closest to when the goal was set (but not after)
+        // Entries are sorted newest-first, so we need to find the right start weight
+        // Sort entries by date (oldest first) to find correct start weight
+        const sortedEntries = [...state.entries].sort((a, b) => a.date - b.date);
+
+        // Find the first entry at or after the goal start date
+        let startWeight = sortedEntries.find((e) => e.date >= state.goal!.startDate)?.weight;
+
+        // If no entry found at or after goal start, use the most recent entry before goal start
+        if (!startWeight) {
+          const entriesBeforeGoal = sortedEntries.filter((e) => e.date < state.goal!.startDate);
+          startWeight = entriesBeforeGoal.length > 0
+            ? entriesBeforeGoal[entriesBeforeGoal.length - 1].weight
+            : currentWeight;
+        }
+
+        console.log(`[WeightStore] Progress calculation:`, {
+          currentWeight,
+          startWeight,
+          goalWeight,
+          goalStartDate: new Date(state.goal.startDate).toISOString(),
+        });
 
         // Determine if this is a weight loss or weight gain goal
         const isWeightLoss = goalWeight < startWeight;
 
         // If current weight equals start weight, progress is 0%
-        if (currentWeight === startWeight) return 0;
+        if (Math.abs(currentWeight - startWeight) < 0.01) {
+          console.log(`[WeightStore] No progress yet (current === start)`);
+          return 0;
+        }
 
         // Check if goal is achieved
         if (
           (isWeightLoss && currentWeight <= goalWeight) || // Weight loss goal achieved
           (!isWeightLoss && currentWeight >= goalWeight)   // Weight gain goal achieved
         ) {
+          console.log(`[WeightStore] Goal achieved!`);
           return 100;
         }
 
@@ -195,7 +220,8 @@ export const useWeightStore = create<WeightState>()(
           (isWeightLoss && currentWeight > startWeight) || // Weight increased when trying to lose
           (!isWeightLoss && currentWeight < startWeight)   // Weight decreased when trying to gain
         ) {
-          return 0; // No progress if moving in wrong direction
+          console.log(`[WeightStore] Regression detected (moving away from goal)`);
+          return 0;
         }
 
         // Calculate progress based on direction
@@ -204,6 +230,11 @@ export const useWeightStore = create<WeightState>()(
 
         // Progress is how much of the total change has been achieved
         const progress = (currentChange / totalChange) * 100;
+
+        console.log(`[WeightStore] Progress: ${progress.toFixed(1)}%`, {
+          totalChange: totalChange.toFixed(2),
+          currentChange: currentChange.toFixed(2),
+        });
 
         // Clamp between 0 and 100
         return Math.min(100, Math.max(0, progress));

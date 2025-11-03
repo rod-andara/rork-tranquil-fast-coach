@@ -114,6 +114,7 @@ export default function ChoosePlanScreen() {
   const handleSaveCustomDuration = (hours: number, minutes: number) => {
     // Convert hours and minutes to total hours (decimal)
     const totalHours = hours + minutes / 60;
+    console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
     setCustomDuration(totalHours);
     setSelectedPlan('custom');
 

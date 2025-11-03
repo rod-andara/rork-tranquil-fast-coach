@@ -63,12 +63,18 @@ export const useFastStore = create<FastState>((set, get) => ({
     console.log('[FastStore] startFast called with:', planOrDuration);
     const state = get();
     const isPlanString = typeof planOrDuration === 'string';
+
+    if (isPlanString && planOrDuration === 'custom') {
+      console.log('[FastStore] Custom plan detected, customDuration from store:', state.customDuration);
+    }
+
     const plannedDuration = isPlanString
       ? getPlanDuration(planOrDuration, state.customDuration)
       : planOrDuration;
     const planName = isPlanString ? (planOrDuration as string) : state.selectedPlan;
 
     console.log('[FastStore] plannedDuration:', plannedDuration);
+    console.log('[FastStore] plannedDuration in hours:', plannedDuration / (60 * 60 * 1000));
     console.log('[FastStore] planName:', planName);
 
     const newFast: FastSession = {
