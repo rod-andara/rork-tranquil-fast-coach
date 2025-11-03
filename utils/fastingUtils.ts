@@ -55,7 +55,22 @@ export function getFastingMessage(progressPercent: number): string {
   }
 }
 
-export function getPlanDuration(plan: string): number {
+export function getPlanDuration(plan: string, customDurationHours?: number): number {
+  // Handle custom plan
+  if (plan === 'custom') {
+    if (customDurationHours === undefined) {
+      console.warn('[getPlanDuration] Custom plan requires customDurationHours parameter');
+      return 16 * 60 * 60 * 1000; // Default to 16 hours if not provided
+    }
+    return customDurationHours * 60 * 60 * 1000;
+  }
+
+  // Handle predefined plans (e.g., "16:8", "18:6")
   const hours = parseInt(plan.split(':')[0]);
+  if (isNaN(hours)) {
+    console.warn(`[getPlanDuration] Invalid plan format: "${plan}". Defaulting to 16 hours.`);
+    return 16 * 60 * 60 * 1000;
+  }
+
   return hours * 60 * 60 * 1000;
 }

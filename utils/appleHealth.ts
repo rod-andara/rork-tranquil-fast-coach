@@ -54,10 +54,11 @@ const getHKWeightUnit = (unit: 'lbs' | 'kg'): HealthUnit => {
 
     throw error;
   }
-  // Use canonical HKUnit constants from the library (try both casing variations)
+  // Use canonical HKUnit constants from the library
+  // Note: react-native-health uses 'gram' for metric weight (not 'kilogram')
   const hkUnit = unit === 'kg'
-    ? ((Units as any).kilogram ?? (Units as any).Kilogram)
-    : ((Units as any).pound ?? (Units as any).Pound);
+    ? Units.gram  // HealthKit automatically converts grams to kg
+    : Units.pound;
 
   if (!hkUnit) {
     const error = new Error(`[HealthKit] Could not resolve unit constant for "${unit}"`);
@@ -70,14 +71,7 @@ const getHKWeightUnit = (unit: 'lbs' | 'kg'): HealthUnit => {
           platform: Platform.OS,
           requested_unit: unit,
           available_units: Object.keys(Units),
-          kilogram_variations: {
-            kilogram: (Units as any).kilogram,
-            Kilogram: (Units as any).Kilogram,
-          },
-          pound_variations: {
-            pound: (Units as any).pound,
-            Pound: (Units as any).Pound,
-          },
+          resolved_unit: unit === 'kg' ? Units.gram : Units.pound,
           initialized: healthKitInitialized,
         },
       },

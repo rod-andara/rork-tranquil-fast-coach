@@ -63,7 +63,9 @@ export const useFastStore = create<FastState>((set, get) => ({
     console.log('[FastStore] startFast called with:', planOrDuration);
     const state = get();
     const isPlanString = typeof planOrDuration === 'string';
-    const plannedDuration = isPlanString ? getPlanDuration(planOrDuration) : planOrDuration;
+    const plannedDuration = isPlanString
+      ? getPlanDuration(planOrDuration, state.customDuration)
+      : planOrDuration;
     const planName = isPlanString ? (planOrDuration as string) : state.selectedPlan;
 
     console.log('[FastStore] plannedDuration:', plannedDuration);
