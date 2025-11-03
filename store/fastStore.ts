@@ -187,6 +187,23 @@ export const useFastStore = create<FastState>((set, get) => ({
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
         const data = JSON.parse(stored);
+
+        // Migration: Check if custom duration needs to be reset
+        // If user has 'custom' plan selected but customDuration is still default (16),
+        // this indicates they saved a custom duration with the old broken code.
+        // Reset their plan to 16:8 to avoid the timing bug.
+        if (data.selectedPlan === 'custom' && data.customDuration === 16) {
+          console.log('[FastStore] Migration: Detected custom plan with default duration (16h)');
+          console.log('[FastStore] Migration: Resetting to 16:8 plan to fix timing bug');
+          console.log('[FastStore] Migration: User can re-select custom plan with corrected code');
+
+          data.selectedPlan = '16:8';
+          // Keep customDuration at 16 as default for future custom selections
+
+          // Save the migrated data immediately
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
         set({ ...data, hasHydrated: true });
       } else {
         // No stored data - still mark as hydrated

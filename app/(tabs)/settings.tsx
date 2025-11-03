@@ -8,7 +8,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore } from '@/store/weightStore';
 import { useRouter } from 'expo-router';
-import ProfileCard from '@/components/ProfileCard';
 import SwitchRow from '@/components/SwitchRow';
 import UnitSelectorRow from '@/components/UnitSelectorRow';
 import ListItem from '@/components/ListItem';
@@ -17,9 +16,6 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan, customDuration } = useFastStore();
   const { unit, setUnit } = useWeightStore();
-
-  // Use selector pattern for ProfileCard to ensure it updates with dark mode
-  const isDark = useFastStore((state) => state.isDarkMode);
 
   // Format custom duration for display
   const formatCustomDuration = useCallback(() => {
@@ -176,23 +172,32 @@ export default function SettingsScreen() {
         <View className="gap-2" testID="settings-header">
           <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">Settings</Text>
           <Text className="text-base text-neutral-500 dark:text-neutral-400">
-            Manage your account and preferences
+            Manage your preferences
           </Text>
         </View>
 
-        {/* Profile Card */}
-        <ProfileCard
-          testID="profile-card"
-          name="John Doe"
-          email="john.doe@email.com"
-          backgroundColor={isDarkMode ? "#1F2937" : "#FFFFFF"}
-          textColor={isDarkMode ? "#F9FAFB" : "#111827"}
-          subTextColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
-          borderColor={isDarkMode ? "#374151" : "#E5E7EB"}
-          onUpgradePress={() => {
-            router.push('/paywall');
-          }}
-        />
+        {/* Premium Upgrade Card */}
+        <TouchableOpacity
+          className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm flex-row items-center justify-between"
+          onPress={() => router.push('/paywall')}
+          activeOpacity={0.8}
+          testID="upgrade-premium-card"
+        >
+          <View className="flex-row items-center gap-3">
+            <View className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 items-center justify-center">
+              <Heart size={20} color="#7C3AED" fill="#7C3AED" />
+            </View>
+            <View>
+              <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                Upgrade to Premium
+              </Text>
+              <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+                Unlock all features
+              </Text>
+            </View>
+          </View>
+          <Text className="text-2xl text-neutral-400">›</Text>
+        </TouchableOpacity>
 
         {/* Preferences Section */}
         <View className="gap-4">
