@@ -33,7 +33,11 @@ export async function scheduleMilestones(totalSeconds: number, enabled: boolean)
             title: milestone.title,
             body: milestone.body,
           },
-          trigger: { seconds: milestone.seconds, repeats: false } as Notifications.TimeIntervalTriggerInput,
+          trigger: {
+            type: 'timeInterval',
+            seconds: milestone.seconds,
+            repeats: false,
+          } as Notifications.TimeIntervalTriggerInput,
         });
         console.log('[notificationsUtils] scheduled', milestone.title, 'at', milestone.seconds, 'seconds');
       }

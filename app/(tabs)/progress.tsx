@@ -64,7 +64,38 @@ export default function ProgressScreen() {
 
     const dayStreak = currentStreak;
 
-    const weekData = [14, 16, 15, 18, 16, 20, 16];
+    // Calculate actual fasting hours per day for this week
+    const now = new Date();
+    const currentDay = now.getDay();
+    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    const hoursPerDay = [0, 0, 0, 0, 0, 0, 0];
+
+    fastHistory.forEach(fast => {
+      if (!fast.endTime) return;
+
+      const fastStart = new Date(fast.startTime);
+      const fastEnd = new Date(fast.endTime);
+
+      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        const dayStart = new Date(monday);
+        dayStart.setDate(monday.getDate() + dayIndex);
+        const dayEnd = new Date(dayStart);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        if (fastEnd >= dayStart && fastStart <= dayEnd) {
+          const overlapStart = fastStart > dayStart ? fastStart : dayStart;
+          const overlapEnd = fastEnd < dayEnd ? fastEnd : dayEnd;
+          const hoursOverlap = (overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60);
+          hoursPerDay[dayIndex] += hoursOverlap;
+        }
+      }
+    });
+
+    const weekData = hoursPerDay.map(hours => Math.round(hours * 10) / 10);
 
     return {
       totalFasts,

@@ -4,22 +4,154 @@ import AppleHealthKit, {
   HealthUnit,
 } from 'react-native-health';
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
 const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+
+// Track if HealthKit has been successfully initialized
+let healthKitInitialized = false;
+
+type HealthPermission = HealthKitPermissions['permissions']['read'][number];
+
+const resolveWeightPermission = (): HealthPermission => {
+  const fallback = 'Weight' as HealthPermission;
+
+  const permission =
+    (AppleHealthKit?.Constants?.Permissions?.Weight as HealthPermission | undefined) ??
+    (AppleHealthKit?.Constants?.Permissions?.BodyMass as HealthPermission | undefined);
+
+  if (!permission) {
+    console.warn(
+      '[HealthKit] Weight permission constant is unavailable on the native module, falling back to string literal'
+    );
+    return fallback;
+  }
+
+  return permission;
+};
+
+// Get canonical HealthKit unit constant for weight
+const getHKWeightUnit = (unit: 'lbs' | 'kg'): HealthUnit => {
+  const Units = AppleHealthKit?.Constants?.Units;
+  if (!Units) {
+    const error = new Error('[HealthKit] Unit constants not available - HealthKit may not be initialized');
+
+    // Track missing unit constants in Sentry
+    Sentry.captureException(error, {
+      tags: { feature: 'apple_health', operation: 'get_unit_constant' },
+      contexts: {
+        healthkit: {
+          platform: Platform.OS,
+          requested_unit: unit,
+          has_apple_health_kit: typeof AppleHealthKit !== 'undefined',
+          has_constants: typeof AppleHealthKit?.Constants !== 'undefined',
+          has_units: typeof AppleHealthKit?.Constants?.Units !== 'undefined',
+          initialized: healthKitInitialized,
+        },
+      },
+    });
+
+    throw error;
+  }
+  // Use canonical HKUnit constants from the library (try both casing variations)
+  const hkUnit = unit === 'kg'
+    ? ((Units as any).kilogram ?? (Units as any).Kilogram)
+    : ((Units as any).pound ?? (Units as any).Pound);
+
+  if (!hkUnit) {
+    const error = new Error(`[HealthKit] Could not resolve unit constant for "${unit}"`);
+
+    // Track unresolved unit constant in Sentry
+    Sentry.captureException(error, {
+      tags: { feature: 'apple_health', operation: 'resolve_unit_constant' },
+      contexts: {
+        healthkit: {
+          platform: Platform.OS,
+          requested_unit: unit,
+          available_units: Object.keys(Units),
+          kilogram_variations: {
+            kilogram: (Units as any).kilogram,
+            Kilogram: (Units as any).Kilogram,
+          },
+          pound_variations: {
+            pound: (Units as any).pound,
+            Pound: (Units as any).Pound,
+          },
+          initialized: healthKitInitialized,
+        },
+      },
+    });
+
+    throw error;
+  }
+
+  return hkUnit;
+};
+
+const ensureNativeAvailability = async (): Promise<boolean> => {
+  if (typeof AppleHealthKit?.isAvailable !== 'function') {
+    return true;
+  }
+
+  return new Promise((resolve) => {
+    (AppleHealthKit.isAvailable as any)((error: string | null, available: boolean) => {
+      if (error) {
+        console.error('[HealthKit] isAvailable reported an error:', error);
+        // Continue with the init flow so we can still surface the permission prompt.
+        resolve(true);
+        return;
+      }
+
+      if (!available) {
+        console.warn(
+          '[HealthKit] Native module reports HealthKit is not available on device — continuing to request permissions'
+        );
+      }
+
+      resolve(available);
+    });
+  });
+};
 
 const getDefaultStartDate = (): Date => {
   return new Date(Date.now() - TEN_YEARS_IN_MS);
 };
 
-// Check if HealthKit is available (iOS only)
-// This is a simple platform check - actual availability is checked during init
-export const isHealthKitAvailable = (): boolean => {
+// Check if device supports HealthKit (mirrors library's capability check)
+export const isHealthKitSupported = (): boolean => {
   return Platform.OS === 'ios';
 };
 
+// Check if HealthKit is both supported AND initialized (ready to use)
+export const isHealthKitReady = (): boolean => {
+  return isHealthKitSupported() && healthKitInitialized;
+};
+
+// Deprecated: Use isHealthKitReady() instead
+// Kept for backward compatibility
+export const isHealthKitAvailable = (): boolean => {
+  return isHealthKitReady();
+};
+
 // Initialize HealthKit and request permissions
-export const initHealthKit = (): Promise<boolean> => {
+export const initHealthKit = async (): Promise<boolean> => {
+  const { setHealthConnected } = useWeightStore.getState();
+
+  if (Platform.OS !== 'ios') {
+    console.log('[HealthKit] Not available - not on iOS platform');
+    setHealthConnected(false);
+    healthKitInitialized = false;
+    return false;
+  }
+
+  const available = await ensureNativeAvailability();
+  if (!available) {
+    console.warn('[HealthKit] Proceeding with init even though availability check returned false');
+  }
+
+  const weightPermission = resolveWeightPermission();
+
   return new Promise((resolve) => {
     console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
     console.log('[HealthKit] Platform:', Platform.OS);
@@ -27,24 +159,25 @@ export const initHealthKit = (): Promise<boolean> => {
     console.log('[HealthKit] AppleHealthKit.Constants:', typeof AppleHealthKit?.Constants);
     console.log('[HealthKit] AppleHealthKit.initHealthKit:', typeof AppleHealthKit?.initHealthKit);
 
-    if (!isHealthKitAvailable()) {
-      console.log('[HealthKit] Not available - not on iOS platform');
-      resolve(false);
-      return;
-    }
-
     console.log('[HealthKit] Platform check passed, requesting permissions...');
 
     const permissions: HealthKitPermissions = {
       permissions: {
-        read: [AppleHealthKit.Constants.Permissions.Weight],
-        write: [AppleHealthKit.Constants.Permissions.Weight],
+        read: [weightPermission],
+        write: [weightPermission],
       },
     };
 
     console.log('[HealthKit] Permissions object:', JSON.stringify(permissions));
 
-    AppleHealthKit.initHealthKit(permissions, (error: string) => {
+    if (typeof AppleHealthKit?.initHealthKit !== 'function') {
+      console.error('[HealthKit] initHealthKit is not a function on the native module');
+      setHealthConnected(false);
+      resolve(false);
+      return;
+    }
+
+    (AppleHealthKit.initHealthKit as any)(permissions, (error: string | null, result?: boolean) => {
       console.log('[HealthKit] initHealthKit callback fired');
       console.log('[HealthKit] error:', error);
       console.log('[HealthKit] error type:', typeof error);
@@ -52,11 +185,53 @@ export const initHealthKit = (): Promise<boolean> => {
       if (error) {
         console.error('[HealthKit] Cannot grant permissions:', error);
         console.error('[HealthKit] Full error details:', JSON.stringify(error));
+
+        // Track HealthKit initialization error in Sentry
+        Sentry.captureException(new Error(`HealthKit init failed: ${error}`), {
+          tags: { feature: 'apple_health', operation: 'init' },
+          contexts: {
+            healthkit: {
+              platform: Platform.OS,
+              error_type: typeof error,
+              permissions: JSON.stringify(permissions),
+              module_type: typeof AppleHealthKit,
+              has_constants: typeof AppleHealthKit?.Constants,
+              has_init_method: typeof AppleHealthKit?.initHealthKit,
+            },
+          },
+        });
+
+        setHealthConnected(false);
+        healthKitInitialized = false;
+        resolve(false);
+        return;
+      }
+
+      if (result === false) {
+        console.error('[HealthKit] initHealthKit returned a false result');
+
+        // Track HealthKit initialization failure in Sentry
+        Sentry.captureMessage('HealthKit init returned false', {
+          level: 'error',
+          tags: { feature: 'apple_health', operation: 'init' },
+          contexts: {
+            healthkit: {
+              platform: Platform.OS,
+              result: false,
+              permissions: JSON.stringify(permissions),
+            },
+          },
+        });
+
+        setHealthConnected(false);
+        healthKitInitialized = false;
         resolve(false);
         return;
       }
 
       console.log('[HealthKit] Successfully initialized and permissions granted');
+      setHealthConnected(true);
+      healthKitInitialized = true;  // ✅ Critical: mark as initialized
       resolve(true);
     });
   });
@@ -83,8 +258,8 @@ export const getWeightFromHealth = (
   limit?: number
 ): Promise<WeightEntry[]> => {
   return new Promise((resolve, reject) => {
-    if (!isHealthKitAvailable()) {
-      reject(new Error('HealthKit is not available'));
+    if (!isHealthKitReady()) {
+      reject(new Error('HealthKit is not ready. Ensure it is initialized first.'));
       return;
     }
 
@@ -97,6 +272,11 @@ export const getWeightFromHealth = (
     };
 
     console.log('[HealthKit] Getting weight samples with options:', options);
+
+    if (typeof AppleHealthKit?.getWeightSamples !== 'function') {
+      reject(new Error('getWeightSamples is not available on the native module'));
+      return;
+    }
 
     AppleHealthKit.getWeightSamples(
       options,
@@ -146,28 +326,88 @@ export const saveWeightToHealth = (
   date?: Date
 ): Promise<boolean> => {
   return new Promise((resolve, reject) => {
-    if (!isHealthKitAvailable()) {
-      reject(new Error('HealthKit is not available'));
+    // Check if HealthKit is initialized first
+    if (!healthKitInitialized) {
+      const errorMsg = 'HealthKit is not initialized. Call initHealthKit() first.';
+      console.error(`[HealthKit] ${errorMsg}`);
+      reject(new Error(errorMsg));
       return;
     }
 
-    // Convert to pounds (Apple Health's preferred unit)
-    const weightInLbs = unit === 'kg' ? convertWeight(weight, 'kg', 'lbs') : weight;
+    if (Platform.OS !== 'ios') {
+      const errorMsg = 'HealthKit is only available on iOS';
+      console.error(`[HealthKit] ${errorMsg}`);
+      reject(new Error(errorMsg));
+      return;
+    }
 
-    const options = {
-      value: weightInLbs,
-      date: date ? date.toISOString() : new Date().toISOString(),
-    };
+    try {
+      // Pass the actual value with the canonical unit constant
+      // Don't pre-convert - let HealthKit handle the value with the correct unit
+      const hkUnit = getHKWeightUnit(unit);
 
-    AppleHealthKit.saveWeight(options, (err: string, result: HealthValue) => {
-      if (err) {
-        console.error('[ERROR] Failed to save weight to Health:', err);
-        reject(err);
+      const options = {
+        value: weight,
+        unit: hkUnit,
+        date: (date ?? new Date()).toISOString(),
+      };
+
+      console.log(`[HealthKit] Saving weight: ${weight} ${unit} (HKUnit: ${hkUnit})`);
+
+      if (typeof AppleHealthKit?.saveWeight !== 'function') {
+        const errorMsg = 'saveWeight is not available on the native module';
+        console.error(`[HealthKit] ${errorMsg}`);
+        reject(new Error(errorMsg));
         return;
       }
-      console.log('[HealthKit] Successfully saved weight to Health');
-      resolve(Boolean(result));
-    });
+
+      AppleHealthKit.saveWeight(options, (err: string | null, result: HealthValue) => {
+        if (err) {
+          console.error('[HealthKit] Error saving weight:', err);
+
+          // Track HealthKit save error in Sentry with full context
+          Sentry.captureException(new Error(`HealthKit saveWeight failed: ${err}`), {
+            tags: { feature: 'apple_health', operation: 'save_weight' },
+            contexts: {
+              healthkit: {
+                platform: Platform.OS,
+                weight: weight,
+                unit: unit,
+                hk_unit: hkUnit,
+                date: (date ?? new Date()).toISOString(),
+                initialized: healthKitInitialized,
+                error_type: typeof err,
+                error_message: String(err),
+                options: JSON.stringify(options),
+              },
+            },
+          });
+
+          reject(new Error(String(err)));
+          return;
+        }
+        console.log('[HealthKit] Successfully saved weight to Health');
+        resolve(Boolean(result));
+      });
+    } catch (error) {
+      console.error('[HealthKit] Exception in saveWeightToHealth:', error);
+
+      // Track caught exceptions in Sentry
+      Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+        tags: { feature: 'apple_health', operation: 'save_weight_exception' },
+        contexts: {
+          healthkit: {
+            platform: Platform.OS,
+            weight: weight,
+            unit: unit,
+            initialized: healthKitInitialized,
+            error_message: error instanceof Error ? error.message : String(error),
+          },
+        },
+      });
+
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
   });
 };
 
@@ -178,8 +418,8 @@ export const syncWeightData = async (
   let imported = 0;
   let exported = 0;
 
-  if (!isHealthKitAvailable()) {
-    throw new Error('HealthKit is not available on this device');
+  if (!isHealthKitReady()) {
+    throw new Error('HealthKit is not ready. Ensure it is initialized first.');
   }
 
   try {

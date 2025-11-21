@@ -13,7 +13,7 @@ import {
 import { X, Save, Scale } from 'lucide-react-native';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
-import { saveWeightToHealth, isHealthKitAvailable } from '@/utils/appleHealth';
+import { saveWeightToHealth, isHealthKitReady } from '@/utils/appleHealth';
 
 interface WeightEntryModalProps {
   visible: boolean;
@@ -50,9 +50,11 @@ export default function WeightEntryModal({
   }, [editEntry, visible, isHealthConnected]);
 
   const handleSave = async () => {
-    // Validate weight
-    const weightNum = parseFloat(weight);
-    if (isNaN(weightNum) || weightNum <= 0) {
+    // Validate weight - normalize comma to dot for locales that use comma as decimal separator
+    const normalizedWeight = (weight ?? '').replace(',', '.').trim();
+    const weightNum = parseFloat(normalizedWeight);
+
+    if (!Number.isFinite(weightNum) || weightNum <= 0) {
       setError('Please enter a valid weight');
       return;
     }
@@ -65,7 +67,7 @@ export default function WeightEntryModal({
         // Update existing entry
         updateEntry(editEntry.id, {
           weight: weightNum,
-          note: note.trim() || undefined,
+          note: (note ?? '').trim() || undefined,
         });
       } else {
         // Add new entry
@@ -73,27 +75,32 @@ export default function WeightEntryModal({
           weight: weightNum,
           date: Date.now(),
           unit: unit,
-          note: note.trim() || undefined,
+          note: (note ?? '').trim() || undefined,
           source: 'manual',
         });
 
-        // Sync to Apple Health if enabled
-        if (syncToHealth && isHealthKitAvailable()) {
+        // Wait for Apple Health sync to complete (only if ready and enabled)
+        const canSync = syncToHealth && isHealthKitReady();
+        if (canSync) {
           try {
             await saveWeightToHealth(weightNum, unit);
+            console.log('[SUCCESS] Weight saved to Apple Health');
           } catch (healthError) {
-            console.error('[ERROR] Failed to sync to Health:', healthError);
-            // Don't fail the save if Health sync fails
+            console.warn('[WARN] Health sync failed:', healthError instanceof Error ? healthError.message : String(healthError));
+            // Continue - don't block on Health sync failure
           }
+        } else if (syncToHealth && !isHealthKitReady()) {
+          console.warn('[WARN] Health sync requested but HealthKit is not ready - saving locally only');
         }
       }
 
-      // Close modal and reset form
+      // ✅ CORRECT: Set isSaving to false BEFORE closing modal
+      // This ensures all state updates complete while component is still mounted
+      setIsSaving(false);
       onClose();
     } catch (err) {
       console.error('[ERROR] Failed to save weight:', err);
       setError('Failed to save weight. Please try again.');
-    } finally {
       setIsSaving(false);
     }
   };
@@ -228,7 +235,7 @@ export default function WeightEntryModal({
               </View>
 
               {/* Sync to Apple Health Toggle */}
-              {!editEntry && isHealthConnected && isHealthKitAvailable() && (
+              {!editEntry && isHealthConnected && isHealthKitReady() && (
                 <TouchableOpacity
                   onPress={() => setSyncToHealth(!syncToHealth)}
                   className={`flex-row items-center justify-between p-4 rounded-xl mb-6 ${
