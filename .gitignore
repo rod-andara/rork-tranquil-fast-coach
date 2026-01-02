@@ -35,3 +35,17 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 .vercel
+node_modules/ 
+.expo/ 
+.expo-shared/ 
+*.log 
+dist/ 
+npm-debug.* 
+*.jks 
+*.p8 
+*.p12 
+*.key 
+*.mobileprovision 
+ios/Pods/ 
+.DS_Store 
+test-export-*/ 
