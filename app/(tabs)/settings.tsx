@@ -14,7 +14,7 @@ import ListItem from '@/components/ListItem';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan, customDuration } = useFastStore();
+  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan, customDuration, isPremium } = useFastStore();
   const { unit, setUnit } = useWeightStore();
 
   // Format custom duration for display
@@ -176,28 +176,52 @@ export default function SettingsScreen() {
           </Text>
         </View>
 
-        {/* Premium Upgrade Card */}
-        <TouchableOpacity
-          className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm flex-row items-center justify-between"
-          onPress={() => router.push('/paywall')}
-          activeOpacity={0.8}
-          testID="upgrade-premium-card"
-        >
-          <View className="flex-row items-center gap-3">
-            <View className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 items-center justify-center">
-              <Heart size={20} color="#7C3AED" fill="#7C3AED" />
+        {/* Premium Card - Show different UI based on premium status */}
+        {isPremium ? (
+          <LinearGradient
+            colors={['#7C3AED', '#5B21B6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="p-4 rounded-lg shadow-lg flex-row items-center justify-between"
+            testID="premium-active-card"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center">
+                <Heart size={20} color="#FFFFFF" fill="#FFFFFF" />
+              </View>
+              <View>
+                <Text className="text-lg font-semibold text-white">
+                  Premium Active
+                </Text>
+                <Text className="text-sm text-white/80">
+                  You're all set! ✨
+                </Text>
+              </View>
             </View>
-            <View>
-              <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
-                Upgrade to Premium
-              </Text>
-              <Text className="text-sm text-neutral-500 dark:text-neutral-400">
-                Unlock all features
-              </Text>
+          </LinearGradient>
+        ) : (
+          <TouchableOpacity
+            className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm flex-row items-center justify-between"
+            onPress={() => router.push('/paywall')}
+            activeOpacity={0.8}
+            testID="upgrade-premium-card"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 items-center justify-center">
+                <Heart size={20} color="#7C3AED" fill="#7C3AED" />
+              </View>
+              <View>
+                <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                  Upgrade to Premium
+                </Text>
+                <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Unlock all features
+                </Text>
+              </View>
             </View>
-          </View>
-          <Text className="text-2xl text-neutral-400">›</Text>
-        </TouchableOpacity>
+            <Text className="text-2xl text-neutral-400">›</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Preferences Section */}
         <View className="gap-4">

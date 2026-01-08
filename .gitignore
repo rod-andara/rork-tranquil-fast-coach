@@ -49,3 +49,4 @@ npm-debug.*
 ios/Pods/ 
 .DS_Store 
 test-export-*/ 
+.env

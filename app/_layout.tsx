@@ -15,15 +15,17 @@ import * as Sentry from "@sentry/react-native";
 import { useFastStore } from "@/store/fastStore";
 import { useWeightStore } from "@/store/weightStore";
 import { initHealthKit } from "@/utils/appleHealth";
+import { initializeRevenueCat, checkSubscriptionStatus } from "@/services/revenuecat";
 import AppSetup from "@/App";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Initialize Sentry for error tracking
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://YOUR_DSN_HERE@o4508556583305216.ingest.us.sentry.io/4508556585926656",
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
+  // Adjust trace sample rate based on environment
+  // Production: 0.1 (10%) to reduce bandwidth and costs
+  // Development: 1.0 (100%) for full debugging
+  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
   // Set to true to enable debug mode (only in development)
   debug: __DEV__,
   environment: __DEV__ ? "development" : "production",
@@ -48,6 +50,19 @@ function RootLayoutNav() {
     const loadData = async () => {
       // Load store data from storage
       await useFastStore.getState().loadFromStorage();
+
+      // Initialize RevenueCat for subscription management
+      console.log('[App] Initializing RevenueCat...');
+      const revenueCatInitialized = await initializeRevenueCat();
+
+      if (revenueCatInitialized) {
+        // Check subscription status and update store
+        const isPremium = await checkSubscriptionStatus();
+        useFastStore.getState().setPremium(isPremium);
+        console.log('[App] Subscription status:', isPremium ? 'Premium' : 'Free');
+      } else {
+        console.warn('[App] RevenueCat initialization failed');
+      }
 
       // If user has previously connected to Apple Health, reinitialize on app startup
       const isHealthConnected = useWeightStore.getState().isHealthConnected;

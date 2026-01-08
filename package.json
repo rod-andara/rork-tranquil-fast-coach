@@ -6,7 +6,9 @@
     "start": "bunx rork start -p o4f5hp7qi19xyblyof8vw --tunnel",
     "start-web": "bunx rork start -p o4f5hp7qi19xyblyof8vw --web --tunnel",
     "start-web-dev": "DEBUG=expo* bunx rork start -p o4f5hp7qi19xyblyof8vw --web --tunnel",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",
@@ -52,6 +54,7 @@
     "react-native-chart-kit": "^6.12.0",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-health": "^1.19.0",
+    "react-native-purchases": "^9.6.13",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
