@@ -71,34 +71,51 @@ export default function WeightChart() {
 
   // Format dates for X-axis labels based on time range
   const formatLabel = (date: Date, index: number, total: number): string => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
     switch (selectedRange) {
       case '7d':
-        // Show day names (Mon, Tue, Wed)
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        // Show all day names for 7-day view
         return days[date.getDay()];
 
       case '30d':
-        // Show dates, but only every ~5th point to avoid crowding
-        if (total <= 6 || index % Math.ceil(total / 6) === 0) {
+        // Show dates at intervals, use space for hidden labels
+        if (total <= 7) {
+          // Show all if 7 or fewer points
           return `${date.getDate()}`;
+        } else {
+          // Show every nth label to avoid crowding
+          const interval = Math.ceil(total / 6);
+          if (index % interval === 0 || index === total - 1) {
+            return `${date.getDate()}`;
+          }
+          return ' '; // Space instead of empty string
         }
-        return '';
 
       case '90d':
-        // Show dates with month (Jan 15, Feb 1)
-        if (total <= 6 || index % Math.ceil(total / 6) === 0) {
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Show dates with month at intervals
+        if (total <= 7) {
           return `${months[date.getMonth()]} ${date.getDate()}`;
+        } else {
+          const interval = Math.ceil(total / 5);
+          if (index % interval === 0 || index === total - 1) {
+            return `${months[date.getMonth()]} ${date.getDate()}`;
+          }
+          return ' '; // Space instead of empty string
         }
-        return '';
 
       case 'all':
-        // Show "MMM YY" format (Jan 24)
-        if (total <= 6 || index % Math.ceil(total / 6) === 0) {
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Show "MMM YY" format at intervals
+        if (total <= 7) {
           return `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`;
+        } else {
+          const interval = Math.ceil(total / 5);
+          if (index % interval === 0 || index === total - 1) {
+            return `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`;
+          }
+          return ' '; // Space instead of empty string
         }
-        return '';
 
       default:
         return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -138,7 +155,7 @@ export default function WeightChart() {
           ? [
               {
                 data: goalLine,
-                color: (opacity = 1) => `rgba(16, 185, 129, ${opacity * 0.6})`,
+                color: (opacity = 1) => (isDarkMode ? `rgba(16, 185, 129, ${opacity})` : `rgba(5, 150, 105, ${opacity})`),
                 strokeWidth: 2,
                 withDots: false,
               },
@@ -426,7 +443,7 @@ export default function WeightChart() {
       <LineChart
         data={chartData}
         width={screenWidth - 32} // Container padding
-        height={220}
+        height={260} // Increased height for better label visibility
         chartConfig={{
           backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
           backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
@@ -448,6 +465,10 @@ export default function WeightChart() {
             stroke: isDarkMode ? '#374151' : '#E5E7EB',
             strokeWidth: 1,
           },
+          propsForLabels: {
+            fontSize: 11,
+            fontWeight: '400',
+          },
         }}
         bezier // Smooth curve interpolation
         style={{
@@ -463,6 +484,8 @@ export default function WeightChart() {
         withHorizontalLines={true}
         fromZero={false}
         segments={4}
+        yAxisSuffix=""
+        yAxisInterval={1}
       />
 
       {/* Chart Footer */}
