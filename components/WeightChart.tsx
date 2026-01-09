@@ -38,6 +38,38 @@ export default function WeightChart() {
     }
   }, [entries, selectedRange]);
 
+  // Sample data for display to prevent label crowding
+  // Statistics use full dataset, but chart displays sampled data for readability
+  const displayData = useMemo(() => {
+    if (filteredEntries.length === 0) return [];
+
+    // If 7 or fewer points, show all
+    if (filteredEntries.length <= 7) {
+      return filteredEntries;
+    }
+
+    // For more than 7 points, sample to show ~6 evenly spaced points
+    const targetPoints = 6;
+    const interval = Math.floor(filteredEntries.length / (targetPoints - 1));
+
+    const sampled: typeof filteredEntries = [];
+
+    // Always include first point
+    sampled.push(filteredEntries[0]);
+
+    // Add evenly spaced middle points
+    for (let i = interval; i < filteredEntries.length - 1; i += interval) {
+      sampled.push(filteredEntries[i]);
+    }
+
+    // Always include last point
+    if (filteredEntries.length > 1) {
+      sampled.push(filteredEntries[filteredEntries.length - 1]);
+    }
+
+    return sampled;
+  }, [filteredEntries]);
+
   // Calculate summary statistics
   const statistics = useMemo(() => {
     if (filteredEntries.length === 0) {
@@ -70,72 +102,47 @@ export default function WeightChart() {
   }, [filteredEntries]);
 
   // Format dates for X-axis labels based on time range
-  const formatLabel = (date: Date, index: number, total: number): string => {
+  // Data is already sampled, so we format every label
+  const formatLabel = (date: Date): string => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     switch (selectedRange) {
       case '7d':
-        // Show all day names for 7-day view
+        // Show day names (Mon, Tue, Wed)
         return days[date.getDay()];
 
       case '30d':
-        // Show dates at intervals, use space for hidden labels
-        if (total <= 7) {
-          // Show all if 7 or fewer points
-          return `${date.getDate()}`;
-        } else {
-          // Show every nth label to avoid crowding
-          const interval = Math.ceil(total / 6);
-          if (index % interval === 0 || index === total - 1) {
-            return `${date.getDate()}`;
-          }
-          return ' '; // Space instead of empty string
-        }
+        // Show date numbers (3, 9, 15, 21, 27, 30)
+        return `${date.getDate()}`;
 
       case '90d':
-        // Show dates with month at intervals
-        if (total <= 7) {
-          return `${months[date.getMonth()]} ${date.getDate()}`;
-        } else {
-          const interval = Math.ceil(total / 5);
-          if (index % interval === 0 || index === total - 1) {
-            return `${months[date.getMonth()]} ${date.getDate()}`;
-          }
-          return ' '; // Space instead of empty string
-        }
+        // Show month + date (Jan 5, Jan 20, Feb 5)
+        return `${months[date.getMonth()]} ${date.getDate()}`;
 
       case 'all':
-        // Show "MMM YY" format at intervals
-        if (total <= 7) {
-          return `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`;
-        } else {
-          const interval = Math.ceil(total / 5);
-          if (index % interval === 0 || index === total - 1) {
-            return `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`;
-          }
-          return ' '; // Space instead of empty string
-        }
+        // Show month + year (Jan 26, Feb 26)
+        return `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`;
 
       default:
         return `${date.getMonth() + 1}/${date.getDate()}`;
     }
   };
 
-  // Prepare chart data
+  // Prepare chart data using sampled displayData
   const chartData = useMemo(() => {
-    if (filteredEntries.length === 0) {
+    if (displayData.length === 0) {
       return null;
     }
 
-    // Create labels with smart formatting
-    const labels = filteredEntries.map((entry, index) => {
+    // Create labels from sampled data
+    const labels = displayData.map((entry) => {
       const date = new Date(entry.date);
-      return formatLabel(date, index, filteredEntries.length);
+      return formatLabel(date);
     });
 
-    // Create data points
-    const data = filteredEntries.map((entry) => entry.weight);
+    // Create data points from sampled data
+    const data = displayData.map((entry) => entry.weight);
 
     // Calculate goal line if exists
     let goalLine: number[] | undefined;
@@ -164,7 +171,7 @@ export default function WeightChart() {
       ],
       legend: goal ? ['Weight', 'Goal'] : ['Weight'],
     };
-  }, [filteredEntries, goal, isDarkMode, selectedRange]);
+  }, [displayData, goal, isDarkMode, selectedRange]);
 
   // Empty state
   if (entries.length === 0) {
@@ -200,7 +207,7 @@ export default function WeightChart() {
   }
 
   // No data in selected range
-  if (!chartData || filteredEntries.length === 0) {
+  if (!chartData || displayData.length === 0) {
     return (
       <View
         className={`rounded-2xl ${
