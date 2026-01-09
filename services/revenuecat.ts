@@ -28,8 +28,9 @@ export const initializeRevenueCat = async (): Promise<boolean> => {
   try {
     console.log('[RevenueCat] Initializing...');
 
-    // Set log level (verbose in dev, warn in production)
-    Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.VERBOSE : LOG_LEVEL.WARN);
+    // Set log level (warn in both dev and production to prevent memory issues)
+    // Verbose logging can cause memory accumulation in long sessions
+    Purchases.setLogLevel(LOG_LEVEL.WARN);
 
     // Configure RevenueCat
     if (Platform.OS === 'ios') {

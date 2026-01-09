@@ -35,6 +35,10 @@ Sentry.init({
   enableAutoSessionTracking: true,
   // Session timeout (30 seconds)
   sessionTrackingIntervalMillis: 30000,
+  // Limit breadcrumbs to prevent memory accumulation
+  maxBreadcrumbs: 50,
+  // Attach stack trace to breadcrumbs (false saves memory)
+  attachStacktrace: false,
 });
 
 SplashScreen.preventAutoHideAsync();
@@ -48,20 +52,24 @@ function RootLayoutNav() {
 
   useEffect(() => {
     const loadData = async () => {
-      // Load store data from storage
-      await useFastStore.getState().loadFromStorage();
+      try {
+        // Load store data from storage
+        await useFastStore.getState().loadFromStorage();
 
-      // Initialize RevenueCat for subscription management
-      console.log('[App] Initializing RevenueCat...');
-      const revenueCatInitialized = await initializeRevenueCat();
+        // Initialize RevenueCat for subscription management
+        console.log('[App] Initializing RevenueCat...');
+        const revenueCatInitialized = await initializeRevenueCat();
 
-      if (revenueCatInitialized) {
-        // Check subscription status and update store
-        const isPremium = await checkSubscriptionStatus();
-        useFastStore.getState().setPremium(isPremium);
-        console.log('[App] Subscription status:', isPremium ? 'Premium' : 'Free');
-      } else {
-        console.warn('[App] RevenueCat initialization failed');
+        if (revenueCatInitialized) {
+          // Check subscription status and update store
+          const isPremium = await checkSubscriptionStatus();
+          useFastStore.getState().setPremium(isPremium);
+          console.log('[App] Subscription status:', isPremium ? 'Premium' : 'Free');
+        } else {
+          console.warn('[App] RevenueCat initialization failed');
+        }
+      } catch (error) {
+        console.error('[App] Error during RevenueCat initialization:', error);
       }
 
       // If user has previously connected to Apple Health, reinitialize on app startup
