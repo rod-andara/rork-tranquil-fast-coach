@@ -1,10 +1,14 @@
 import { Tabs } from "expo-router";
+import { useColorScheme } from "react-native";
 import { Home, Clock, TrendingUp, BookOpen, Settings } from "lucide-react-native";
 import React from "react";
 
 import { colors } from "@/constants/theme";
 
 export default function TabLayout() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <Tabs
       screenOptions={{
@@ -12,8 +16,9 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.inactive,
         headerShown: true,
         tabBarStyle: {
+          backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
           borderTopWidth: 1,
-          borderTopColor: colors.border,
+          borderTopColor: isDark ? '#38383A' : colors.border,
         },
       }}
     >

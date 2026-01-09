@@ -19,6 +19,23 @@ export const colors = {
   inactive: '#6B7280',
   white: '#FFFFFF',
   black: '#000000',
+
+  // iOS Dark Mode System Colors
+  iosBackgroundDark: '#000000',           // Pure black (optional, for OLED)
+  iosSystemBackgroundDark: '#1C1C1E',     // Standard iOS dark background
+  iosElevatedBackgroundDark: '#2C2C2E',   // Elevated surfaces (cards, modals)
+  iosTertiaryBackgroundDark: '#3A3A3C',   // Tertiary surfaces (grouped backgrounds)
+  iosSeparatorDark: '#38383A',            // Borders and separators
+  iosLabelPrimaryDark: '#FFFFFF',         // Primary text
+  iosLabelSecondaryDark: '#EBEBF5',       // Secondary text (use with 60% opacity)
+
+  // iOS Light Mode System Colors
+  iosSystemBackgroundLight: '#FFFFFF',
+  iosElevatedBackgroundLight: '#F2F2F7',
+  iosTertiaryBackgroundLight: '#FFFFFF',
+  iosSeparatorLight: '#C6C6C8',
+  iosLabelPrimaryLight: '#000000',
+  iosLabelSecondaryLight: '#3C3C43',
 } as const;
 
 export const spacing = {
@@ -99,3 +116,20 @@ export const shadows = {
     elevation: 8,
   },
 } as const;
+
+// Hook for adaptive colors based on color scheme
+import { useColorScheme } from 'react-native';
+
+export const useAdaptiveColors = () => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
+  return {
+    systemBackground: isDark ? colors.iosSystemBackgroundDark : colors.iosSystemBackgroundLight,
+    elevatedBackground: isDark ? colors.iosElevatedBackgroundDark : colors.iosElevatedBackgroundLight,
+    tertiaryBackground: isDark ? colors.iosTertiaryBackgroundDark : colors.iosTertiaryBackgroundLight,
+    separator: isDark ? colors.iosSeparatorDark : colors.iosSeparatorLight,
+    labelPrimary: isDark ? colors.iosLabelPrimaryDark : colors.iosLabelPrimaryLight,
+    labelSecondary: isDark ? colors.iosLabelSecondaryDark : colors.iosLabelSecondaryLight,
+  };
+};

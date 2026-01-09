@@ -179,24 +179,72 @@ export default function SettingsScreen() {
         {/* Premium Card - Show different UI based on premium status */}
         {isPremium ? (
           <LinearGradient
-            colors={['#7C3AED', '#5B21B6']}
+            colors={['#8B5CF6', '#A855F7', '#EC4899']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            className="p-4 rounded-lg shadow-lg flex-row items-center justify-between"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingVertical: 18,
+              paddingHorizontal: 20,
+              borderRadius: 28,
+              marginHorizontal: 16,
+              marginBottom: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
             testID="premium-active-card"
           >
-            <View className="flex-row items-center gap-3">
-              <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center">
-                <Heart size={20} color="#FFFFFF" fill="#FFFFFF" />
-              </View>
-              <View>
-                <Text className="text-lg font-semibold text-white">
+            <View style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+            }}>
+              <Heart size={28} color="#FFFFFF" fill="#FFFFFF" strokeWidth={2.5} />
+            </View>
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontSize: 19,
+                  fontWeight: '700',
+                  letterSpacing: 0.5,
+                }}>
                   Premium Active
                 </Text>
-                <Text className="text-sm text-white/80">
-                  You're all set! ✨
-                </Text>
+                <View style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: '#10B981',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginLeft: 8,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 2,
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 'bold' }}>✓</Text>
+                </View>
               </View>
+              <Text style={{
+                color: '#FFFFFF',
+                fontSize: 14,
+                opacity: 0.95,
+                marginTop: 3,
+                fontWeight: '500',
+              }}>
+                Enjoying all premium features
+              </Text>
             </View>
           </LinearGradient>
         ) : (
