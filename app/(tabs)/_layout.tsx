@@ -15,6 +15,17 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.inactive,
         headerShown: true,
+        // Navigation bar dark mode support
+        headerStyle: {
+          backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+        },
+        headerTintColor: isDark ? '#FFFFFF' : '#000000',
+        headerShadowVisible: true,
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 17,
+        },
+        // Tab bar dark mode support
         tabBarStyle: {
           backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
           borderTopWidth: 1,
