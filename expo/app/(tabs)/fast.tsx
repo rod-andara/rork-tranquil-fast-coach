@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
-import { formatTime, formatDate, getFastingMessage, getPlanDuration } from '@/utils';
+import { formatTime, formatDate, getFastingMessage } from '@/utils';
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function FastScreen() {
@@ -16,8 +16,8 @@ export default function FastScreen() {
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
-  const progress = currentFast ? calc(elapsedMs, getPlanDuration(selectedPlan)) : 0;
-  const targetEndTime = currentFast ? currentFast.startTime + getPlanDuration(selectedPlan) : 0;
+  const progress = currentFast ? calc(elapsedMs, currentFast.plannedDuration) : 0;
+  const targetEndTime = currentFast ? currentFast.startTime + currentFast.plannedDuration : 0;
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

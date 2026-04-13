@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFastStore } from '@/store/fastStore';
 import CircularProgress from '@/components/CircularProgress';
 import StatCard from '@/components/StatCard';
-import { formatTime, getPlanDuration } from '@/utils/fastingUtils';
+import { formatTime } from '@/utils/fastingUtils';
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function HomeScreen() {
@@ -16,7 +16,7 @@ export default function HomeScreen() {
   const { currentFast, selectedPlan, startFast, endFast, fastHistory, isDarkMode } = useFastStore();
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
 
-  const progress = currentFast ? calc(elapsedMs, getPlanDuration(selectedPlan)) : 0;
+  const progress = currentFast ? calc(elapsedMs, currentFast.plannedDuration) : 0;
 
   const totalFasts = fastHistory.length;
   const dayStreak = calculateDayStreak();
