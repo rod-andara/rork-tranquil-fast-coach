@@ -13,7 +13,7 @@ import useFastTimer from '@/hooks/useFastTimer';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { currentFast, selectedPlan, startFast, endFast, fastHistory, isDarkMode } = useFastStore();
+  const { currentFast, selectedPlan, startFast, endFast, fastHistory, isDarkMode, userName } = useFastStore();
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
 
   const progress = currentFast ? calc(elapsedMs, currentFast.plannedDuration) : 0;
@@ -80,7 +80,7 @@ export default function HomeScreen() {
         {/* Header Section - 24pt bottom margin */}
         <View className="mb-6">
           <Text className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-2">
-            Welcome Back!
+            {userName ? `Welcome, ${userName}!` : 'Welcome Back!'}
           </Text>
           <Text className="text-base text-neutral-600 dark:text-neutral-400">
             Current Plan: {selectedPlan} Intermittent Fasting

@@ -1,6 +1,6 @@
 # SPEC-04: Add User Name to Greeting
 
-**Status:** pending
+**Status:** complete
 **Priority:** P1 (should fix)
 **Estimated Effort:** medium (30-90 min)
 

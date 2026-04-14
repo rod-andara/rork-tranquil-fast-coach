@@ -30,6 +30,7 @@ export interface FastState {
   isDarkMode: boolean;
   onboardingComplete: boolean;
   isPremium: boolean;
+  userName: string;
   hasHydrated: boolean;
 
   startFast: (planOrDuration: number | string) => void;
@@ -42,6 +43,7 @@ export interface FastState {
   setDarkMode: (enabled: boolean) => void;
   completeOnboarding: () => void;
   setPremium: (value: boolean) => void;
+  setUserName: (name: string) => void;
   loadFromStorage: () => Promise<void>;
   saveToStorage: () => Promise<void>;
 }
@@ -57,6 +59,7 @@ export const useFastStore = create<FastState>((set, get) => ({
   isDarkMode: false,
   onboardingComplete: false,
   isPremium: false,
+  userName: '',
   hasHydrated: false,
 
   startFast: (planOrDuration: number | string) => {
@@ -182,6 +185,11 @@ export const useFastStore = create<FastState>((set, get) => ({
     get().saveToStorage();
   },
 
+  setUserName: (name: string) => {
+    set({ userName: name });
+    get().saveToStorage();
+  },
+
   loadFromStorage: async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
@@ -228,6 +236,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         isDarkMode: state.isDarkMode,
         onboardingComplete: state.onboardingComplete,
         isPremium: state.isPremium,
+        userName: state.userName,
       };
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch (error) {

@@ -141,8 +141,8 @@ All icons use `lucide-react-native`, NOT `@expo/vector-icons`.
 See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
 
-**SPEC-01 is COMPLETED** (custom fast duration fix, commit 305aa05).
-**Next: SPEC-00** (fix baseline tsc errors + Expo Go RevenueCat red screen).
+**Completed:** SPEC-00, SPEC-01, SPEC-02, SPEC-03, SPEC-04.
+**Next: SPEC-05**.
 
 ## Build Commands
 ```bash

@@ -1,15 +1,18 @@
 import { router } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import VideoBackground from '@/components/VideoBackground';
 import { spacing, borderRadius } from '@/constants/theme';
+import { useFastStore } from '@/store/fastStore';
 
 export default function WelcomeScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
+  const [name, setName] = React.useState('');
+  const { setUserName } = useFastStore();
 
   useEffect(() => {
     Animated.parallel([
@@ -46,6 +49,16 @@ export default function WelcomeScreen() {
             <Text style={styles.subtitle}>
               Your personal fasting coach to help you reach your wellness goals with ease
             </Text>
+            <TextInput
+              style={styles.nameInput}
+              placeholder="Your name (optional)"
+              placeholderTextColor="rgba(255, 255, 255, 0.5)"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="done"
+            />
           </BlurView>
 
           {/* Progress Dots */}
@@ -68,7 +81,12 @@ export default function WelcomeScreen() {
         >
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push('/onboarding/track-succeed')}
+            onPress={() => {
+              if (name.trim()) {
+                setUserName(name.trim());
+              }
+              router.push('/onboarding/track-succeed');
+            }}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Continue</Text>
@@ -172,5 +190,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     opacity: 0.8,
+  },
+  nameInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginTop: 20,
+    textAlign: 'center',
   },
 });
