@@ -138,8 +138,11 @@ All icons use `lucide-react-native`, NOT `@expo/vector-icons`.
 - [ ] No TypeScript errors (`npx tsc --noEmit`)
 
 ## Remaining Work
-See `expo/specs/` for numbered task specifications. Execute in order: 01 -> 08.
+See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
+
+**SPEC-01 is COMPLETED** (custom fast duration fix, commit 305aa05).
+**Next: SPEC-00** (fix baseline tsc errors + Expo Go RevenueCat red screen).
 
 ## Build Commands
 ```bash

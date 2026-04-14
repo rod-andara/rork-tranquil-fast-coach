@@ -9,8 +9,9 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 
 | # | Spec | Type | Risk | Dependencies |
 |---|------|------|------|--------------|
-| 01 | Fix custom fast duration display | Bug fix | Low | None |
-| 02 | Fix chart X-axis label truncation | Bug fix | Medium | None |
+| 00 | Fix baseline errors (tsc + Expo Go) | Bug fix | Low | None -- DO THIS FIRST |
+| 01 | Fix custom fast duration display | Bug fix | Low | COMPLETED |
+| 02 | Fix chart X-axis label truncation | Bug fix | Medium | 00 (clean tsc baseline) |
 | 03 | Fix goal line visibility on chart | Bug fix | Medium | None (can combine with 02) |
 | 04 | Add user name to greeting | Feature | Low | None |
 | 05 | Apple Health sync onboarding screen | Feature | Low | None |
