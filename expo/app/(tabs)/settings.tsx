@@ -14,7 +14,7 @@ import ListItem from '@/components/ListItem';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan, customDuration, isPremium } = useFastStore();
+  const { notificationsEnabled, setNotificationsEnabled, isDarkMode, setDarkMode, selectedPlan, customDuration } = useFastStore();
   const { unit, setUnit } = useWeightStore();
 
   // Format custom duration for display
@@ -176,100 +176,23 @@ export default function SettingsScreen() {
           </Text>
         </View>
 
-        {/* Premium Card - Show different UI based on premium status */}
-        {isPremium ? (
-          <LinearGradient
-            colors={['#8B5CF6', '#A855F7', '#EC4899']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: 18,
-              paddingHorizontal: 20,
-              borderRadius: 28,
-              marginHorizontal: 16,
-              marginBottom: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 5,
-            }}
-            testID="premium-active-card"
-          >
-            <View style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: 'rgba(255, 255, 255, 0.25)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 2,
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }}>
-              <Heart size={28} color="#FFFFFF" fill="#FFFFFF" strokeWidth={2.5} />
-            </View>
-            <View style={{ marginLeft: 16, flex: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontSize: 19,
-                  fontWeight: '700',
-                  letterSpacing: 0.5,
-                }}>
-                  Premium Active
-                </Text>
-                <View style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: '#10B981',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginLeft: 8,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 2,
-                }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 'bold' }}>✓</Text>
-                </View>
-              </View>
-              <Text style={{
-                color: '#FFFFFF',
-                fontSize: 14,
-                opacity: 0.95,
-                marginTop: 3,
-                fontWeight: '500',
-              }}>
-                Enjoying all premium features
-              </Text>
-            </View>
-          </LinearGradient>
-        ) : (
-          <TouchableOpacity
-            className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm flex-row items-center justify-between"
-            onPress={() => router.push('/paywall')}
-            activeOpacity={0.8}
-            testID="upgrade-premium-card"
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 items-center justify-center">
-                <Heart size={20} color="#7C3AED" fill="#7C3AED" />
-              </View>
-              <View>
-                <Text className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
-                  Upgrade to Premium
-                </Text>
-                <Text className="text-sm text-neutral-500 dark:text-neutral-400">
-                  Unlock all features
-                </Text>
-              </View>
-            </View>
-            <Text className="text-2xl text-neutral-400">›</Text>
-          </TouchableOpacity>
-        )}
+        {/* Premium coming soon card */}
+        <View
+          className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm flex-row items-center gap-3"
+          testID="premium-coming-soon-card"
+        >
+          <View className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 items-center justify-center">
+            <Heart size={20} color="#7C3AED" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text className="text-base font-semibold text-neutral-800 dark:text-neutral-100">
+              Premium features coming soon
+            </Text>
+            <Text className="text-sm text-neutral-500 dark:text-neutral-400">
+              Advanced analytics and more — coming soon.
+            </Text>
+          </View>
+        </View>
 
         {/* Preferences Section */}
         <View className="gap-4">

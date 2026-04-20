@@ -185,11 +185,12 @@ export default function ChoosePlanScreen() {
             <Text style={[styles.title, { color: isDarkMode ? '#F9FAFB' : '#111827' }]}>
               Choose Your Plan
             </Text>
-            <Text style={[styles.subtitle, { color: isDarkMode ? '#9CA3AF' : '#6B7280' }]}>
+            <Text style={[styles.subtitle, { color: 'rgba(255,255,255,0.9)' }]}>
               Select a fasting schedule that fits your lifestyle
             </Text>
 
             <View style={styles.dotsContainer}>
+              <View style={styles.dot} />
               <View style={styles.dot} />
               <View style={styles.dot} />
               <View style={[styles.dot, styles.dotActive]} />

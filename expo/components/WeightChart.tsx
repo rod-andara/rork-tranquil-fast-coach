@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { Line, Text as SvgText } from 'react-native-svg';
 import { Scale } from 'lucide-react-native';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore } from '@/store/weightStore';
@@ -48,8 +49,8 @@ export default function WeightChart() {
       return filteredEntries;
     }
 
-    // For more than 7 points, sample to show ~6 evenly spaced points
-    const targetPoints = 6;
+    // For more than 7 points, sample to show ~5 evenly spaced points
+    const targetPoints = 5;
     const interval = Math.floor(filteredEntries.length / (targetPoints - 1));
 
     const sampled: typeof filteredEntries = [];
@@ -104,25 +105,25 @@ export default function WeightChart() {
   // Format dates for X-axis labels based on time range
   // Data is already sampled, so we format every label
   const formatLabel = (date: Date): string => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     switch (selectedRange) {
       case '7d':
-        // Show day names (Mon, Tue, Wed)
+        // Day names are short enough (Mon, Tue)
         return days[date.getDay()];
 
       case '30d':
-        // Show date numbers (3, 9, 15, 21, 27, 30)
+        // Just the date number
         return `${date.getDate()}`;
 
       case '90d':
-        // Show month + date (Jan 5, Jan 20, Feb 5)
-        return `${months[date.getMonth()]} ${date.getDate()}`;
+        // Compact: M/D format (1/5, 2/14)
+        return `${date.getMonth() + 1}/${date.getDate()}`;
 
       case 'all':
-        // Show month + year (Jan 26, Feb 26)
-        return `${months[date.getMonth()]} ${String(date.getFullYear()).slice(-2)}`;
+        // Compact: M'YY format (J'25, F'26)
+        return `${months[date.getMonth()]}'${String(date.getFullYear()).slice(-2)}`;
 
       default:
         return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -144,12 +145,6 @@ export default function WeightChart() {
     // Create data points from sampled data
     const data = displayData.map((entry) => entry.weight);
 
-    // Calculate goal line if exists
-    let goalLine: number[] | undefined;
-    if (goal) {
-      goalLine = new Array(data.length).fill(goal.targetWeight);
-    }
-
     return {
       labels,
       datasets: [
@@ -158,20 +153,10 @@ export default function WeightChart() {
           color: (opacity = 1) => (isDarkMode ? `rgba(167, 139, 250, ${opacity})` : `rgba(124, 58, 237, ${opacity})`),
           strokeWidth: 3,
         },
-        ...(goalLine
-          ? [
-              {
-                data: goalLine,
-                color: (opacity = 1) => (isDarkMode ? `rgba(16, 185, 129, ${opacity})` : `rgba(5, 150, 105, ${opacity})`),
-                strokeWidth: 2,
-                withDots: false,
-              },
-            ]
-          : []),
       ],
-      legend: goal ? ['Weight', 'Goal'] : ['Weight'],
+      legend: ['Weight'],
     };
-  }, [displayData, goal, isDarkMode, selectedRange]);
+  }, [displayData, goal, isDarkMode, selectedRange, filteredEntries.length]);
 
   // Empty state
   if (entries.length === 0) {
@@ -473,7 +458,7 @@ export default function WeightChart() {
             strokeWidth: 1,
           },
           propsForLabels: {
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: '400',
           },
         }}
@@ -481,7 +466,50 @@ export default function WeightChart() {
         style={{
           marginVertical: 8,
           borderRadius: 16,
-          paddingRight: 0,
+          paddingRight: 16,
+        }}
+        decorator={() => {
+          if (!goal || !chartData) return null;
+
+          const weights = displayData.map(e => e.weight);
+          const allValues = [...weights, goal.targetWeight];
+          const minY = Math.min(...allValues);
+          const maxY = Math.max(...allValues);
+
+          if (maxY === minY) return null;
+
+          const chartHeight = 260;
+          const chartPadding = { top: 16, bottom: 40 };
+          const usableHeight = chartHeight - chartPadding.top - chartPadding.bottom;
+
+          const yRatio = (goal.targetWeight - minY) / (maxY - minY);
+          const yPos = chartPadding.top + usableHeight * (1 - yRatio);
+
+          const goalColor = isDarkMode ? '#10B981' : '#059669';
+
+          return (
+            <>
+              <Line
+                x1={64}
+                y1={yPos}
+                x2={screenWidth - 48}
+                y2={yPos}
+                stroke={goalColor}
+                strokeWidth={1.5}
+                strokeDasharray="6,4"
+              />
+              <SvgText
+                x={screenWidth - 46}
+                y={yPos - 6}
+                fill={goalColor}
+                fontSize={10}
+                fontWeight="600"
+                textAnchor="end"
+              >
+                Goal
+              </SvgText>
+            </>
+          );
         }}
         withHorizontalLabels={true}
         withVerticalLabels={true}
