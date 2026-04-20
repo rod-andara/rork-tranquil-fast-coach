@@ -24,7 +24,7 @@ interface Achievement {
 
 export default function ProgressScreen() {
   const { fastHistory, isDarkMode } = useFastStore();
-  const { getCurrentWeight, getWeightChange, getProgressPercentage, goal, unit } = useWeightStore();
+  const { getCurrentWeight, getWeightChange, getProgressPercentage, goal, unit, setUnit } = useWeightStore();
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
 
@@ -159,9 +159,25 @@ export default function ProgressScreen() {
         <View className="mb-4">
           {/* Section Header with Add Button */}
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100">
-              Weight
-            </Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-xl font-bold text-neutral-800 dark:text-neutral-100">
+                Weight
+              </Text>
+              <TouchableOpacity
+                onPress={() => setUnit(unit === 'lbs' ? 'kg' : 'lbs')}
+                className={`flex-row items-center px-3 py-1 rounded-full border ${
+                  isDarkMode
+                    ? 'border-neutral-600 bg-neutral-700'
+                    : 'border-neutral-300 bg-neutral-100'
+                }`}
+                accessibilityLabel={`Switch to ${unit === 'lbs' ? 'kg' : 'lbs'}`}
+                accessibilityRole="button"
+              >
+                <Text className={`text-sm font-semibold ${isDarkMode ? 'text-neutral-200' : 'text-neutral-700'}`}>
+                  {unit}
+                </Text>
+              </TouchableOpacity>
+            </View>
             <View className="flex-row gap-2">
               {/* Set/Edit Goal Button */}
               <TouchableOpacity

@@ -11,6 +11,7 @@ import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "nativewind";
 import * as Sentry from "@sentry/react-native";
+import * as Localization from 'expo-localization';
 
 import { useFastStore } from "@/store/fastStore";
 import { useWeightStore } from "@/store/weightStore";
@@ -56,15 +57,21 @@ function RootLayoutNav() {
         // Load store data from storage
         await useFastStore.getState().loadFromStorage();
 
+        // Auto-detect unit preference on first launch
+        const { setUnitDefault } = useWeightStore.getState();
+        const locales = Localization.getLocales();
+        const regionCode = locales[0]?.regionCode ?? '';
+        const imperialRegions = ['US', 'LR', 'MM'];
+        const detectedUnit = imperialRegions.includes(regionCode) ? 'lbs' : 'kg';
+        setUnitDefault(detectedUnit);
+
         // Initialize RevenueCat for subscription management
-        console.log('[App] Initializing RevenueCat...');
         const revenueCatInitialized = await initializeRevenueCat();
 
         if (revenueCatInitialized) {
           // Check subscription status and update store
           const isPremium = await checkSubscriptionStatus();
           useFastStore.getState().setPremium(isPremium);
-          console.log('[App] Subscription status:', isPremium ? 'Premium' : 'Free');
         } else {
           console.warn('[App] RevenueCat initialization failed');
         }
@@ -75,10 +82,8 @@ function RootLayoutNav() {
       // If user has previously connected to Apple Health, reinitialize on app startup
       const isHealthConnected = useWeightStore.getState().isHealthConnected;
       if (isHealthConnected && Platform.OS === 'ios') {
-        console.log('[App] User previously connected to Apple Health, reinitializing...');
         try {
           await initHealthKit();
-          console.log('[App] HealthKit reinitialized successfully');
         } catch (error) {
           console.error('[App] Failed to reinitialize HealthKit:', error);
         }
@@ -110,12 +115,19 @@ function RootLayoutNav() {
           presentation: "card",
         }} 
       />
-      <Stack.Screen 
-        name="onboarding/choose-plan" 
-        options={{ 
+      <Stack.Screen
+        name="onboarding/health-sync"
+        options={{
           headerShown: false,
           presentation: "card",
-        }} 
+        }}
+      />
+      <Stack.Screen
+        name="onboarding/choose-plan"
+        options={{
+          headerShown: false,
+          presentation: "card",
+        }}
       />
       <Stack.Screen name="paywall" options={{ headerShown: true, title: 'Premium' }} />
       <Stack.Screen name="index" options={{ headerShown: false }} />

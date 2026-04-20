@@ -24,6 +24,7 @@ interface WeightState {
   unit: 'lbs' | 'kg';
   isHealthConnected: boolean;
   lastHealthSync: number | null;
+  unitSetByUser: boolean;
 
   // Actions
   addEntry: (entry: Omit<WeightEntry, 'id'>) => void;
@@ -31,6 +32,7 @@ interface WeightState {
   deleteEntry: (id: string) => void;
   setGoal: (goal: WeightGoal | null) => void;
   setUnit: (unit: 'lbs' | 'kg') => void;
+  setUnitDefault: (unit: 'lbs' | 'kg') => void;
   setHealthConnected: (connected: boolean) => void;
   setLastHealthSync: (timestamp: number | null) => void;
 
@@ -48,6 +50,7 @@ const defaultState = {
   unit: 'lbs' as const,
   isHealthConnected: false,
   lastHealthSync: null as number | null,
+  unitSetByUser: false as boolean,
 };
 
 export const useWeightStore = create<WeightState>()(
@@ -133,10 +136,18 @@ export const useWeightStore = create<WeightState>()(
           return {
             ...state,
             unit: newUnit,
+            unitSetByUser: true,
             entries: convertedEntries,
             goal: convertedGoal,
           };
         });
+      },
+
+      setUnitDefault: (newUnit) => {
+        const { unitSetByUser } = get();
+        if (!unitSetByUser) {
+          get().setUnit(newUnit);
+        }
       },
 
       setHealthConnected: (connected) => {
@@ -295,7 +306,7 @@ export const useWeightStore = create<WeightState>()(
     {
       name: 'weight-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2,
+      version: 3,
       migrate: (persistedState: any, version) => {
         if (!persistedState) {
           return { ...defaultState };
@@ -312,6 +323,10 @@ export const useWeightStore = create<WeightState>()(
 
         if (version < 2) {
           stateWithDefaults.lastHealthSync = null;
+        }
+
+        if (version < 3) {
+          stateWithDefaults.unitSetByUser = false;
         }
 
         return stateWithDefaults;
