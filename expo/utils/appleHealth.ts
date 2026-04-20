@@ -133,7 +133,6 @@ export const initHealthKit = async (): Promise<boolean> => {
   const { setHealthConnected } = useWeightStore.getState();
 
   if (Platform.OS !== 'ios') {
-    console.log('[HealthKit] Not available - not on iOS platform');
     setHealthConnected(false);
     healthKitInitialized = false;
     return false;
@@ -147,22 +146,12 @@ export const initHealthKit = async (): Promise<boolean> => {
   const weightPermission = resolveWeightPermission();
 
   return new Promise((resolve) => {
-    console.log('[HealthKit] ===== INIT HEALTHKIT CALLED =====');
-    console.log('[HealthKit] Platform:', Platform.OS);
-    console.log('[HealthKit] AppleHealthKit module:', typeof AppleHealthKit);
-    console.log('[HealthKit] AppleHealthKit.Constants:', typeof AppleHealthKit?.Constants);
-    console.log('[HealthKit] AppleHealthKit.initHealthKit:', typeof AppleHealthKit?.initHealthKit);
-
-    console.log('[HealthKit] Platform check passed, requesting permissions...');
-
     const permissions: HealthKitPermissions = {
       permissions: {
         read: [weightPermission],
         write: [weightPermission],
       },
     };
-
-    console.log('[HealthKit] Permissions object:', JSON.stringify(permissions));
 
     if (typeof AppleHealthKit?.initHealthKit !== 'function') {
       console.error('[HealthKit] initHealthKit is not a function on the native module');
@@ -172,13 +161,8 @@ export const initHealthKit = async (): Promise<boolean> => {
     }
 
     (AppleHealthKit.initHealthKit as any)(permissions, (error: string | null, result?: boolean) => {
-      console.log('[HealthKit] initHealthKit callback fired');
-      console.log('[HealthKit] error:', error);
-      console.log('[HealthKit] error type:', typeof error);
-
       if (error) {
         console.error('[HealthKit] Cannot grant permissions:', error);
-        console.error('[HealthKit] Full error details:', JSON.stringify(error));
 
         // Track HealthKit initialization error in Sentry
         Sentry.captureException(new Error(`HealthKit init failed: ${error}`), {
@@ -202,7 +186,7 @@ export const initHealthKit = async (): Promise<boolean> => {
       }
 
       if (result === false) {
-        console.error('[HealthKit] initHealthKit returned a false result');
+        console.error('[HealthKit] initHealthKit returned a false result (no permissions granted)');
 
         // Track HealthKit initialization failure in Sentry
         Sentry.captureMessage('HealthKit init returned false', {
@@ -223,7 +207,6 @@ export const initHealthKit = async (): Promise<boolean> => {
         return;
       }
 
-      console.log('[HealthKit] Successfully initialized and permissions granted');
       setHealthConnected(true);
       healthKitInitialized = true;  // ✅ Critical: mark as initialized
       resolve(true);
@@ -265,8 +248,6 @@ export const getWeightFromHealth = (
       ascending: false,
     };
 
-    console.log('[HealthKit] Getting weight samples with options:', options);
-
     if (typeof AppleHealthKit?.getWeightSamples !== 'function') {
       reject(new Error('getWeightSamples is not available on the native module'));
       return;
@@ -282,7 +263,6 @@ export const getWeightFromHealth = (
         }
 
         if (!results || results.length === 0) {
-          console.log('[HealthKit] No weight samples found');
           resolve([]);
           return;
         }
@@ -306,7 +286,6 @@ export const getWeightFromHealth = (
           };
         });
 
-        console.log(`[HealthKit] Retrieved ${entries.length} weight samples`);
         resolve(entries);
       }
     );
@@ -345,7 +324,6 @@ export const saveWeightToHealth = (
       if (unit === 'kg') {
         // Convert kg to grams (HealthKit uses grams for metric weight)
         valueToSave = weight * 1000;
-        console.log(`[HealthKit] Converting ${weight} kg to ${valueToSave} grams`);
       }
       // For lbs, no conversion needed (Units.pound expects pounds)
 
@@ -354,8 +332,6 @@ export const saveWeightToHealth = (
         unit: hkUnit,
         date: (date ?? new Date()).toISOString(),
       };
-
-      console.log(`[HealthKit] Saving weight: ${weight} ${unit} → ${valueToSave} (HKUnit: ${hkUnit})`);
 
       if (typeof AppleHealthKit?.saveWeight !== 'function') {
         const errorMsg = 'saveWeight is not available on the native module';
@@ -389,7 +365,6 @@ export const saveWeightToHealth = (
           reject(new Error(String(err)));
           return;
         }
-        console.log('[HealthKit] Successfully saved weight to Health');
         resolve(Boolean(result));
       });
     } catch (error) {
@@ -426,8 +401,6 @@ export const syncWeightData = async (
   }
 
   try {
-    console.log(`[HealthKit] Starting sync, direction: ${direction}`);
-
     if (direction === 'import' || direction === 'both') {
       // Import from Apple Health
       const lastSync = useWeightStore.getState().lastHealthSync;
@@ -436,7 +409,6 @@ export const syncWeightData = async (
           ? new Date(lastSync)
           : undefined;
 
-      console.log('[HealthKit] Importing from Apple Health...');
       const healthEntries = await getWeightFromHealth(startDate);
 
       // Filter out entries that already exist (by date)
@@ -459,7 +431,6 @@ export const syncWeightData = async (
       });
 
       imported = newEntries.length;
-      console.log(`[HealthKit] Imported ${imported} new entries`);
     }
 
     if (direction === 'export' || direction === 'both') {
@@ -472,22 +443,16 @@ export const syncWeightData = async (
             e.source === 'manual' && (!lastSync || e.date > lastSync)
         );
 
-      console.log(`[HealthKit] Exporting ${manualEntries.length} manual entries to Apple Health...`);
       for (const entry of manualEntries) {
         await saveWeightToHealth(entry.weight, entry.unit, new Date(entry.date));
         exported++;
       }
-      console.log(`[HealthKit] Exported ${exported} entries`);
     }
 
     if (imported > 0 || exported > 0) {
       useWeightStore.getState().setLastHealthSync(Date.now());
-      console.log('[HealthKit] Updated last sync timestamp');
-    } else {
-      console.log('[HealthKit] Skipping last sync update - no changes detected');
     }
 
-    console.log(`[HealthKit] Sync completed: ${imported} imported, ${exported} exported`);
     return { imported, exported };
   } catch (error) {
     console.error('[ERROR] Failed to sync weight data:', error);

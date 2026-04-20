@@ -63,22 +63,13 @@ export const useFastStore = create<FastState>((set, get) => ({
   hasHydrated: false,
 
   startFast: (planOrDuration: number | string) => {
-    console.log('[FastStore] startFast called with:', planOrDuration);
     const state = get();
     const isPlanString = typeof planOrDuration === 'string';
-
-    if (isPlanString && planOrDuration === 'custom') {
-      console.log('[FastStore] Custom plan detected, customDuration from store:', state.customDuration);
-    }
 
     const plannedDuration = isPlanString
       ? getPlanDuration(planOrDuration, state.customDuration)
       : planOrDuration;
     const planName = isPlanString ? (planOrDuration as string) : state.selectedPlan;
-
-    console.log('[FastStore] plannedDuration:', plannedDuration);
-    console.log('[FastStore] plannedDuration in hours:', plannedDuration / (60 * 60 * 1000));
-    console.log('[FastStore] planName:', planName);
 
     const newFast: FastSession = {
       id: Date.now().toString(),
@@ -91,16 +82,13 @@ export const useFastStore = create<FastState>((set, get) => ({
       isRunning: true,
     };
 
-    console.log('[FastStore] Created new fast session:', newFast);
     set({ currentFast: newFast });
-    console.log('[FastStore] currentFast state updated');
 
     if (state.notificationsEnabled) {
       try {
         scheduleMilestones(Math.floor(plannedDuration / 1000), true);
-        console.log('[FastStore] Milestones scheduled');
       } catch (e) {
-        console.log('[store] scheduleMilestones error', e);
+        console.warn('[store] scheduleMilestones error', e);
       }
     }
     if (Platform.OS !== 'web') {
@@ -109,7 +97,6 @@ export const useFastStore = create<FastState>((set, get) => ({
       } catch {}
     }
     get().saveToStorage();
-    console.log('[FastStore] startFast completed successfully');
   },
 
   pauseFast: () => {
@@ -201,10 +188,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         // this indicates they saved a custom duration with the old broken code.
         // Reset their plan to 16:8 to avoid the timing bug.
         if (data.selectedPlan === 'custom' && data.customDuration === 16) {
-          console.log('[FastStore] Migration: Detected custom plan with default duration (16h)');
-          console.log('[FastStore] Migration: Resetting to 16:8 plan to fix timing bug');
-          console.log('[FastStore] Migration: User can re-select custom plan with corrected code');
-
+          if (__DEV__) console.log('[FastStore] Migration: Resetting custom plan with default duration to 16:8');
           data.selectedPlan = '16:8';
           // Keep customDuration at 16 as default for future custom selections
 

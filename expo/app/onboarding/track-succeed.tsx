@@ -53,6 +53,7 @@ export default function TrackSucceedScreen() {
             <View style={styles.dot} />
             <View style={[styles.dot, styles.dotActive]} />
             <View style={styles.dot} />
+            <View style={styles.dot} />
           </View>
         </Animated.View>
 
@@ -68,7 +69,7 @@ export default function TrackSucceedScreen() {
         >
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push('/onboarding/choose-plan')}
+            onPress={() => router.push('/onboarding/health-sync')}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Get Started</Text>

@@ -6,6 +6,7 @@ import Purchases, {
   PurchasesStoreProduct,
 } from 'react-native-purchases';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import * as Sentry from '@sentry/react-native';
 
 // RevenueCat API Keys from environment variables
@@ -23,6 +24,19 @@ export const initializeRevenueCat = async (): Promise<boolean> => {
   if (isInitialized) {
     console.log('[RevenueCat] Already initialized');
     return true;
+  }
+
+  const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+  if (!apiKey) {
+    console.warn('[RevenueCat] No API key configured — skipping init');
+    return false;
+  }
+
+  // Skip RevenueCat in Expo Go — native StoreKit is not available
+  const isExpoGo = Constants.appOwnership === 'expo';
+  if (isExpoGo) {
+    console.log('[RevenueCat] Skipping initialization in Expo Go (native store unavailable)');
+    return false;
   }
 
   try {
@@ -46,18 +60,23 @@ export const initializeRevenueCat = async (): Promise<boolean> => {
     console.log('[RevenueCat] Initialized successfully');
     return true;
   } catch (error) {
-    console.error('[RevenueCat] Initialization failed:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isInvalidKey = errorMessage.includes('Invalid API Key') || !apiKey;
 
-    // Track initialization error in Sentry
-    Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
-      tags: { feature: 'revenuecat', operation: 'initialize' },
-      contexts: {
-        revenuecat: {
-          platform: Platform.OS,
-          error_message: error instanceof Error ? error.message : String(error),
+    if (isInvalidKey) {
+      console.warn('[RevenueCat] Initialization skipped — invalid or missing API key:', errorMessage);
+    } else {
+      console.error('[RevenueCat] Initialization failed:', error);
+      Sentry.captureException(error instanceof Error ? error : new Error(errorMessage), {
+        tags: { feature: 'revenuecat', operation: 'initialize' },
+        contexts: {
+          revenuecat: {
+            platform: Platform.OS,
+            error_message: errorMessage,
+          },
         },
-      },
-    });
+      });
+    }
 
     return false;
   }

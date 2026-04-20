@@ -1,6 +1,6 @@
 # SPEC-03: Fix Goal Line Visibility on Weight Chart
 
-**Status:** pending
+**Status:** complete
 **Priority:** P1 (should fix)
 **Estimated Effort:** medium (30-90 min)
 

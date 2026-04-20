@@ -1,6 +1,6 @@
 # SPEC-00: Fix Pre-Existing Baseline Errors
 
-**Status:** pending
+**Status:** completed
 **Priority:** P0 (blocks all other specs — `npx tsc --noEmit` must be clean)
 **Estimated Effort:** low (<30 min)
 

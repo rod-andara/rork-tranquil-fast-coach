@@ -23,10 +23,7 @@
         "UIBackgroundModes": [
           "remote-notification"
         ],
-        "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based fasting reminders and insights.",
         "NSUserNotificationsUsageDescription": "We need permission to send you fasting reminders and milestone notifications.",
-        "NSPhotoLibraryUsageDescription": "We need access to your photo library to let you choose profile pictures.",
-        "NSCameraUsageDescription": "We need camera access to let you take profile pictures.",
         "NSHealthShareUsageDescription": "We need access to read your weight from Apple Health to automatically track your progress and provide personalized insights.",
         "NSHealthUpdateUsageDescription": "We need access to write your weight and fasting data to Apple Health for a complete health picture and seamless integration with your other health apps.",
         "NSAppTransportSecurity": {
@@ -94,7 +91,8 @@
           "organization": "rodrigo-andara",
           "project": "tranquil-fast"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
