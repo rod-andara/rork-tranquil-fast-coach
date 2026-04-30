@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
-import { Platform, View } from "react-native";
+import { Appearance, Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "nativewind";
 import * as Sentry from "@sentry/react-native";
@@ -56,6 +56,10 @@ function RootLayoutNav() {
       try {
         // Load store data from storage
         await useFastStore.getState().loadFromStorage();
+
+        // Auto-detect dark mode on first launch (no-op if user already chose)
+        const systemColorScheme = Appearance.getColorScheme();
+        useFastStore.getState().setDarkModeDefault(systemColorScheme === 'dark');
 
         // Auto-detect unit preference on first launch
         const { setUnitDefault } = useWeightStore.getState();

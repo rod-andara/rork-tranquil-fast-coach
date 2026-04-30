@@ -28,6 +28,7 @@ export interface FastState {
   customDuration: number;
   notificationsEnabled: boolean;
   isDarkMode: boolean;
+  darkModeSetByUser: boolean;
   onboardingComplete: boolean;
   isPremium: boolean;
   userName: string;
@@ -41,6 +42,7 @@ export interface FastState {
   setCustomDuration: (duration: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   setDarkMode: (enabled: boolean) => void;
+  setDarkModeDefault: (defaultDark: boolean) => void;
   completeOnboarding: () => void;
   setPremium: (value: boolean) => void;
   setUserName: (name: string) => void;
@@ -57,6 +59,7 @@ export const useFastStore = create<FastState>((set, get) => ({
   customDuration: 16,
   notificationsEnabled: true,
   isDarkMode: false,
+  darkModeSetByUser: false,
   onboardingComplete: false,
   isPremium: false,
   userName: '',
@@ -158,8 +161,15 @@ export const useFastStore = create<FastState>((set, get) => ({
   },
 
   setDarkMode: (enabled: boolean) => {
-    set({ isDarkMode: enabled });
+    set({ isDarkMode: enabled, darkModeSetByUser: true });
     get().saveToStorage();
+  },
+
+  setDarkModeDefault: (defaultDark: boolean) => {
+    const state = get();
+    if (state.darkModeSetByUser) return;
+    set({ isDarkMode: defaultDark });
+    state.saveToStorage();
   },
 
   completeOnboarding: () => {
@@ -218,6 +228,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         customDuration: state.customDuration,
         notificationsEnabled: state.notificationsEnabled,
         isDarkMode: state.isDarkMode,
+        darkModeSetByUser: state.darkModeSetByUser,
         onboardingComplete: state.onboardingComplete,
         isPremium: state.isPremium,
         userName: state.userName,

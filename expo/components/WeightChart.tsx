@@ -434,7 +434,7 @@ export default function WeightChart() {
       {/* Chart */}
       <LineChart
         data={chartData}
-        width={screenWidth - 32} // Container padding
+        width={screenWidth - 48} // 16pt outer + 16pt card padding (each side)
         height={260} // Increased height for better label visibility
         chartConfig={{
           backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
@@ -466,7 +466,8 @@ export default function WeightChart() {
         style={{
           marginVertical: 8,
           borderRadius: 16,
-          paddingRight: 16,
+          paddingRight: 8,
+          paddingLeft: 0,
         }}
         decorator={() => {
           if (!goal || !chartData) return null;
