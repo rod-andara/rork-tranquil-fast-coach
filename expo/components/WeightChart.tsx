@@ -440,7 +440,7 @@ export default function WeightChart() {
           backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
           backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
           backgroundGradientTo: isDarkMode ? '#1F2937' : '#FFFFFF',
-          decimalPlaces: 1,
+          decimalPlaces: 0,
           color: (opacity = 1) => (isDarkMode ? `rgba(167, 139, 250, ${opacity})` : `rgba(124, 58, 237, ${opacity})`),
           labelColor: (opacity = 1) => (isDarkMode ? `rgba(156, 163, 175, ${opacity})` : `rgba(107, 114, 128, ${opacity})`),
           style: {
