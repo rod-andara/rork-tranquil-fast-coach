@@ -466,8 +466,7 @@ export default function WeightChart() {
         style={{
           marginVertical: 8,
           borderRadius: 16,
-          paddingRight: 8,
-          paddingLeft: 0,
+          paddingRight: 16,
         }}
         decorator={() => {
           if (!goal || !chartData) return null;
