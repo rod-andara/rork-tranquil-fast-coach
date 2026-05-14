@@ -102,44 +102,36 @@ export default function WeightChart() {
     };
   }, [filteredEntries]);
 
-  // Format dates for X-axis labels based on time range
-  // Data is already sampled, so we format every label
-  const formatLabel = (date: Date): string => {
-    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    switch (selectedRange) {
-      case '7d':
-        // Day names are short enough (Mon, Tue)
-        return days[date.getDay()];
-
-      case '30d':
-        // Just the date number
-        return `${date.getDate()}`;
-
-      case '90d':
-        // Compact: M/D format (1/5, 2/14)
-        return `${date.getMonth() + 1}/${date.getDate()}`;
-
-      case 'all':
-        // Compact: M'YY format (J'25, F'26)
-        return `${months[date.getMonth()]}'${String(date.getFullYear()).slice(-2)}`;
-
-      default:
-        return `${date.getMonth() + 1}/${date.getDate()}`;
-    }
-  };
-
   // Prepare chart data using sampled displayData
   const chartData = useMemo(() => {
     if (displayData.length === 0) {
       return null;
     }
 
-    // Create labels from sampled data
-    const labels = displayData.map((entry) => {
+    // Create labels from sampled data, context-aware for month boundaries
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const labels = displayData.map((entry, idx) => {
       const date = new Date(entry.date);
-      return formatLabel(date);
+      const prevDate = idx > 0 ? new Date(displayData[idx - 1].date) : null;
+      const monthChanged = !prevDate || prevDate.getMonth() !== date.getMonth();
+
+      switch (selectedRange) {
+        case '7d':
+          return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+        case '30d':
+          return monthChanged
+            ? `${monthsShort[date.getMonth()]} ${date.getDate()}`
+            : `${date.getDate()}`;
+        case '90d':
+          return `${date.getMonth() + 1}/${date.getDate()}`;
+        case 'all': {
+          const monthsCompact = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+          return `${monthsCompact[date.getMonth()]}'${String(date.getFullYear()).slice(-2)}`;
+        }
+        default:
+          return `${date.getMonth() + 1}/${date.getDate()}`;
+      }
     });
 
     // Create data points from sampled data
@@ -432,9 +424,10 @@ export default function WeightChart() {
       </View>
 
       {/* Chart */}
+      <View style={{ paddingLeft: 12, paddingRight: 0 }}>
       <LineChart
         data={chartData}
-        width={screenWidth - 48} // 16pt outer + 16pt card padding (each side)
+        width={screenWidth - 60}
         height={260} // Increased height for better label visibility
         chartConfig={{
           backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
@@ -522,6 +515,7 @@ export default function WeightChart() {
         yAxisSuffix=""
         yAxisInterval={1}
       />
+      </View>
 
       {/* Chart Footer */}
       <View className="px-4 pb-4">
