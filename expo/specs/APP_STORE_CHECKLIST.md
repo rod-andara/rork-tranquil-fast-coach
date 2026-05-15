@@ -26,15 +26,27 @@ The app currently declares these permissions. Remove any that aren't used:
 
 ### Code Cleanup
 - [ ] Remove or gate all `console.log` statements behind `__DEV__` (there are many debug logs in fastStore.ts, appleHealth.ts, WeightChart.tsx)
+  - [x] `appleHealth.ts` — all 14 console statements gated (SPEC-16)
+  - [x] `store/weightStore.ts` — all 5 weight-bearing logs gated (SPEC-16)
+  - [ ] `fastStore.ts` — still has ungated logs; address before submission
+  - [ ] `WeightChart.tsx` — `chartData` memo logging; address before submission
 - [ ] Remove debug logging from WeightChart.tsx `chartData` memo
 - [ ] Verify no test/stub API keys in committed code (check `.env` is gitignored)
 - [ ] Run `npx tsc --noEmit` -- 0 errors
 - [ ] Run `npx expo-doctor` -- no critical warnings
 
 ### Performance
-- [ ] No memory leaks (RevenueCat WARN log level is set -- verify in `revenuecat.ts`)
-- [ ] Sentry `tracesSampleRate` is 0.1 for production (already set in `_layout.tsx:28`)
-- [ ] `maxBreadcrumbs` is 50 (already set)
+- [x] No memory leaks — RevenueCat is **fully dormant in v1.0** (SPEC-17); log-level concern moot until v1.1 reactivation. WARN level still pre-configured in `revenuecat.ts` for v1.1.
+- [x] Sentry `tracesSampleRate` is **0** for production — performance tracing fully disabled by SPEC-16 (previously 0.1; changed intentionally to eliminate payload-leak risk)
+- [x] `maxBreadcrumbs` reduced to **30** after SPEC-16 `_layout.tsx` changes (was 50)
+
+### RevenueCat / In-App Purchases (SPEC-17 — v1.0 disabled)
+- [x] RevenueCat SDK initialization gated behind `EXPO_PUBLIC_ENABLE_REVENUECAT === 'true'` — flag is **unset** in EAS for v1.0, so SDK never initializes
+- [x] Placeholder API key (`appl_YOUR_API_KEY_HERE`) removed from `services/revenuecat.ts`
+- [x] Paywall route deregistered — `<Stack.Screen name="paywall">` removed from `_layout.tsx`; `app/paywall.tsx` renamed to `app/_paywall.tsx` (expo-router ignores leading-underscore files)
+- [x] `<PremiumGate>` is defined but rendered zero times in v1.0
+- [x] App Store description copy: "NO ADS. NO SUBSCRIPTIONS REQUIRED. Tranquil Fast is free to use." — now structurally truthful at binary level
+- [x] App Privacy labels do NOT declare Identifiers, Purchases, or Product Interaction (RevenueCat is dormant)
 
 ---
 
@@ -79,8 +91,8 @@ The app currently declares these permissions. Remove any that aren't used:
 
 ### App Store Connect Privacy Questionnaire
 - [ ] Health & Fitness data type selected (HealthKit weight data)
-- [ ] "Data Not Linked to You" if no user accounts exist (Supabase is stub)
-- [ ] "Data Not Used to Track You"
+- [x] "Data Not Linked to You" if no user accounts exist (Supabase is stub) — SPEC-16 ensures no health/weight data reaches Sentry; claim is now truthful
+- [x] "Data Not Used to Track You" — SPEC-16 disables performance tracing and session tracking; claim is now truthful
 
 ---
 
@@ -95,8 +107,8 @@ The app currently declares these permissions. Remove any that aren't used:
 ### HealthKit Requirements (Apple Guidelines 27.1-27.5)
 - [ ] HealthKit usage description strings are accurate and specific
 - [ ] Only requested health data types that are actually used (weight read/write)
-- [ ] Health data is not used for advertising or marketing
-- [ ] Health data is not sold to third parties
+- [x] Health data is not used for advertising or marketing — SPEC-16 confirmed: no health/weight values reach Sentry or any third-party analytics
+- [x] Health data is not sold to third parties — same as above; only Sentry error diagnostics (scrubbed) leave the device
 - [ ] App functions without HealthKit (graceful degradation -- already works)
 
 ### General

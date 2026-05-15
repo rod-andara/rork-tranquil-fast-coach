@@ -9,64 +9,92 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Sentry from '@sentry/react-native';
 
-// RevenueCat API Keys from environment variables
-const REVENUECAT_IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY || 'appl_YOUR_API_KEY_HERE';
-const REVENUECAT_ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY || 'goog_YOUR_API_KEY_HERE';
+// ---------------------------------------------------------------------------
+// SPEC-17: RevenueCat Runtime Disablement for v1 Free Launch
+// ---------------------------------------------------------------------------
+// Tranquil Fast v1.0 ships free with no paywall and no in-app purchases.
+// RevenueCat code stays in the repo for v1.1 reactivation, but the SDK must
+// be COMPLETELY DORMANT in v1.0 — no network calls, no anonymous IDs, no
+// Sentry noise. See expo/specs/SPEC-17-revenuecat-runtime-disablement-v1.md
+// for rationale, App Privacy label impact, and the v1.1 reactivation
+// checklist.
+//
+// To enable in v1.1: set EXPO_PUBLIC_ENABLE_REVENUECAT="true" in EAS env
+// AND provision EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY with the real key.
+// ---------------------------------------------------------------------------
+
+export const REVENUECAT_ENABLED =
+  process.env.EXPO_PUBLIC_ENABLE_REVENUECAT === 'true';
+
+// RevenueCat API Keys — sourced exclusively from EAS env vars (no fallback).
+// Placeholder fallbacks were removed per SPEC-17 §4.2.
+const REVENUECAT_IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY;
+const REVENUECAT_ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY;
 
 // Track if RevenueCat has been initialized
 let isInitialized = false;
 
 /**
- * Initialize RevenueCat SDK
- * Call this once when the app starts
+ * Initialize RevenueCat SDK.
+ * Call this once when the app starts.
+ *
+ * SPEC-17: short-circuits to `false` immediately when REVENUECAT_ENABLED
+ * is false (the v1.0 ship state). No network calls, no anonymous ID
+ * generation, no Sentry reporting on the disabled path — disablement is
+ * intentional, not a failure.
  */
 export const initializeRevenueCat = async (): Promise<boolean> => {
+  // SPEC-17: hard short-circuit when feature flag is off.
+  if (!REVENUECAT_ENABLED) {
+    return false;
+  }
+
   if (isInitialized) {
-    console.log('[RevenueCat] Already initialized');
+    if (__DEV__) console.log('[RevenueCat] Already initialized');
     return true;
   }
 
   const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
   if (!apiKey) {
-    console.warn('[RevenueCat] No API key configured — skipping init');
+    // Enabled but key missing — fail gracefully, do NOT call Purchases.configure.
+    if (__DEV__) {
+      console.warn(
+        '[RevenueCat] EXPO_PUBLIC_ENABLE_REVENUECAT is true but no API key ' +
+        'is provisioned for this platform. Set EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ' +
+        '(or _GOOGLE_) in EAS env before enabling.'
+      );
+    }
     return false;
   }
 
   // Skip RevenueCat in Expo Go — native StoreKit is not available
   const isExpoGo = Constants.appOwnership === 'expo';
   if (isExpoGo) {
-    console.log('[RevenueCat] Skipping initialization in Expo Go (native store unavailable)');
+    if (__DEV__) console.log('[RevenueCat] Skipping initialization in Expo Go (native store unavailable)');
     return false;
   }
 
   try {
-    console.log('[RevenueCat] Initializing...');
+    if (__DEV__) console.log('[RevenueCat] Initializing...');
 
     // Set log level (warn in both dev and production to prevent memory issues)
     // Verbose logging can cause memory accumulation in long sessions
     Purchases.setLogLevel(LOG_LEVEL.WARN);
 
     // Configure RevenueCat
-    if (Platform.OS === 'ios') {
-      await Purchases.configure({ apiKey: REVENUECAT_IOS_KEY });
-    } else if (Platform.OS === 'android') {
-      await Purchases.configure({ apiKey: REVENUECAT_ANDROID_KEY });
-    } else {
-      console.warn('[RevenueCat] Platform not supported:', Platform.OS);
-      return false;
-    }
+    await Purchases.configure({ apiKey });
 
     isInitialized = true;
-    console.log('[RevenueCat] Initialized successfully');
+    if (__DEV__) console.log('[RevenueCat] Initialized successfully');
     return true;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const isInvalidKey = errorMessage.includes('Invalid API Key') || !apiKey;
+    const isInvalidKey = errorMessage.includes('Invalid API Key');
 
     if (isInvalidKey) {
-      console.warn('[RevenueCat] Initialization skipped — invalid or missing API key:', errorMessage);
+      if (__DEV__) console.warn('[RevenueCat] Initialization skipped — invalid API key:', errorMessage);
     } else {
-      console.error('[RevenueCat] Initialization failed:', error);
+      if (__DEV__) console.error('[RevenueCat] Initialization failed:', error);
       Sentry.captureException(error instanceof Error ? error : new Error(errorMessage), {
         tags: { feature: 'revenuecat', operation: 'initialize' },
         contexts: {
@@ -87,17 +115,19 @@ export const initializeRevenueCat = async (): Promise<boolean> => {
  * @returns Promise<boolean> - true if user is premium, false otherwise
  */
 export const checkSubscriptionStatus = async (): Promise<boolean> => {
+  if (!REVENUECAT_ENABLED) return false; // SPEC-17
+
   try {
     const customerInfo = await Purchases.getCustomerInfo();
 
     // Check if user has any active entitlements
     const hasActiveEntitlement = typeof customerInfo.entitlements.active['premium'] !== 'undefined';
 
-    console.log('[RevenueCat] Subscription status:', hasActiveEntitlement ? 'Premium' : 'Free');
+    if (__DEV__) console.log('[RevenueCat] Subscription status:', hasActiveEntitlement ? 'Premium' : 'Free');
 
     return hasActiveEntitlement;
   } catch (error) {
-    console.error('[RevenueCat] Failed to check subscription status:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to check subscription status:', error);
 
     // Track error in Sentry
     Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
@@ -113,21 +143,25 @@ export const checkSubscriptionStatus = async (): Promise<boolean> => {
  * @returns Promise<PurchasesOffering | null> - Current offering or null if error
  */
 export const getCurrentOffering = async (): Promise<PurchasesOffering | null> => {
+  if (!REVENUECAT_ENABLED) return null; // SPEC-17
+
   try {
-    console.log('[RevenueCat] Fetching offerings...');
+    if (__DEV__) console.log('[RevenueCat] Fetching offerings...');
 
     const offerings = await Purchases.getOfferings();
 
     if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
-      console.log('[RevenueCat] Current offering:', offerings.current.identifier);
-      console.log('[RevenueCat] Available packages:', offerings.current.availablePackages.length);
+      if (__DEV__) {
+        console.log('[RevenueCat] Current offering:', offerings.current.identifier);
+        console.log('[RevenueCat] Available packages:', offerings.current.availablePackages.length);
+      }
       return offerings.current;
     }
 
-    console.warn('[RevenueCat] No offerings available');
+    if (__DEV__) console.warn('[RevenueCat] No offerings available');
     return null;
   } catch (error) {
-    console.error('[RevenueCat] Failed to get offerings:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to get offerings:', error);
 
     // Track error in Sentry
     Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
@@ -146,8 +180,13 @@ export const getCurrentOffering = async (): Promise<PurchasesOffering | null> =>
 export const purchasePackage = async (
   packageToPurchase: PurchasesPackage
 ): Promise<{ success: boolean; customerInfo?: CustomerInfo; error?: string }> => {
+  // SPEC-17: disabled in v1.0 — no purchase path exists.
+  if (!REVENUECAT_ENABLED) {
+    return { success: false, error: 'RevenueCat disabled' };
+  }
+
   try {
-    console.log('[RevenueCat] Purchasing package:', packageToPurchase.identifier);
+    if (__DEV__) console.log('[RevenueCat] Purchasing package:', packageToPurchase.identifier);
 
     const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
 
@@ -155,18 +194,18 @@ export const purchasePackage = async (
     const isPremium = typeof customerInfo.entitlements.active['premium'] !== 'undefined';
 
     if (isPremium) {
-      console.log('[RevenueCat] Purchase successful! User is now premium');
+      if (__DEV__) console.log('[RevenueCat] Purchase successful! User is now premium');
       return { success: true, customerInfo };
     } else {
-      console.warn('[RevenueCat] Purchase completed but user is not premium');
+      if (__DEV__) console.warn('[RevenueCat] Purchase completed but user is not premium');
       return { success: false, error: 'Purchase completed but entitlement not active' };
     }
   } catch (error: any) {
-    console.error('[RevenueCat] Purchase failed:', error);
+    if (__DEV__) console.error('[RevenueCat] Purchase failed:', error);
 
     // Check if user cancelled
     if (error.userCancelled) {
-      console.log('[RevenueCat] User cancelled the purchase');
+      if (__DEV__) console.log('[RevenueCat] User cancelled the purchase');
       return { success: false, error: 'User cancelled' };
     }
 
@@ -198,8 +237,13 @@ export const restorePurchases = async (): Promise<{
   customerInfo?: CustomerInfo;
   error?: string;
 }> => {
+  // SPEC-17: disabled in v1.0.
+  if (!REVENUECAT_ENABLED) {
+    return { success: false, error: 'RevenueCat disabled' };
+  }
+
   try {
-    console.log('[RevenueCat] Restoring purchases...');
+    if (__DEV__) console.log('[RevenueCat] Restoring purchases...');
 
     const customerInfo = await Purchases.restorePurchases();
 
@@ -207,14 +251,14 @@ export const restorePurchases = async (): Promise<{
     const isPremium = typeof customerInfo.entitlements.active['premium'] !== 'undefined';
 
     if (isPremium) {
-      console.log('[RevenueCat] Purchases restored! User is premium');
+      if (__DEV__) console.log('[RevenueCat] Purchases restored! User is premium');
       return { success: true, customerInfo };
     } else {
-      console.log('[RevenueCat] No active purchases to restore');
+      if (__DEV__) console.log('[RevenueCat] No active purchases to restore');
       return { success: false, error: 'No active purchases found' };
     }
   } catch (error) {
-    console.error('[RevenueCat] Failed to restore purchases:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to restore purchases:', error);
 
     // Track error in Sentry
     Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
@@ -233,11 +277,13 @@ export const restorePurchases = async (): Promise<{
  * @returns Promise<CustomerInfo | null>
  */
 export const getCustomerInfo = async (): Promise<CustomerInfo | null> => {
+  if (!REVENUECAT_ENABLED) return null; // SPEC-17
+
   try {
     const customerInfo = await Purchases.getCustomerInfo();
     return customerInfo;
   } catch (error) {
-    console.error('[RevenueCat] Failed to get customer info:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to get customer info:', error);
 
     // Track error in Sentry
     Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
@@ -257,6 +303,8 @@ export const getActiveSubscription = async (): Promise<{
   expirationDate?: string;
   productId?: string;
 }> => {
+  if (!REVENUECAT_ENABLED) return { isActive: false }; // SPEC-17
+
   try {
     const customerInfo = await Purchases.getCustomerInfo();
     const premiumEntitlement = customerInfo.entitlements.active['premium'];
@@ -271,7 +319,7 @@ export const getActiveSubscription = async (): Promise<{
 
     return { isActive: false };
   } catch (error) {
-    console.error('[RevenueCat] Failed to get active subscription:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to get active subscription:', error);
     return { isActive: false };
   }
 };
@@ -281,11 +329,13 @@ export const getActiveSubscription = async (): Promise<{
  * @param userId - User ID to identify
  */
 export const identifyUser = async (userId: string): Promise<void> => {
+  if (!REVENUECAT_ENABLED) return; // SPEC-17
+
   try {
     await Purchases.logIn(userId);
-    console.log('[RevenueCat] User identified:', userId);
+    if (__DEV__) console.log('[RevenueCat] User identified:', userId);
   } catch (error) {
-    console.error('[RevenueCat] Failed to identify user:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to identify user:', error);
 
     // Track error in Sentry
     Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
@@ -298,10 +348,12 @@ export const identifyUser = async (userId: string): Promise<void> => {
  * Log out user from RevenueCat (clears cached data)
  */
 export const logoutUser = async (): Promise<void> => {
+  if (!REVENUECAT_ENABLED) return; // SPEC-17
+
   try {
     await Purchases.logOut();
-    console.log('[RevenueCat] User logged out');
+    if (__DEV__) console.log('[RevenueCat] User logged out');
   } catch (error) {
-    console.error('[RevenueCat] Failed to logout user:', error);
+    if (__DEV__) console.error('[RevenueCat] Failed to logout user:', error);
   }
 };

@@ -16,8 +16,16 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 04 | Add user name to greeting | Feature | Low | None |
 | 05 | Apple Health sync onboarding screen | Feature | Low | None |
 | 06 | Learn tab images | Feature | Low | Deferred/optional |
-| 07 | Premium feature gating | Feature | Medium | RevenueCat dashboard configured |
+| 07 | Premium feature gating | Feature | Medium | Deferred to v1.1 — see SPEC-17 reactivation checklist |
 | 08 | App Store submission | Checklist | N/A | All above complete |
+| 09 | Auto-detect lbs/kg from device locale | Feature | Low | Folded into SPEC-11 |
+| 10 | Expo SDK 52 → 54 upgrade (iOS 26 compliance) | Upgrade | High | **Completed** |
+| 11 | Post-upgrade polish (dark mode, unit detect, header layout) | Feature | Low | **Completed** (includes SPEC-09) |
+| 12 | SDK upgrade regression fixes (Animated API, onboarding) | Bug fix | Medium | **Completed** |
+| 13 | Migrate WeightChart to react-native-gifted-charts | Feature | Medium | **Completed** |
+| 14 | NativeWind 4.2 upgrade attempt + React 19 css-interop fix | Bug fix | High | **Completed** (rolled back to 4.1.23) |
+| 16 | Sentry privacy hardening (App Store submission blocker) | Security | Medium | **Completed** |
+| 17 | RevenueCat runtime disablement for free v1 launch | Compliance | Medium | **Completed** — paywall hidden, RC dormant; reactivation §10 |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 

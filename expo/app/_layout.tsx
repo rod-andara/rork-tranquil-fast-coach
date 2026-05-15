@@ -16,7 +16,7 @@ import * as Localization from 'expo-localization';
 import { useFastStore } from "@/store/fastStore";
 import { useWeightStore } from "@/store/weightStore";
 import { initHealthKit } from "@/utils/appleHealth";
-import { initializeRevenueCat, checkSubscriptionStatus } from "@/services/revenuecat";
+import { initializeRevenueCat, checkSubscriptionStatus, REVENUECAT_ENABLED } from "@/services/revenuecat";
 import AppSetup from "@/App";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -131,18 +131,24 @@ function RootLayoutNav() {
         const detectedUnit = imperialRegions.includes(regionCode) ? 'lbs' : 'kg';
         setUnitDefault(detectedUnit);
 
-        // Initialize RevenueCat for subscription management
-        const revenueCatInitialized = await initializeRevenueCat();
-
-        if (revenueCatInitialized) {
-          // Check subscription status and update store
-          const isPremium = await checkSubscriptionStatus();
-          useFastStore.getState().setPremium(isPremium);
-        } else {
-          console.warn('[App] RevenueCat initialization failed');
+        // RevenueCat — gated by EXPO_PUBLIC_ENABLE_REVENUECAT (SPEC-17).
+        // For v1.0 (free launch), this is disabled. The whole block is a no-op
+        // when REVENUECAT_ENABLED is false: no network calls, no anonymous ID
+        // generation, no Sentry noise. Re-enable in v1.1 by setting the env var
+        // and provisioning EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY.
+        if (REVENUECAT_ENABLED) {
+          try {
+            const ok = await initializeRevenueCat();
+            if (ok) {
+              const isPremium = await checkSubscriptionStatus();
+              useFastStore.getState().setPremium(isPremium);
+            }
+          } catch (error) {
+            if (__DEV__) console.error('[App] RevenueCat init error:', error);
+          }
         }
       } catch (error) {
-        console.error('[App] Error during RevenueCat initialization:', error);
+        if (__DEV__) console.error('[App] Error during startup:', error);
       }
 
       // If user has previously connected to Apple Health, reinitialize on app startup
@@ -195,7 +201,13 @@ function RootLayoutNav() {
           presentation: "card",
         }}
       />
-      <Stack.Screen name="paywall" options={{ headerShown: true, title: 'Premium' }} />
+      {/*
+        SPEC-17: paywall route deliberately NOT registered in v1.0.
+        RevenueCat is disabled (EXPO_PUBLIC_ENABLE_REVENUECAT !== 'true'), so the
+        paywall has no offerings and no purchase flow. The file app/paywall.tsx is
+        retained for v1.1 reactivation — restore this <Stack.Screen> line when
+        re-enabling premium subscriptions.
+      */}
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
