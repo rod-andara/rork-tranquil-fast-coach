@@ -424,10 +424,10 @@ export default function WeightChart() {
       </View>
 
       {/* Chart */}
-      <View style={{ paddingLeft: 12, paddingRight: 0 }}>
       <LineChart
         data={chartData}
-        width={screenWidth - 60}
+        width={screenWidth - 48}
+        formatYLabel={(value) => `  ${value}`}
         height={260} // Increased height for better label visibility
         chartConfig={{
           backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
@@ -515,7 +515,6 @@ export default function WeightChart() {
         yAxisSuffix=""
         yAxisInterval={1}
       />
-      </View>
 
       {/* Chart Footer */}
       <View className="px-4 pb-4">

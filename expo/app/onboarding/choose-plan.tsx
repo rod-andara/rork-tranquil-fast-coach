@@ -1,6 +1,6 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
@@ -93,24 +93,6 @@ export default function ChoosePlanScreen() {
     customDuration,
     setCustomDuration,
   } = useFastStore();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
-
   const handleSaveCustomDuration = (hours: number, minutes: number) => {
     // Convert hours and minutes to total hours (decimal)
     const totalHours = hours + minutes / 60;
@@ -224,15 +206,7 @@ export default function ChoosePlanScreen() {
           </View>
         </ScrollView>
 
-        <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+        <View style={styles.footer}>
           <TouchableOpacity
             style={styles.button}
             onPress={handleContinue}
@@ -242,7 +216,7 @@ export default function ChoosePlanScreen() {
               Start {selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan
             </Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
 
         <CustomDurationModal
           visible={showCustomModal}

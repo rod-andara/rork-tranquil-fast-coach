@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Heart } from 'lucide-react-native';
@@ -11,8 +11,6 @@ import { initHealthKit } from '@/utils/appleHealth';
 import { useWeightStore } from '@/store/weightStore';
 
 export default function HealthSyncScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
   const [isConnecting, setIsConnecting] = useState(false);
   const { setHealthConnected } = useWeightStore();
 
@@ -22,23 +20,6 @@ export default function HealthSyncScreen() {
       router.replace('/onboarding/choose-plan');
     }
   }, []);
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1000,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
 
   const handleConnect = async () => {
     setIsConnecting(true);
@@ -64,9 +45,7 @@ export default function HealthSyncScreen() {
   return (
     <VideoBackground source={require('@/assets/videos/track-succeed.mp4')}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <Animated.View
-          style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-        >
+        <View style={styles.content}>
           <BlurView intensity={20} tint="dark" style={styles.textContainer}>
             <View style={styles.iconContainer}>
               <Heart size={48} color="#EF4444" fill="#EF4444" />
@@ -84,11 +63,9 @@ export default function HealthSyncScreen() {
             <View style={[styles.dot, styles.dotActive]} />
             <View style={styles.dot} />
           </View>
-        </Animated.View>
+        </View>
 
-        <Animated.View
-          style={[styles.footer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-        >
+        <View style={styles.footer}>
           <TouchableOpacity
             style={styles.button}
             onPress={handleConnect}
@@ -108,7 +85,7 @@ export default function HealthSyncScreen() {
           >
             <Text style={styles.skipText}>Skip for now</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       </SafeAreaView>
     </VideoBackground>
   );
