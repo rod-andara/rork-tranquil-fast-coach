@@ -201,19 +201,24 @@ export const useWeightStore = create<WeightState>()(
             : currentWeight;
         }
 
-        console.log(`[WeightStore] Progress calculation:`, {
-          currentWeight,
-          startWeight,
-          goalWeight,
-          goalStartDate: new Date(state.goal.startDate).toISOString(),
-        });
+        // SPEC-16: all weight-bearing logs are dev-only. In production these
+        // never run, so the Sentry console integration cannot capture them as
+        // breadcrumbs. Do NOT log weight/goal values in production.
+        if (__DEV__) {
+          console.log(`[WeightStore] Progress calculation:`, {
+            currentWeight,
+            startWeight,
+            goalWeight,
+            goalStartDate: new Date(state.goal.startDate).toISOString(),
+          });
+        }
 
         // Determine if this is a weight loss or weight gain goal
         const isWeightLoss = goalWeight < startWeight;
 
         // If current weight equals start weight, progress is 0%
         if (Math.abs(currentWeight - startWeight) < 0.01) {
-          console.log(`[WeightStore] No progress yet (current === start)`);
+          if (__DEV__) console.log(`[WeightStore] No progress yet (current === start)`);
           return 0;
         }
 
@@ -222,7 +227,7 @@ export const useWeightStore = create<WeightState>()(
           (isWeightLoss && currentWeight <= goalWeight) || // Weight loss goal achieved
           (!isWeightLoss && currentWeight >= goalWeight)   // Weight gain goal achieved
         ) {
-          console.log(`[WeightStore] Goal achieved!`);
+          if (__DEV__) console.log(`[WeightStore] Goal achieved!`);
           return 100;
         }
 
@@ -231,7 +236,7 @@ export const useWeightStore = create<WeightState>()(
           (isWeightLoss && currentWeight > startWeight) || // Weight increased when trying to lose
           (!isWeightLoss && currentWeight < startWeight)   // Weight decreased when trying to gain
         ) {
-          console.log(`[WeightStore] Regression detected (moving away from goal)`);
+          if (__DEV__) console.log(`[WeightStore] Regression detected (moving away from goal)`);
           return 0;
         }
 
@@ -242,10 +247,12 @@ export const useWeightStore = create<WeightState>()(
         // Progress is how much of the total change has been achieved
         const progress = (currentChange / totalChange) * 100;
 
-        console.log(`[WeightStore] Progress: ${progress.toFixed(1)}%`, {
-          totalChange: totalChange.toFixed(2),
-          currentChange: currentChange.toFixed(2),
-        });
+        if (__DEV__) {
+          console.log(`[WeightStore] Progress: ${progress.toFixed(1)}%`, {
+            totalChange: totalChange.toFixed(2),
+            currentChange: currentChange.toFixed(2),
+          });
+        }
 
         // Clamp between 0 and 100
         return Math.min(100, Math.max(0, progress));

@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { Line, Text as SvgText } from 'react-native-svg';
+import { LineChart } from 'react-native-gifted-charts';
+import * as Sentry from '@sentry/react-native';
 import { Scale } from 'lucide-react-native';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore } from '@/store/weightStore';
@@ -104,51 +104,56 @@ export default function WeightChart() {
 
   // Prepare chart data using sampled displayData
   const chartData = useMemo(() => {
-    if (displayData.length === 0) {
-      return null;
-    }
+    if (displayData.length === 0) return null;
 
-    // Create labels from sampled data, context-aware for month boundaries
-    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const labels = displayData.map((entry, idx) => {
+    const monthsShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    return displayData.map((entry, idx) => {
       const date = new Date(entry.date);
       const prevDate = idx > 0 ? new Date(displayData[idx - 1].date) : null;
       const monthChanged = !prevDate || prevDate.getMonth() !== date.getMonth();
 
+      let label: string;
       switch (selectedRange) {
         case '7d':
-          return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+          label = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][date.getDay()];
+          break;
         case '30d':
-          return monthChanged
+          label = monthChanged
             ? `${monthsShort[date.getMonth()]} ${date.getDate()}`
             : `${date.getDate()}`;
+          break;
         case '90d':
-          return `${date.getMonth() + 1}/${date.getDate()}`;
+          label = `${date.getMonth() + 1}/${date.getDate()}`;
+          break;
         case 'all': {
           const monthsCompact = ['J','F','M','A','M','J','J','A','S','O','N','D'];
-          return `${monthsCompact[date.getMonth()]}'${String(date.getFullYear()).slice(-2)}`;
+          label = `${monthsCompact[date.getMonth()]}'${String(date.getFullYear()).slice(-2)}`;
+          break;
         }
         default:
-          return `${date.getMonth() + 1}/${date.getDate()}`;
+          label = `${date.getMonth() + 1}/${date.getDate()}`;
       }
+
+      return {
+        value: entry.weight,
+        label,
+      };
     });
+  }, [displayData, selectedRange]);
 
-    // Create data points from sampled data
-    const data = displayData.map((entry) => entry.weight);
-
-    return {
-      labels,
-      datasets: [
-        {
-          data,
-          color: (opacity = 1) => (isDarkMode ? `rgba(167, 139, 250, ${opacity})` : `rgba(124, 58, 237, ${opacity})`),
-          strokeWidth: 3,
-        },
-      ],
-      legend: ['Weight'],
-    };
-  }, [displayData, goal, isDarkMode, selectedRange, filteredEntries.length]);
+  useEffect(() => {
+    Sentry.addBreadcrumb({
+      category: 'chart',
+      message: 'WeightChart rendered',
+      level: 'info',
+      data: {
+        range: selectedRange,
+        points: displayData.length,
+        hasGoal: !!goal,
+      },
+    });
+  }, [selectedRange, displayData.length, goal]);
 
   // Empty state
   if (entries.length === 0) {
@@ -424,97 +429,80 @@ export default function WeightChart() {
       </View>
 
       {/* Chart */}
-      <LineChart
-        data={chartData}
-        width={screenWidth - 48}
-        formatYLabel={(value) => `  ${value}`}
-        height={260} // Increased height for better label visibility
-        chartConfig={{
-          backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
-          backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
-          backgroundGradientTo: isDarkMode ? '#1F2937' : '#FFFFFF',
-          decimalPlaces: 0,
-          color: (opacity = 1) => (isDarkMode ? `rgba(167, 139, 250, ${opacity})` : `rgba(124, 58, 237, ${opacity})`),
-          labelColor: (opacity = 1) => (isDarkMode ? `rgba(156, 163, 175, ${opacity})` : `rgba(107, 114, 128, ${opacity})`),
-          style: {
-            borderRadius: 16,
-          },
-          propsForDots: {
-            r: '5',
-            strokeWidth: '2',
-            stroke: isDarkMode ? '#A78BFA' : '#7C3AED',
-            fill: isDarkMode ? '#1F2937' : '#FFFFFF',
-          },
-          propsForBackgroundLines: {
-            strokeDasharray: '', // solid lines
-            stroke: isDarkMode ? '#374151' : '#E5E7EB',
-            strokeWidth: 1,
-          },
-          propsForLabels: {
-            fontSize: 10,
-            fontWeight: '400',
-          },
-        }}
-        bezier // Smooth curve interpolation
-        style={{
-          marginVertical: 8,
-          borderRadius: 16,
-          paddingRight: 16,
-        }}
-        decorator={() => {
-          if (!goal || !chartData) return null;
-
-          const weights = displayData.map(e => e.weight);
-          const allValues = [...weights, goal.targetWeight];
-          const minY = Math.min(...allValues);
-          const maxY = Math.max(...allValues);
-
-          if (maxY === minY) return null;
-
-          const chartHeight = 260;
-          const chartPadding = { top: 16, bottom: 40 };
-          const usableHeight = chartHeight - chartPadding.top - chartPadding.bottom;
-
-          const yRatio = (goal.targetWeight - minY) / (maxY - minY);
-          const yPos = chartPadding.top + usableHeight * (1 - yRatio);
-
-          const goalColor = isDarkMode ? '#10B981' : '#059669';
+      <View style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+        {(() => {
+          const values = chartData!.map(d => d.value);
+          if (goal) values.push(goal.targetWeight);
+          const dataMin = Math.min(...values);
+          const dataMax = Math.max(...values);
+          const padding = Math.max(2, (dataMax - dataMin) * 0.2);
+          const minValue = Math.floor(dataMin - padding);
+          const maxValue = Math.ceil(dataMax + padding);
 
           return (
-            <>
-              <Line
-                x1={64}
-                y1={yPos}
-                x2={screenWidth - 48}
-                y2={yPos}
-                stroke={goalColor}
-                strokeWidth={1.5}
-                strokeDasharray="6,4"
-              />
-              <SvgText
-                x={screenWidth - 46}
-                y={yPos - 6}
-                fill={goalColor}
-                fontSize={10}
-                fontWeight="600"
-                textAnchor="end"
-              >
-                Goal
-              </SvgText>
-            </>
+        <LineChart
+          data={chartData!}
+          width={screenWidth - 80}
+          height={220}
+          spacing={(screenWidth - 80 - 40) / Math.max(chartData!.length - 1, 1)}
+          initialSpacing={10}
+          endSpacing={10}
+
+          yAxisOffset={minValue}
+          maxValue={maxValue - minValue}
+          yAxisLabelWidth={44}
+          yAxisTextStyle={{
+            fontSize: 10,
+            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+          }}
+          yAxisColor="transparent"
+          noOfSections={4}
+          formatYLabel={(v) => `${Math.round(Number(v))}`}
+
+          xAxisColor={isDarkMode ? '#374151' : '#E5E7EB'}
+          xAxisLabelTextStyle={{
+            fontSize: 10,
+            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+          }}
+
+          color={isDarkMode ? '#A78BFA' : '#7C3AED'}
+          thickness={3}
+          curved
+          dataPointsColor={isDarkMode ? '#A78BFA' : '#7C3AED'}
+          dataPointsRadius={5}
+
+          areaChart
+          startFillColor={isDarkMode ? '#A78BFA' : '#7C3AED'}
+          endFillColor={isDarkMode ? '#A78BFA' : '#7C3AED'}
+          startOpacity={0.25}
+          endOpacity={0.05}
+
+          rulesType="solid"
+          rulesColor={isDarkMode ? '#374151' : '#E5E7EB'}
+          showVerticalLines={false}
+
+          {...(goal ? {
+            showReferenceLine1: true,
+            referenceLine1Position: goal.targetWeight,
+            referenceLine1Config: {
+              color: isDarkMode ? '#10B981' : '#059669',
+              dashWidth: 6,
+              dashGap: 4,
+              thickness: 1.5,
+              labelText: 'Goal',
+              labelTextStyle: {
+                color: isDarkMode ? '#10B981' : '#059669',
+                fontSize: 10,
+                fontWeight: '600',
+              },
+            },
+          } : {})}
+
+          isAnimated={false}
+        />
           );
-        }}
-        withHorizontalLabels={true}
-        withVerticalLabels={true}
-        withInnerLines={true}
-        withOuterLines={false}
-        withVerticalLines={false}
-        withHorizontalLines={true}
-        fromZero={false}
-        segments={4}
-        yAxisSuffix=""
-        yAxisInterval={1}
-      />
+        })()}
+      </View>
 
       {/* Chart Footer */}
       <View className="px-4 pb-4">

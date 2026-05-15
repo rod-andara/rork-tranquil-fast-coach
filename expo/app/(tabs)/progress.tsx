@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Text, View, ScrollView, Dimensions, Platform, TouchableOpacity } from 'react-native';
-import { BarChart } from 'react-native-chart-kit';
+import { Text, View, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { TrendingUp, Clock, Trophy, Calendar, Plus, Target, Scale } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -182,7 +182,14 @@ export default function ProgressScreen() {
           <View className="flex-row gap-2 mb-3">
             {/* Set/Edit Goal Button */}
             <TouchableOpacity
-              onPress={() => setShowGoalModal(true)}
+              onPress={() => {
+                Sentry.addBreadcrumb({
+                  category: 'ui.action',
+                  message: goal ? 'Tapped Edit Goal' : 'Tapped Set Goal',
+                  level: 'info',
+                });
+                setShowGoalModal(true);
+              }}
               className={`flex-1 flex-row items-center justify-center gap-2 px-4 py-2 rounded-lg ${
                 goal
                   ? 'bg-brand-50 dark:bg-brand-900/30'
@@ -205,7 +212,14 @@ export default function ProgressScreen() {
 
             {/* Add Weight Button */}
             <TouchableOpacity
-              onPress={() => setShowWeightModal(true)}
+              onPress={() => {
+                Sentry.addBreadcrumb({
+                  category: 'ui.action',
+                  message: 'Tapped Add Weight',
+                  level: 'info',
+                });
+                setShowWeightModal(true);
+              }}
               className="flex-1 flex-row items-center justify-center gap-2 bg-primary-600 px-4 py-2 rounded-lg"
               style={{ minHeight: 44 }}
               activeOpacity={0.8}
@@ -371,59 +385,27 @@ export default function ProgressScreen() {
             }}>
               This Week
             </Text>
-            {Platform.OS !== 'web' ? (
-              <BarChart
-                data={{
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [
-                  {
-                    data: stats.weekData,
-                  },
-                ],
-              }}
-                width={screenWidth - 16 * 2 - 12 * 2}
-                height={175}
-                yAxisLabel=""
-                yAxisSuffix="h"
-                chartConfig={{
-                backgroundColor: isDarkMode ? '#1F2937' : '#FFFFFF',
-                backgroundGradientFrom: isDarkMode ? '#1F2937' : '#FFFFFF',
-                backgroundGradientTo: isDarkMode ? '#1F2937' : '#FFFFFF',
-                decimalPlaces: 0,
-                color: (opacity = 1) => isDarkMode
-                  ? `rgba(167, 139, 250, ${opacity})`
-                  : `rgba(124, 58, 237, ${opacity})`,
-                labelColor: (opacity = 1) => isDarkMode
-                  ? `rgba(209, 213, 219, ${opacity})`
-                  : `rgba(107, 114, 128, ${opacity})`,
-                barPercentage: 0.7,
-                propsForBackgroundLines: {
-                  strokeWidth: 0,
-                },
-              }}
-                style={{ marginVertical: 8, borderRadius: 12 }}
-                showValuesOnTopOfBars={false}
-                withInnerLines={false}
-                fromZero
-              />
-            ) : (
-              <View className="flex-row items-end justify-between h-[160px] px-4">
-                {stats.weekData.map((v, idx) => (
-                  <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 12 * 2) / 7 - 4 }}>
-                    <View
-                      className="w-full rounded-md"
-                      style={{
-                        height: Math.max(10, (v / 24) * 140),
-                        backgroundColor: isDarkMode ? '#A78BFA' : '#7C3AED'
-                      }}
-                    />
-                    <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
+            <View className="flex-row items-end justify-between h-[160px] px-4">
+              {stats.weekData.map((v, idx) => (
+                <View key={idx} className="items-center" style={{ width: (screenWidth - 16 * 2 - 12 * 2) / 7 - 4 }}>
+                  {v > 0 && (
+                    <Text className="text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
+                      {v.toFixed(1)}h
                     </Text>
-                  </View>
-                ))}
-              </View>
-            )}
+                  )}
+                  <View
+                    className="w-full rounded-md"
+                    style={{
+                      height: Math.max(10, (v / 24) * 140),
+                      backgroundColor: isDarkMode ? '#A78BFA' : '#7C3AED'
+                    }}
+                  />
+                  <Text className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
+                  </Text>
+                </View>
+              ))}
+            </View>
         </GlassCard>
 
         {/* Achievements Section */}
