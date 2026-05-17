@@ -28,6 +28,7 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 17 | RevenueCat runtime disablement for free v1 launch | Compliance | Medium | **Completed** — paywall hidden, RC dormant; reactivation §10 |
 | 18 | HealthKit usage description fix + App Review cleanup | Compliance | Small | **Completed** — write desc no longer mentions fasting data; HealthKit consumer logs gated; medical-professional copy softened |
 | 19 | Learn-tab external links cleanup | Compliance | Small | **Completed** — supplement health claim removed; "fat burning" + "therapeutic" softened; wellness disclaimer + "Opens in Safari" indicator added |
+| 20 | Notifications brand-voice + lifecycle cleanup | Compliance | Small | **Completed** — milestone copy rewritten (no "fat-burning"/"autophagy"/hype); cancellation wired into endFast / pauseFast / updatePlan / setNotificationsEnabled(false); UIBackgroundModes remote-notification removed; usage description softened |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 
