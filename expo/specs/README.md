@@ -26,6 +26,7 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 14 | NativeWind 4.2 upgrade attempt + React 19 css-interop fix | Bug fix | High | **Completed** (rolled back to 4.1.23) |
 | 16 | Sentry privacy hardening (App Store submission blocker) | Security | Medium | **Completed** |
 | 17 | RevenueCat runtime disablement for free v1 launch | Compliance | Medium | **Completed** — paywall hidden, RC dormant; reactivation §10 |
+| 18 | HealthKit usage description fix + App Review cleanup | Compliance | Small | **Completed** — write desc no longer mentions fasting data; HealthKit consumer logs gated; medical-professional copy softened |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 

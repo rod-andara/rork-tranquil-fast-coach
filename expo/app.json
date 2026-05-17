@@ -24,8 +24,8 @@
           "remote-notification"
         ],
         "NSUserNotificationsUsageDescription": "We need permission to send you fasting reminders and milestone notifications.",
-        "NSHealthShareUsageDescription": "We need access to read your weight from Apple Health to automatically track your progress and provide personalized insights.",
-        "NSHealthUpdateUsageDescription": "We need access to write your weight and fasting data to Apple Health for a complete health picture and seamless integration with your other health apps.",
+        "NSHealthShareUsageDescription": "We read your weight from Apple Health so your existing entries appear in Tranquil Fast automatically — no need to re-enter them.",
+        "NSHealthUpdateUsageDescription": "We write your weight entries to Apple Health so you have a single, consistent record across all your health apps.",
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
             "images.unsplash.com": {

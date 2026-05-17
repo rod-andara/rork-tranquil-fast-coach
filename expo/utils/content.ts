@@ -122,7 +122,7 @@ export const contentData: ContentItem[] = [
     gradientColors: ['#A8EDEA', '#FED6E3'],
     price: '$14.99',
     rating: '5/5',
-    whyRecommended: 'Evidence-based approach from medical professional',
+    whyRecommended: 'Evidence-informed approach from a health professional',
   },
   {
     id: '12',

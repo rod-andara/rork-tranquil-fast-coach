@@ -33,7 +33,9 @@ export default function HealthSyncScreen() {
         router.push('/onboarding/choose-plan');
       }
     } catch (error) {
-      console.error('[HealthSync] Failed to init HealthKit:', error);
+      // SPEC-18: gated to prevent native error strings from leaking
+      // HealthKit state to the device console in production builds.
+      if (__DEV__) console.error('[HealthSync] Failed to init HealthKit:', error);
       router.push('/onboarding/choose-plan');
     } finally {
       setIsConnecting(false);
