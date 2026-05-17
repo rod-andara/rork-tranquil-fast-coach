@@ -10,7 +10,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Search, ChevronRight, BookOpen, ShoppingBag, Star } from 'lucide-react-native';
+import { Search, ChevronRight, BookOpen, ShoppingBag, Star, ExternalLink } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -79,8 +79,13 @@ export default function LearnScreen() {
         <Text className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">
           Learn & Grow
         </Text>
-        <Text className="text-base text-neutral-500 dark:text-neutral-400 mb-3">
+        <Text className="text-base text-neutral-500 dark:text-neutral-400 mb-2">
           Recipes, tips, and expert guidance
+        </Text>
+
+        {/* SPEC-19: wellness / not-medical-advice disclaimer */}
+        <Text className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 leading-4">
+          Educational content for general wellness — not medical advice. Consult a healthcare professional before changing your diet, exercise routine, or fasting schedule.
         </Text>
 
         {/* Search Bar */}
@@ -213,6 +218,13 @@ function RecipeCard({ recipe }: { recipe: ContentItem }) {
             ))}
           </View>
         )}
+        {/* SPEC-19: external-link indicator */}
+        <View className="flex-row items-center gap-1 mt-1.5">
+          <ExternalLink size={11} color="#9CA3AF" strokeWidth={2} />
+          <Text className="text-xs text-neutral-400 dark:text-neutral-500">
+            Opens in Safari
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -247,6 +259,13 @@ function ArticleCard({ article }: { article: ContentItem }) {
           {article.title}
         </Text>
         <Text className="text-sm text-neutral-500 dark:text-neutral-400" numberOfLines={2}>{article.desc}</Text>
+        {/* SPEC-19: external-link indicator */}
+        <View className="flex-row items-center gap-1 mt-1.5">
+          <ExternalLink size={11} color="#9CA3AF" strokeWidth={2} />
+          <Text className="text-xs text-neutral-400 dark:text-neutral-500">
+            Opens in Safari
+          </Text>
+        </View>
       </View>
       <ChevronRight size={20} color="#6B7280" strokeWidth={2} />
     </TouchableOpacity>
@@ -310,6 +329,13 @@ function ProductCard({ product }: { product: ContentItem }) {
             </Text>
           </View>
         )}
+        {/* SPEC-19: external-link indicator */}
+        <View className="flex-row items-center gap-1 mt-1.5">
+          <ExternalLink size={11} color="#9CA3AF" strokeWidth={2} />
+          <Text className="text-xs text-neutral-400 dark:text-neutral-500">
+            Opens in Safari
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
