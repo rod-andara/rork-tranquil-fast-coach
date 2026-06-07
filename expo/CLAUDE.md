@@ -132,8 +132,10 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 - **NEVER** restore the placeholder API key fallback `'appl_YOUR_API_KEY_HERE'` in `services/revenuecat.ts`. The constants must remain `string | undefined`, sourced exclusively from env vars (SPEC-17).
 - **NEVER** call `getPlanDuration(selectedPlan)` without the `customDuration` parameter when `selectedPlan` could be `'custom'`. This is a known bug source.
 - **NEVER** add `console.log` to production paths without `__DEV__` guards. Many debug logs exist from prior sessions -- clean them up when touching those files.
+- **NEVER** run `npx expo run:ios`, `npx expo run:android`, or `npx expo prebuild`. These generate a local `ios/`/`android/` directory whose `Info.plist` then silently overrides `app.json` on the next EAS Build (this caused the canceled build 101 — stale HealthKit/notification strings). The simulator is run via `npx expo start` + Expo Go / dev client only. If you ever need to inspect native config, read `app.json` — never generate the native project.
 
 ### Known Constraints
+- **Managed workflow — native dirs are GENERATED, never committed (SPEC-22 lesson).** This project has no committed `ios/` or `android/` directory. EAS Build runs `expo prebuild` on the server from `app.json`, so `app.json` is the single source of truth for `Info.plist` (permission strings, `UIBackgroundModes`, entitlements). Both `.gitignore` and `expo/.gitignore` ignore `/ios` and `/android`. **If a local `ios/`/`android/` dir exists, EAS uploads it and its stale `Info.plist` silently overrides `app.json`** — this shipped the wrong HealthKit/notification strings into build 101 (canceled). Canary: if a build log prints *"an ios directory was detected in the project / EAS Build will use the value found in the native code"*, STOP — delete `expo/ios` and `expo/android` and rebuild. All compliance permission edits (SPEC-18 HealthKit, SPEC-20 notifications) live in `app.json` and only reach the binary via a clean server prebuild.
 - **Old Architecture only** (`newArchEnabled: false` in `app.json`). Do NOT enable New Architecture without a dedicated migration spec. Enabling it would unblock NativeWind 4.2 but requires auditing all native modules — out of scope.
 - **NativeWind pinned at 4.1.23.** Do not bump to 4.2+ without first enabling New Architecture (see SPEC-14 progress notes). NativeWind 4.2 requires `react-native-worklets` which requires New Arch.
 - **Tailwind `transition-*` and `animate-*` utility classes are FORBIDDEN** in any `className` prop. They trigger `css-interop`'s `Animated.createAnimatedComponent` path, which crashes under React 19. Use `react-native-reanimated` directly for any animation.
@@ -188,9 +190,17 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
 
-**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1).
-**Pending:** SPEC-05 (Apple Health onboarding), SPEC-06 (Learn tab images), SPEC-08 (App Store submission).
+**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check).
+**In progress:** SPEC-21 (App Store submission punch list — paperwork checklist; build + ASC listing).
+**Pending:** SPEC-05 (Apple Health onboarding), SPEC-06 (Learn tab images), SPEC-08 (App Store submission — superseded by SPEC-21).
 **Deferred to v1.1:** SPEC-07 (premium gating) — depends on SPEC-17 reactivation; see SPEC-17 §10 checklist.
+
+### App Store submission status (v1.0)
+All engineering compliance work is complete (SPEC-16 through SPEC-22). Remaining
+work is paperwork in SPEC-21: production build, privacy-policy URL hosting,
+screenshots, App Privacy labels, and the ASC listing. The compliance-clean
+build candidate is built via `eas build --platform ios --profile production`
+from `app.json` (NOT from any local native dir — see Known Constraints).
 
 ## Build Commands
 ```bash
