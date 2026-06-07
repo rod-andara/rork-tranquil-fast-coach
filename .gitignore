@@ -12,3 +12,6 @@ node_modules
 # Misc
 .DS_Store
 *.log
+
+# Expo-generated type file (should not be committed per Expo docs)
+expo-env.d.ts
