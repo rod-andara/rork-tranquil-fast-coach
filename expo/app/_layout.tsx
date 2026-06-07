@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
-import { Platform, View } from "react-native";
+import { Appearance, Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "nativewind";
 import * as Sentry from "@sentry/react-native";
@@ -16,30 +16,92 @@ import * as Localization from 'expo-localization';
 import { useFastStore } from "@/store/fastStore";
 import { useWeightStore } from "@/store/weightStore";
 import { initHealthKit } from "@/utils/appleHealth";
-import { initializeRevenueCat, checkSubscriptionStatus } from "@/services/revenuecat";
+import { initializeRevenueCat, checkSubscriptionStatus, REVENUECAT_ENABLED } from "@/services/revenuecat";
 import AppSetup from "@/App";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Initialize Sentry for error tracking
+// ---------------------------------------------------------------------------
+// SPEC-16: Sentry Privacy Hardening
+// ---------------------------------------------------------------------------
+// Tranquil Fast is a privacy-first weight/fasting app. Sentry is configured for
+// minimal crash reporting only — no health, weight, fasting, or user-identifying
+// data may leave the device. See expo/specs/SPEC-16-sentry-privacy-hardening.md
+// for the full rationale, before/after posture, and acceptance criteria.
+// ---------------------------------------------------------------------------
+
+// Keys that must never appear in any Sentry payload. Used by the redactor below
+// as a defense-in-depth scrub on every outgoing event and breadcrumb.
+const SENSITIVE_KEYS = new Set([
+  'weight', 'currentWeight', 'startWeight', 'goalWeight', 'targetWeight',
+  'bodyMass', 'fastingHistory', 'fastingDuration', 'fastStart', 'fastEnd',
+  'userName', 'name', 'healthData', 'appleHealth', 'healthkit',
+  'goalStartDate', 'options',
+]);
+
+function redactSensitive<T>(input: T): T {
+  if (input === null || input === undefined) return input;
+  if (Array.isArray(input)) {
+    return input.map((v) => redactSensitive(v)) as unknown as T;
+  }
+  if (typeof input === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+      if (SENSITIVE_KEYS.has(k)) {
+        out[k] = '[redacted]';
+      } else {
+        out[k] = redactSensitive(v);
+      }
+    }
+    return out as T;
+  }
+  return input;
+}
+
+// Initialize Sentry — minimal crash reporting only.
 Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://YOUR_DSN_HERE@o4508556583305216.ingest.us.sentry.io/4508556585926656",
-  // Adjust trace sample rate based on environment
-  // Production: 0.1 (10%) to reduce bandwidth and costs
-  // Development: 1.0 (100%) for full debugging
-  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
-  // Set to true to enable debug mode (only in development)
+  // DSN comes exclusively from the EAS secret EXPO_PUBLIC_SENTRY_DSN.
+  // If unset at build time, the SDK no-ops gracefully (no events sent).
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  environment: __DEV__ ? 'development' : 'production',
   debug: __DEV__,
-  environment: __DEV__ ? "development" : "production",
-  // Enable native crash reporting
-  enableNative: true,
-  // Enable automatic session tracking
-  enableAutoSessionTracking: true,
-  // Session timeout (30 seconds)
-  sessionTrackingIntervalMillis: 30000,
-  // Limit breadcrumbs to prevent memory accumulation
-  maxBreadcrumbs: 50,
-  // Attach stack trace to breadcrumbs (false saves memory)
+
+  // --- Minimal crash reporting only ---
+  enableNative: true,                   // native iOS crashes — keep
   attachStacktrace: false,
+
+  // --- Disabled tracing/telemetry surfaces (SPEC-16 §4.3) ---
+  tracesSampleRate: 0,                  // no performance tracing
+  enableAutoPerformanceTracing: false,
+  enableUserInteractionTracing: false,  // no auto touch breadcrumbs
+  enableAutoSessionTracking: false,     // no session start/stop events
+
+  // --- PII safety ---
+  sendDefaultPii: false,
+  maxBreadcrumbs: 30,
+
+  // --- Defense-in-depth: drop console breadcrumbs entirely in prod ---
+  beforeBreadcrumb(breadcrumb) {
+    if (!__DEV__ && breadcrumb.category === 'console') return null;
+    if (breadcrumb.data) {
+      breadcrumb.data = redactSensitive(breadcrumb.data);
+    }
+    return breadcrumb;
+  },
+
+  // --- Final-stage outbound scrub of every event payload ---
+  beforeSend(event) {
+    if (event.contexts) event.contexts = redactSensitive(event.contexts);
+    if (event.extra) event.extra = redactSensitive(event.extra);
+    if (event.tags) event.tags = redactSensitive(event.tags);
+    if (event.request) event.request = redactSensitive(event.request);
+    if (event.breadcrumbs) {
+      event.breadcrumbs = event.breadcrumbs.map((b) => ({
+        ...b,
+        data: b.data ? redactSensitive(b.data) : b.data,
+      }));
+    }
+    return event;
+  },
 });
 
 SplashScreen.preventAutoHideAsync();
@@ -57,6 +119,10 @@ function RootLayoutNav() {
         // Load store data from storage
         await useFastStore.getState().loadFromStorage();
 
+        // Auto-detect dark mode on first launch (no-op if user already chose)
+        const systemColorScheme = Appearance.getColorScheme();
+        useFastStore.getState().setDarkModeDefault(systemColorScheme === 'dark');
+
         // Auto-detect unit preference on first launch
         const { setUnitDefault } = useWeightStore.getState();
         const locales = Localization.getLocales();
@@ -65,18 +131,24 @@ function RootLayoutNav() {
         const detectedUnit = imperialRegions.includes(regionCode) ? 'lbs' : 'kg';
         setUnitDefault(detectedUnit);
 
-        // Initialize RevenueCat for subscription management
-        const revenueCatInitialized = await initializeRevenueCat();
-
-        if (revenueCatInitialized) {
-          // Check subscription status and update store
-          const isPremium = await checkSubscriptionStatus();
-          useFastStore.getState().setPremium(isPremium);
-        } else {
-          console.warn('[App] RevenueCat initialization failed');
+        // RevenueCat — gated by EXPO_PUBLIC_ENABLE_REVENUECAT (SPEC-17).
+        // For v1.0 (free launch), this is disabled. The whole block is a no-op
+        // when REVENUECAT_ENABLED is false: no network calls, no anonymous ID
+        // generation, no Sentry noise. Re-enable in v1.1 by setting the env var
+        // and provisioning EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY.
+        if (REVENUECAT_ENABLED) {
+          try {
+            const ok = await initializeRevenueCat();
+            if (ok) {
+              const isPremium = await checkSubscriptionStatus();
+              useFastStore.getState().setPremium(isPremium);
+            }
+          } catch (error) {
+            if (__DEV__) console.error('[App] RevenueCat init error:', error);
+          }
         }
       } catch (error) {
-        console.error('[App] Error during RevenueCat initialization:', error);
+        if (__DEV__) console.error('[App] Error during startup:', error);
       }
 
       // If user has previously connected to Apple Health, reinitialize on app startup
@@ -129,7 +201,13 @@ function RootLayoutNav() {
           presentation: "card",
         }}
       />
-      <Stack.Screen name="paywall" options={{ headerShown: true, title: 'Premium' }} />
+      {/*
+        SPEC-17: paywall route deliberately NOT registered in v1.0.
+        RevenueCat is disabled (EXPO_PUBLIC_ENABLE_REVENUECAT !== 'true'), so the
+        paywall has no offerings and no purchase flow. The file app/paywall.tsx is
+        retained for v1.1 reactivation — restore this <Stack.Screen> line when
+        re-enabling premium subscriptions.
+      */}
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );

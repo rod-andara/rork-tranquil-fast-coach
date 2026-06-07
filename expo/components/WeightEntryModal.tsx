@@ -1,3 +1,7 @@
+// NOTE: Do NOT use Tailwind transition-* or animate-* utility classes anywhere in
+// className props. react-native-css-interop wraps such components with
+// Animated.createAnimatedComponent, which crashes under React 19 + RN's non-forwardRef
+// Views. For animations, use react-native-reanimated directly. See SPEC-15 for context.
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -256,7 +260,7 @@ export default function WeightEntryModal({
                     }`}
                   >
                     <View
-                      className={`w-5 h-5 rounded-full bg-white transition-all ${
+                      className={`w-5 h-5 rounded-full bg-white ${
                         syncToHealth ? 'ml-auto' : 'ml-0'
                       }`}
                     />

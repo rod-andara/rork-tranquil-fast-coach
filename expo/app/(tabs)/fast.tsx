@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { Text, View, TouchableOpacity, ScrollView, Switch, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
@@ -18,15 +18,6 @@ export default function FastScreen() {
 
   const progress = currentFast ? calc(elapsedMs, currentFast.plannedDuration) : 0;
   const targetEndTime = currentFast ? currentFast.startTime + currentFast.plannedDuration : 0;
-  const animatedWidth = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(animatedWidth, {
-      toValue: progress,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  }, [progress, animatedWidth]);
 
   const handlePauseResume = () => {
     if (Platform.OS !== 'web') {
@@ -162,14 +153,9 @@ export default function FastScreen() {
           {/* Progress Bar - true 0% width with visible border */}
           <View className="w-full mt-2">
             <View className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden w-full border border-neutral-300 dark:border-neutral-600">
-              <Animated.View
+              <View
                 className="h-full bg-primary-600 rounded-full"
-                style={{
-                  width: animatedWidth.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: ['0%', '100%']
-                  })
-                }}
+                style={{ width: `${progress}%` }}
               />
             </View>
           </View>

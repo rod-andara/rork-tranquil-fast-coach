@@ -16,8 +16,21 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 04 | Add user name to greeting | Feature | Low | None |
 | 05 | Apple Health sync onboarding screen | Feature | Low | None |
 | 06 | Learn tab images | Feature | Low | Deferred/optional |
-| 07 | Premium feature gating | Feature | Medium | RevenueCat dashboard configured |
+| 07 | Premium feature gating | Feature | Medium | Deferred to v1.1 — see SPEC-17 reactivation checklist |
 | 08 | App Store submission | Checklist | N/A | All above complete |
+| 09 | Auto-detect lbs/kg from device locale | Feature | Low | Folded into SPEC-11 |
+| 10 | Expo SDK 52 → 54 upgrade (iOS 26 compliance) | Upgrade | High | **Completed** |
+| 11 | Post-upgrade polish (dark mode, unit detect, header layout) | Feature | Low | **Completed** (includes SPEC-09) |
+| 12 | SDK upgrade regression fixes (Animated API, onboarding) | Bug fix | Medium | **Completed** |
+| 13 | Migrate WeightChart to react-native-gifted-charts | Feature | Medium | **Completed** |
+| 14 | NativeWind 4.2 upgrade attempt + React 19 css-interop fix | Bug fix | High | **Completed** (rolled back to 4.1.23) |
+| 16 | Sentry privacy hardening (App Store submission blocker) | Security | Medium | **Completed** |
+| 17 | RevenueCat runtime disablement for free v1 launch | Compliance | Medium | **Completed** — paywall hidden, RC dormant; reactivation §10 |
+| 18 | HealthKit usage description fix + App Review cleanup | Compliance | Small | **Completed** — write desc no longer mentions fasting data; HealthKit consumer logs gated; medical-professional copy softened |
+| 19 | Learn-tab external links cleanup | Compliance | Small | **Completed** — supplement health claim removed; "fat burning" + "therapeutic" softened; wellness disclaimer + "Opens in Safari" indicator added |
+| 20 | Notifications brand-voice + lifecycle cleanup | Compliance | Small | **Completed** — milestone copy rewritten (no "fat-burning"/"autophagy"/hype); cancellation wired into endFast / pauseFast / updatePlan / setNotificationsEnabled(false); UIBackgroundModes remote-notification removed; usage description softened |
+| 21 | App Store submission punch list | Checklist | Medium | **Pending execution** — paperwork-only spec; exact ASC copy, App Privacy label clicks, screenshot plan, reviewer note, rejection response templates, go/no-go checklist |
+| 22 | External link health check + broken link replacement | Compliance | Small | **Completed** — Amazon glass container 404 replaced with People.com editorial; Healthline electrolyte 404 replaced with durable explainer; Healthline workout+IF 404 removed (no verified replacement); 12 → 11 cards |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 

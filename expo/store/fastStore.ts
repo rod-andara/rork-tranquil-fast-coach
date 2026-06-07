@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import NetInfo from '@react-native-community/netinfo';
-import { scheduleMilestones } from '@/utils/notificationsUtils';
+import { scheduleMilestones, cancelFastingNotifications } from '@/utils/notificationsUtils';
 import { getPlanDuration } from '@/utils';
 import { supabaseUpsertFast } from '@/services/supabase';
 import { enqueueOffline } from '@/services/offline-sync';
@@ -28,6 +28,7 @@ export interface FastState {
   customDuration: number;
   notificationsEnabled: boolean;
   isDarkMode: boolean;
+  darkModeSetByUser: boolean;
   onboardingComplete: boolean;
   isPremium: boolean;
   userName: string;
@@ -41,6 +42,7 @@ export interface FastState {
   setCustomDuration: (duration: number) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
   setDarkMode: (enabled: boolean) => void;
+  setDarkModeDefault: (defaultDark: boolean) => void;
   completeOnboarding: () => void;
   setPremium: (value: boolean) => void;
   setUserName: (name: string) => void;
@@ -57,6 +59,7 @@ export const useFastStore = create<FastState>((set, get) => ({
   customDuration: 16,
   notificationsEnabled: true,
   isDarkMode: false,
+  darkModeSetByUser: false,
   onboardingComplete: false,
   isPremium: false,
   userName: '',
@@ -88,7 +91,8 @@ export const useFastStore = create<FastState>((set, get) => ({
       try {
         scheduleMilestones(Math.floor(plannedDuration / 1000), true);
       } catch (e) {
-        console.warn('[store] scheduleMilestones error', e);
+        // SPEC-20: dev-only; no notification telemetry in production.
+        if (__DEV__) console.warn('[store] scheduleMilestones error', e);
       }
     }
     if (Platform.OS !== 'web') {
@@ -104,6 +108,11 @@ export const useFastStore = create<FastState>((set, get) => ({
     if (!currentFast) return;
     const toggled = { ...currentFast, isRunning: !currentFast.isRunning };
     set({ currentFast: toggled });
+    // SPEC-20: scheduled milestones fire at absolute times, so any pause/resume
+    // desynchronizes them from actual elapsed time. Cancelling on toggle is
+    // safer than firing inaccurate milestones. v1.1 may re-schedule on resume
+    // based on adjusted elapsed time.
+    cancelFastingNotifications();
     get().saveToStorage();
   },
 
@@ -119,6 +128,8 @@ export const useFastStore = create<FastState>((set, get) => ({
         currentFast: null,
         fastHistory: [completedFast, ...fastHistory],
       });
+      // SPEC-20: cancel any milestone notifications still scheduled for this fast.
+      cancelFastingNotifications();
       try {
         const state = await NetInfo.fetch();
         if (state.isConnected) {
@@ -142,6 +153,8 @@ export const useFastStore = create<FastState>((set, get) => ({
     const { currentFast } = get();
     if (currentFast) {
       set({ currentFast: null });
+      // SPEC-20: changing the plan ends the active fast; cancel its milestones.
+      cancelFastingNotifications();
     }
     set({ selectedPlan: plan });
     await get().saveToStorage();
@@ -154,12 +167,24 @@ export const useFastStore = create<FastState>((set, get) => ({
 
   setNotificationsEnabled: (enabled: boolean) => {
     set({ notificationsEnabled: enabled });
+    // SPEC-20: if user disables notifications mid-fast, cancel any already-
+    // scheduled milestones so they cannot fire later.
+    if (!enabled) {
+      cancelFastingNotifications();
+    }
     get().saveToStorage();
   },
 
   setDarkMode: (enabled: boolean) => {
-    set({ isDarkMode: enabled });
+    set({ isDarkMode: enabled, darkModeSetByUser: true });
     get().saveToStorage();
+  },
+
+  setDarkModeDefault: (defaultDark: boolean) => {
+    const state = get();
+    if (state.darkModeSetByUser) return;
+    set({ isDarkMode: defaultDark });
+    state.saveToStorage();
   },
 
   completeOnboarding: () => {
@@ -218,6 +243,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         customDuration: state.customDuration,
         notificationsEnabled: state.notificationsEnabled,
         isDarkMode: state.isDarkMode,
+        darkModeSetByUser: state.darkModeSetByUser,
         onboardingComplete: state.onboardingComplete,
         isPremium: state.isPremium,
         userName: state.userName,
