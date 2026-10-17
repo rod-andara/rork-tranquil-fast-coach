@@ -78,8 +78,8 @@ See [VALIDATION.md](VALIDATION.md) for checks performed and limits. The preview 
 
 - Git branch: `codex/website-launch-update`.
 - Recovered baseline commit: `9e6a61c`.
-- Updated implementation commit: pending final checks.
-- GitHub PR: pending.
+- Updated implementation commit: `52c1098` (checks passed).
+- GitHub PR: [#9](https://github.com/rod-andara/rork-tranquil-fast-coach/pull/9), draft, based on `sdk-upgrade`; branch pushed.
 - New production version: **none yet**.
 - DNS/HTTPS redirect changes: **none yet**.
 - Rollback target: pre-update version prefix `66777db0`, plus recovered Git baseline if necessary.
