@@ -44,6 +44,10 @@ Cloudflare serves the existing static site. Workers logs/traces were off in the 
 
 Support correspondence uses purpose-based retention criteria in the draft. Recommendation: review closed support cases periodically, remove unnecessary attachments/health details, and document a fixed operational policy if the owner wants a deadline. Do not claim automatic deletion without an implemented process. Keep the required provider DPAs/transfer safeguards and subprocessor lists in the operator's compliance records; do not publish private account material.
 
+### Domain repair readiness
+
+Read-only Cloudflare inspection confirmed that `www` is already a proxied CNAME to `tranquilfast.app`, with automatic TTL. The apex is a Worker-managed record. No DNS changes are needed merely to create a redirect. The Single Redirects list contains **zero rules** (0/10 used). A host-specific redirect at the edge can therefore fix the `www`522 before the request reaches an unmatched Worker/origin; preserve the path/query and target HTTPS apex. No mail records should be changed. No redirect was saved or deployed during this inspection.
+
 ## Age recommendation and App Store alignment
 
 Recommendation: **18+** for this fasting/weight app. Draft terms say users must be 18. This is an owner policy decision awaiting approval; it is not a claim that Apple's questionnaire automatically requires 18+.
