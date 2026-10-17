@@ -16,6 +16,7 @@ Source: independent Manus pre-launch review of commit `6115283` (full text in `s
 | B10 | Medium | S | Learn content: recipe title/claim vs destination mismatch; remove static retailer prices/ratings; neutral non-outcome onboarding copy | `utils/content.ts`, `choose-plan.tsx` |
 | B11 | Low | M | Allowlist-first Sentry outbound policy (normalize keys, cover `event.user`, free-form exception/message/breadcrumb strings, adversarial fixtures); decide on native app-hang reporting | `_layout.tsx`, `ErrorBoundary.tsx` |
 | B12 | Low | S | Document wall-clock timer policy (device clock changes); partly addressed by SPEC-25 removing the redundant cache/task | `useFastTimer.ts` |
+| B13 | Medium | S | Manus N3 (iPhone Mirroring test, build 104): Progress shows "100% complete" while Edit Goal says "Weight to gain". Likely an overshoot (start above target, current now below it): `getProgressPercentage` returns 100, the modal compares target vs current. Not reproduced; verify with synthetic gain/loss/at-goal/overshoot fixtures, then show "Goal reached" instead of gain/lose wording when overshot | `weightStore.ts getProgressPercentage`, `WeightGoalModal.tsx`, `(tabs)/progress.tsx` |
 
 ## Manus findings already handled or reclassified
 - A1/A5/A6 → SPEC-25; A3/A4 → SPEC-26; A2/A8/A9 → SPEC-27; A7 → SPEC-28.
