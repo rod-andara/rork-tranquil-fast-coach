@@ -21,7 +21,7 @@ function SwitchRowComponent({ testID, Icon, label, description, value, onValueCh
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     onValueChange(v);
   }, [onValueChange]);

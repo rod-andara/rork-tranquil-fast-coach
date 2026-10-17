@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform, Linking } from 'react-native';
 import { Heart, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react-native';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore } from '@/store/weightStore';
@@ -18,6 +18,7 @@ export default function AppleHealthCard() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState(false);
+  const [showAccessHint, setShowAccessHint] = useState(false);
 
   // Don't show on Android or web - show on iOS even if not yet initialized
   if (!isHealthKitSupported()) {
@@ -65,14 +66,18 @@ export default function AppleHealthCard() {
     setIsSyncing(true);
     setSyncError(null);
     setSyncSuccess(false);
+    setShowAccessHint(false);
 
     try {
       const result = await syncWeightData('both');
-      if (result.imported === 0 && result.exported === 0) {
-        // iOS hides read-permission status: a denied read looks like an empty result.
-        setSyncError(
-          'No new weight data found. If you expected some, open Settings › Health › Data Access & Devices › Tranquil Fast and turn on Weight.'
-        );
+      const hasImportedBefore = useWeightStore
+        .getState()
+        .entries.some((e) => e.source === 'apple_health');
+
+      if (result.imported === 0 && result.exported === 0 && !hasImportedBefore) {
+        // iOS hides read-permission status: a denied read looks like an empty
+        // result. Never having imported anything is the signal to show the hint.
+        setShowAccessHint(true);
       } else {
         setSyncSuccess(true);
         setTimeout(() => {
@@ -183,6 +188,39 @@ export default function AppleHealthCard() {
           <Text className="text-success-500 text-sm font-medium flex-1">
             Successfully synced with Apple Health
           </Text>
+        </View>
+      )}
+
+      {/* Read-permission hint: iOS reports a denied read as an empty result */}
+      {showAccessHint && (
+        <View className="bg-warning-500/10 border border-warning-500 rounded-lg p-3 mb-4">
+          <View className="flex-row items-center gap-2 mb-2">
+            <AlertCircle size={16} color="#F59E0B" />
+            <Text
+              className={`text-sm font-medium flex-1 ${
+                isDarkMode ? 'text-neutral-100' : 'text-neutral-900'
+              }`}
+            >
+              No weight data found in Apple Health
+            </Text>
+          </View>
+          <Text
+            className={`text-xs mb-3 ${
+              isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
+            }`}
+          >
+            If Health has weight entries, Tranquil Fast may not have permission to read them. Go to
+            Settings › Health › Data Access & Devices › Tranquil Fast and turn on Weight, then tap
+            Sync Now.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              Linking.openURL('x-apple-health://').catch(() => Linking.openSettings());
+            }}
+            activeOpacity={0.8}
+          >
+            <Text className="text-primary-600 text-sm font-bold">Open Health</Text>
+          </TouchableOpacity>
         </View>
       )}
 

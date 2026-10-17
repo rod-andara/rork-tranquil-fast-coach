@@ -21,7 +21,7 @@ function ListItemComponent({ testID, Icon, text, subtitle, onPress, iconColor = 
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     onPress();
   };

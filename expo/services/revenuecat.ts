@@ -152,8 +152,8 @@ export const getCurrentOffering = async (): Promise<PurchasesOffering | null> =>
 
     if (offerings.current !== null && offerings.current.availablePackages.length > 0) {
       if (__DEV__) {
-        console.log('[RevenueCat] Current offering:', offerings.current.identifier);
-        console.log('[RevenueCat] Available packages:', offerings.current.availablePackages.length);
+        if (__DEV__) console.log('[RevenueCat] Current offering:', offerings.current.identifier);
+        if (__DEV__) console.log('[RevenueCat] Available packages:', offerings.current.availablePackages.length);
       }
       return offerings.current;
     }

@@ -46,7 +46,7 @@ export const CustomDurationModal: React.FC<CustomDurationModalProps> = ({
   const handleSave = () => {
     // Validation: ensure duration is at least 4 hours
     const totalHours = selectedHours + selectedMinutes / 60;
-    console.log(`[CustomDurationModal] handleSave: ${selectedHours}h ${selectedMinutes}m = ${totalHours} hours`);
+    if (__DEV__) console.log(`[CustomDurationModal] handleSave: ${selectedHours}h ${selectedMinutes}m = ${totalHours} hours`);
 
     if (totalHours < 4) {
       setError('Fasting duration must be at least 4 hours');
@@ -60,7 +60,7 @@ export const CustomDurationModal: React.FC<CustomDurationModalProps> = ({
     }
 
     setError(null);
-    console.log(`[CustomDurationModal] Calling onSave with hours=${selectedHours}, minutes=${selectedMinutes}`);
+    if (__DEV__) console.log(`[CustomDurationModal] Calling onSave with hours=${selectedHours}, minutes=${selectedMinutes}`);
     onSave(selectedHours, selectedMinutes);
     onClose();
   };

@@ -32,6 +32,7 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 21 | App Store submission punch list | Checklist | Medium | **Pending execution** — paperwork-only spec; exact ASC copy, App Privacy label clicks, screenshot plan, reviewer note, rejection response templates, go/no-go checklist |
 | 22 | External link health check + broken link replacement | Compliance | Small | **Completed** — Amazon glass container 404 replaced with People.com editorial; Healthline electrolyte 404 replaced with durable explainer; Healthline workout+IF 404 removed (no verified replacement); 12 → 11 cards |
 | 23 | Apple Health sync fixes + TestFlight build 103 | Bug fix | Medium | **Code complete** (`dd28cff`) — no duplicate exports, 30-day import lookback, lastSync always recorded, launch no longer disconnects; build 103 built, TestFlight submit + on-device verification pending |
+| 24 | Pre-submission hardening (Health read hint, ATS exception removed, console gating, stub audit, buildNumber) | Compliance | Small | **Code complete** — ships in build 104; on-device verification pending |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 

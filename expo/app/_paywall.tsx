@@ -67,7 +67,7 @@ export default function PaywallScreen() {
         );
       }
     } catch (error) {
-      console.error('[Paywall] Failed to load offerings:', error);
+      if (__DEV__) console.error('[Paywall] Failed to load offerings:', error);
       Alert.alert(
         'Error',
         'Failed to load subscription options. Please try again.',
@@ -103,7 +103,7 @@ export default function PaywallScreen() {
         Alert.alert('Purchase Failed', result.error || 'Something went wrong. Please try again.');
       }
     } catch (error) {
-      console.error('[Paywall] Purchase error:', error);
+      if (__DEV__) console.error('[Paywall] Purchase error:', error);
       Alert.alert('Purchase Failed', 'Something went wrong. Please try again.');
     } finally {
       setPurchasing(false);
@@ -128,7 +128,7 @@ export default function PaywallScreen() {
         Alert.alert('No Purchases Found', 'No active purchases were found to restore.');
       }
     } catch (error) {
-      console.error('[Paywall] Restore error:', error);
+      if (__DEV__) console.error('[Paywall] Restore error:', error);
       Alert.alert('Restore Failed', 'Unable to restore purchases. Please try again.');
     } finally {
       setRestoring(false);

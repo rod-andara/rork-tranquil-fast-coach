@@ -96,7 +96,7 @@ export default function ChoosePlanScreen() {
   const handleSaveCustomDuration = (hours: number, minutes: number) => {
     // Convert hours and minutes to total hours (decimal)
     const totalHours = hours + minutes / 60;
-    console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
+    if (__DEV__) console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
     setCustomDuration(totalHours);
     setSelectedPlan('custom');
 
@@ -116,33 +116,33 @@ export default function ChoosePlanScreen() {
   };
 
   const handleContinue = () => {
-    console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
-    console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
-    console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
-    console.log('[ChoosePlan] fromSettings:', fromSettings);
+    if (__DEV__) console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
+    if (__DEV__) console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
+    if (__DEV__) console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
+    if (__DEV__) console.log('[ChoosePlan] fromSettings:', fromSettings);
 
     try {
       if (fromSettings) {
         // Changing plan from Settings - just update and go back
-        console.log('[ChoosePlan] Updating plan from Settings');
+        if (__DEV__) console.log('[ChoosePlan] Updating plan from Settings');
         updatePlan(selectedPlan);
         router.back();
       } else {
         // Completing onboarding for first time
-        console.log('[ChoosePlan] Step 1: Saving selected plan');
+        if (__DEV__) console.log('[ChoosePlan] Step 1: Saving selected plan');
         saveSelectedPlan(selectedPlan);
 
-        console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
+        if (__DEV__) console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
         completeOnboarding();
 
-        console.log('[ChoosePlan] Step 3: Navigating to Home tab (user will manually start fast)');
+        if (__DEV__) console.log('[ChoosePlan] Step 3: Navigating to Home tab (user will manually start fast)');
         // Replace the entire onboarding stack with the Home tab
         // User will manually start the fast from the Home screen
         router.replace('/(tabs)/home');
       }
     } catch (e) {
-      console.error('[ChoosePlan] ERROR in handleContinue:', e);
-      console.error('[ChoosePlan] Error stack:', (e as Error).stack);
+      if (__DEV__) console.error('[ChoosePlan] ERROR in handleContinue:', e);
+      if (__DEV__) console.error('[ChoosePlan] Error stack:', (e as Error).stack);
       alert(`Error: ${(e as Error).message}`);
     }
   };

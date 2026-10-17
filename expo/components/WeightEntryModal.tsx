@@ -103,7 +103,7 @@ export default function WeightEntryModal({
       setIsSaving(false);
       onClose();
     } catch (err) {
-      console.error('[ERROR] Failed to save weight:', err);
+      if (__DEV__) console.error('[ERROR] Failed to save weight:', err);
       setError('Failed to save weight. Please try again.');
       setIsSaving(false);
     }

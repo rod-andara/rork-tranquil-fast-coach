@@ -705,3 +705,4 @@ Each of these is a 15-30 minute human task. None require engineering.
 (To be filled in as you work through the punch list)
 
 - 2026-10-17: Fresh production build **103** created after Health sync fixes (see SPEC-23). Provisioning profile and distribution cert renewed. Not yet submitted to TestFlight/App Store Connect. Build 103 supersedes the `155dd7f` build candidate referenced above; re-verify the on-device Health checklist in SPEC-23 before App Review submission.
+- 2026-10-17: Build 103 showed the Health read-permission problem; fixes in SPEC-23 follow-up + SPEC-24 (ATS exception removed, console gating, buildNumber removed). **Build 104 is now the App Store candidate.** Remaining non-code blockers unchanged: privacy policy URL, screenshots, App Privacy labels, ASC listing. App Privacy labels must stay "no data collected" for the app itself (Sentry diagnostics-only per SPEC-16; stub services are inert per SPEC-24).

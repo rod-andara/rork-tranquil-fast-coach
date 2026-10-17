@@ -63,4 +63,6 @@ Debug findings (code review incl. `node_modules/react-native-health/RCTAppleHeal
 - Added `deletedHealthIds` (weightStore, no version bump needed; defaults merge) so full-history import doesn't resurrect deleted entries (removes the earlier "known gap").
 - Card now shows a Settings hint when a sync imports/exports nothing.
 
+**Confirmed by the owner on device:** Weight read was OFF (write ON) — the permission-denied explanation was correct. The code requests read+write together (`utils/appleHealth.ts`, `permissions.read/write: [Weight]`); the sheet has separate toggles and iOS never re-prompts after a decision. The in-app hint for this case was implemented in SPEC-24.
+
 **Needs a new build (104)** — fixes are source-only until rebuilt. Then re-run the verification checklist above. If still empty after confirming Weight read is ON and Health has data, next step is a dev-client build with `__DEV__` logging of `getWeightSamples` result count.

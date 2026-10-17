@@ -40,7 +40,7 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     setNotificationsEnabled(val);
   }, [setNotificationsEnabled]);
@@ -49,7 +49,7 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     setDarkMode(val);
   }, [setDarkMode]);
@@ -58,7 +58,7 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     setUnit(val);
   }, [setUnit]);
@@ -105,7 +105,7 @@ export default function SettingsScreen() {
         );
       }
     } catch (error) {
-      console.error('Error requesting review:', error);
+      if (__DEV__) console.error('Error requesting review:', error);
       Alert.alert(
         'Rate App',
         'Thank you for your support! Please rate us on the App Store.',
@@ -127,7 +127,7 @@ export default function SettingsScreen() {
         }
       }
     } catch (error) {
-      console.error('Error sharing:', error);
+      if (__DEV__) console.error('Error sharing:', error);
       Alert.alert(
         'Share Failed',
         'Unable to share at this time. Please try again later.',
@@ -150,7 +150,7 @@ export default function SettingsScreen() {
               await AsyncStorage.clear();
               router.replace('/onboarding/welcome');
             } catch (error) {
-              console.error('Failed to clear storage:', error);
+              if (__DEV__) console.error('Failed to clear storage:', error);
             }
           },
         },

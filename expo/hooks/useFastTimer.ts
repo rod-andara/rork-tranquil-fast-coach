@@ -27,7 +27,7 @@ export default function useFastTimer(): UseFastTimerResult {
         const parsed = stored ? Number(stored) : 0;
         if (mounted) setElapsedMs(Number.isFinite(parsed) ? parsed : 0);
       } catch (e) {
-        console.log('[useFastTimer] load elapsed error', e);
+        if (__DEV__) console.log('[useFastTimer] load elapsed error', e);
       }
     };
     load();
@@ -45,7 +45,7 @@ export default function useFastTimer(): UseFastTimerResult {
         try {
           await AsyncStorage.setItem(storageKeys.elapsedMs, String(elapsed));
         } catch (e) {
-          console.log('[useFastTimer] save elapsed error', e);
+          if (__DEV__) console.log('[useFastTimer] save elapsed error', e);
         }
       };
       tick();
@@ -90,6 +90,6 @@ TaskManager.defineTask(TASK_NAME, async () => {
     const elapsed = start ? Date.now() - start : 0;
     await AsyncStorage.setItem(storageKeys.elapsedMs, String(elapsed));
   } catch (e) {
-    console.log('[fast-timer task] error', e);
+    if (__DEV__) console.log('[fast-timer task] error', e);
   }
 });

@@ -227,7 +227,7 @@ export const useFastStore = create<FastState>((set, get) => ({
         set({ hasHydrated: true });
       }
     } catch (error) {
-      console.error('Failed to load from storage:', error);
+      if (__DEV__) console.error('Failed to load from storage:', error);
       // Even on error, mark as hydrated to prevent infinite loading
       set({ hasHydrated: true });
     }
@@ -250,7 +250,7 @@ export const useFastStore = create<FastState>((set, get) => ({
       };
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch (error) {
-      console.error('Failed to save to storage:', error);
+      if (__DEV__) console.error('Failed to save to storage:', error);
     }
   },
 }));

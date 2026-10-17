@@ -66,7 +66,7 @@ The `startFast()` method in `fastStore.ts:71-72` correctly calculates `plannedDu
 - Manual entries carry `healthSynced`; export only sends `source === 'manual' && !healthSynced` and flags each entry after a successful save. Any new code that writes weight to Health MUST set `healthSynced: true` on the entry, or it will be exported twice.
 - Imported entries carry `healthId` (HealthKit sample id). Import reads FULL history every sync (never a lastSync-limited window — an early empty sync would hide older data) and dedupes by `healthId` or timestamp within 1s. Locally deleted imports are remembered in `deletedHealthIds` so they don't return.
 - `saveWeight` in react-native-health reads the date from `startDate` (NOT `date`); keep it that way.
-- iOS hides READ permission status: denied read = empty result, no error. The Health card therefore shows a "check Settings › Health › Data Access" hint when a sync finds nothing; never show a plain "success" for 0 results.
+- iOS hides READ permission status: denied read = empty result, no error. The Health card therefore shows a permission hint with an "Open Health" button when a sync finds nothing AND no `apple_health` entry was ever imported (SPEC-24); never show a plain "success" for that case. Confirmed in the field: Weight WRITE on / READ off happens, and iOS will not re-prompt.
 - `lastHealthSync` is set on every successful sync (even when nothing changed).
 - Launch-time `initHealthKit({ keepConnectedOnFailure: true })` must never clear `isHealthConnected`; only an explicit user-initiated connect failure may.
 - HealthKit can only be verified on a physical device. Known gap: edits/deletes of entries are not mirrored to Health.
@@ -199,7 +199,7 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
 
-**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check), SPEC-23 (Apple Health sync fixes; code complete, on-device verification pending).
+**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check), SPEC-23 (Apple Health sync fixes; code complete, on-device verification pending), SPEC-24 (pre-submission hardening; code complete, ships in build 104).
 **In progress:** SPEC-21 (App Store submission punch list — paperwork checklist; build + ASC listing).
 **Pending:** SPEC-05 (Apple Health onboarding), SPEC-06 (Learn tab images), SPEC-08 (App Store submission — superseded by SPEC-21).
 **Deferred to v1.1:** SPEC-07 (premium gating) — depends on SPEC-17 reactivation; see SPEC-17 §10 checklist.
@@ -211,7 +211,12 @@ screenshots, App Privacy labels, and the ASC listing. The compliance-clean
 build candidate is built via `eas build --platform ios --profile production`
 from `app.json` (NOT from any local native dir — see Known Constraints).
 
-**Latest build:** iOS buildNumber **103** (EAS build `9fd1da62-41bf-4273-bebc-c7b747fbb403`, 2026-10-17, production profile, includes SPEC-23). Not yet submitted to TestFlight at time of writing — see SPEC-23 "Build / release log".
+**Builds:** buildNumber **103** (EAS `9fd1da62-41bf-4273-bebc-c7b747fbb403`, 2026-10-17) is on TestFlight but has the Health bugs described in SPEC-23's follow-up (empty import, misleading success). **Build 104 (next, not yet built) is the App Store candidate** and includes SPEC-23 follow-up + SPEC-24. `ios.buildNumber` is intentionally absent from `app.json` (EAS remote versioning owns it).
+
+### Pre-submission rules (SPEC-24)
+- No `NSAppTransportSecurity` exceptions in `app.json`; all remote content must be HTTPS. Don't re-add one without a documented reason.
+- Every `console.*` call must be `if (__DEV__)`-gated (single-line or inside a braced `__DEV__` block). Check with: `grep -rnE "console\.(log|warn|error|info|debug)" app components utils store services hooks constants | grep -v __DEV__` and confirm any hits are inside a braced `__DEV__` block.
+- `services/supabase.ts` / `services/offline-sync.ts` are inert stubs (in-memory, no network). Replacing them with a real backend requires updating the privacy policy and App Privacy labels first.
 
 ## Build Commands
 `preview` is internal/ad hoc distribution and does NOT reach TestFlight; use `production` + `eas submit` for TestFlight. If credentials/provisioning profile expired, run the build interactively once (non-interactive fails). The dev Mac's Xcode license must be accepted (`sudo xcodebuild -license`) or `/usr/bin/python3` breaks (EAS cloud builds are unaffected).
