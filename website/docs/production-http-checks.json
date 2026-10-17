@@ -1,0 +1,564 @@
+{
+  "checked_utc": "2026-10-17T21:25:18.767537+00:00",
+  "version_prefix": "5564e595",
+  "archive_sha256": "da343bfc3a33d09d4a65e94b8394f7ca56ed44a4bc353cdb186eb948741083d8",
+  "routes": [
+    {
+      "url": "http://tranquilfast.app/",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://tranquilfast.app/privacy?source=launch-check&mode=read",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/privacy?source=launch-check&mode=read",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/privacy?source=launch-check&mode=read"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://tranquilfast.app/terms",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/terms",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/terms"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://tranquilfast.app/support",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/support",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/support"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://www.tranquilfast.app/",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://www.tranquilfast.app/privacy?source=launch-check&mode=read",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/privacy?source=launch-check&mode=read",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/privacy?source=launch-check&mode=read"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://www.tranquilfast.app/terms",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/terms",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/terms"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "http://www.tranquilfast.app/support",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/support",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/1.1 301 Moved Permanently",
+          "location": "https://tranquilfast.app/support"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/",
+      "redirects": "0",
+      "hops": [
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/privacy?source=launch-check&mode=read",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/privacy?source=launch-check&mode=read",
+      "redirects": "0",
+      "hops": [
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/terms",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/terms",
+      "redirects": "0",
+      "hops": [
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/support",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/support",
+      "redirects": "0",
+      "hops": [
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://www.tranquilfast.app/",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 301 ",
+          "location": "https://tranquilfast.app/"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://www.tranquilfast.app/privacy?source=launch-check&mode=read",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/privacy?source=launch-check&mode=read",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 301 ",
+          "location": "https://tranquilfast.app/privacy?source=launch-check&mode=read"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://www.tranquilfast.app/terms",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/terms",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 301 ",
+          "location": "https://tranquilfast.app/terms"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://www.tranquilfast.app/support",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/support",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 301 ",
+          "location": "https://tranquilfast.app/support"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/privacy.html",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/privacy",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 307 ",
+          "location": "/privacy"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/terms.html",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/terms",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 307 ",
+          "location": "/terms"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/support.html",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/support",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 307 ",
+          "location": "/support"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/index.html",
+      "status": 200,
+      "final_url": "https://tranquilfast.app/",
+      "redirects": "1",
+      "hops": [
+        {
+          "response": "HTTP/2 307 ",
+          "location": "/"
+        },
+        {
+          "response": "HTTP/2 200 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    },
+    {
+      "url": "https://tranquilfast.app/this-page-does-not-exist",
+      "status": 404,
+      "final_url": "https://tranquilfast.app/this-page-does-not-exist",
+      "redirects": "0",
+      "hops": [
+        {
+          "response": "HTTP/2 404 ",
+          "location": null
+        }
+      ],
+      "csp": true,
+      "nosniff": true,
+      "matches_upload": true,
+      "pass": true
+    }
+  ],
+  "asset_requests": [
+    {
+      "path": "404.html",
+      "status": "307",
+      "matches_upload": false,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "_headers",
+      "status": "404",
+      "matches_upload": false,
+      "csp": true,
+      "nosniff": true,
+      "note": "Configuration file is not intended to be publicly served."
+    },
+    {
+      "path": "apple-touch-icon.png",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "favicon.svg",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "fonts/dm-sans-0.woff2",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "fonts/dm-serif-display-0.woff2",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "fonts/dm-serif-display-1.woff2",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "fonts/dmsans-OFL.txt",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "fonts/dmserifdisplay-OFL.txt",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "fonts.css",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "index.html",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "og-image.png",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "privacy.html",
+      "status": "307",
+      "matches_upload": false,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "robots.txt",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "screenshot-track-succeed.jpg",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "screenshot-welcome.jpg",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "site.js",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "sitemap.xml",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "styles.css",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "support.html",
+      "status": "307",
+      "matches_upload": false,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "terms.html",
+      "status": "307",
+      "matches_upload": false,
+      "csp": true,
+      "nosniff": true
+    },
+    {
+      "path": "theme-init.js",
+      "status": "200",
+      "matches_upload": true,
+      "csp": true,
+      "nosniff": true
+    }
+  ]
+}

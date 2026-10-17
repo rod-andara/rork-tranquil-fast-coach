@@ -25,4 +25,14 @@
 - Without-JavaScript behavior is supported structurally (native details/links, default-visible navigation/content); browser JavaScript was not disabled during these UI tests.
 - Cloudflare certificate/DNS, HTTP/HTTPS/www redirects, injected security scripts, edge header handling, cache behavior and production404 status require live verification.
 - Current Sentry account configuration was inspected read-only. No native crash test or complete raw-event audit was performed; no claim that all health data is proven absent from diagnostics.
-- Privacy/Terms are drafts pending operator approval. Age-rating and final-app-policy coordination are recorded in LAUNCH-HANDOFF.md.
+- Owner selected the18+ policy and the prepared website was published on17October2026. App Store age-rating and final-app-policy coordination are still required as recorded in LAUNCH-HANDOFF.md.
+
+## Production verification after deployment
+
+Worker version prefix **5564e595** was Ready at100% after uploading22 public assets. [production-http-checks.json](production-http-checks.json) records the actual requests and checks, including expected normalization redirects/config-file exclusion.
+
+- All21 live route checks passed: HTTP/HTTPS × www/apex × homepage/privacy/terms/support, legacy `.html` aliases, and unknown-path404. Query parameters on the privacy test survived unchanged. Canonical pages do not loop or redirect away.
+- The canonical redirect rule returns301. Cloudflare's automatic `.html` normalization returns307 (the preview server uses308); both reach the canonical page correctly. `_headers` itself returns404 as expected because it is configuration, not public content. `/404.html` normalizes to `/404`; an actually nonexistent path returns the custom page with HTTP404.
+- Public HTML bodies, fonts, scripts, styles, images and metadata matched the packaged content; extensionless legal bodies and the custom404 were separately compared. CSP and nosniff headers were present on final HTML responses and all sampled successful assets.
+- In-browser HTTPS homepage, Terms18+ wording, mobile menu→Privacy→Support,16px legal body copy, no horizontal overflow, and Health support heading verified. No JavaScript/CSP warnings/errors observed on these sampled production pages.
+- No Sentry, mail, app binary, App Store Connect, or DNS record changes were made. Provider contracts, trader/operator disclosures and final-binary privacy review are not certified by these checks.
