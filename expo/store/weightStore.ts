@@ -13,6 +13,9 @@ export interface WeightEntry {
   healthSynced?: boolean; // manual entry already written to Apple Health
 }
 
+// NOTE: `deletedHealthIds` (below) remembers HealthKit samples the user deleted
+// locally so a full-history import doesn't bring them back.
+
 export interface WeightGoal {
   targetWeight: number;
   unit: 'lbs' | 'kg';
@@ -27,6 +30,7 @@ interface WeightState {
   isHealthConnected: boolean;
   lastHealthSync: number | null;
   unitSetByUser: boolean;
+  deletedHealthIds: string[];
 
   // Actions
   addEntry: (entry: Omit<WeightEntry, 'id'>) => void;
@@ -53,6 +57,7 @@ const defaultState = {
   isHealthConnected: false,
   lastHealthSync: null as number | null,
   unitSetByUser: false as boolean,
+  deletedHealthIds: [] as string[],
 };
 
 export const useWeightStore = create<WeightState>()(
@@ -80,9 +85,15 @@ export const useWeightStore = create<WeightState>()(
       },
 
       deleteEntry: (id) => {
-        set((state) => ({
-          entries: (state.entries || []).filter((entry) => entry.id !== id),
-        }));
+        set((state) => {
+          const removed = (state.entries || []).find((entry) => entry.id === id);
+          return {
+            entries: (state.entries || []).filter((entry) => entry.id !== id),
+            deletedHealthIds: removed?.healthId
+              ? [...(state.deletedHealthIds || []), removed.healthId]
+              : state.deletedHealthIds || [],
+          };
+        });
       },
 
       setGoal: (goal) => {

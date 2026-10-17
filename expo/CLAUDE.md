@@ -64,10 +64,12 @@ The `startFast()` method in `fastStore.ts:71-72` correctly calculates `plannedDu
 
 ### Apple Health sync invariants (SPEC-23)
 - Manual entries carry `healthSynced`; export only sends `source === 'manual' && !healthSynced` and flags each entry after a successful save. Any new code that writes weight to Health MUST set `healthSynced: true` on the entry, or it will be exported twice.
-- Imported entries carry `healthId` (HealthKit sample id). Import dedupes by `healthId` or timestamp within 1s, and re-scans the last 30 days each sync.
+- Imported entries carry `healthId` (HealthKit sample id). Import reads FULL history every sync (never a lastSync-limited window — an early empty sync would hide older data) and dedupes by `healthId` or timestamp within 1s. Locally deleted imports are remembered in `deletedHealthIds` so they don't return.
+- `saveWeight` in react-native-health reads the date from `startDate` (NOT `date`); keep it that way.
+- iOS hides READ permission status: denied read = empty result, no error. The Health card therefore shows a "check Settings › Health › Data Access" hint when a sync finds nothing; never show a plain "success" for 0 results.
 - `lastHealthSync` is set on every successful sync (even when nothing changed).
 - Launch-time `initHealthKit({ keepConnectedOnFailure: true })` must never clear `isHealthConnected`; only an explicit user-initiated connect failure may.
-- HealthKit can only be verified on a physical device. Known gaps: edits/deletes not mirrored to Health; locally deleted imports can reappear within the 30-day window.
+- HealthKit can only be verified on a physical device. Known gap: edits/deletes of entries are not mirrored to Health.
 
 ### Dark mode: dual system
 - NativeWind `dark:` classes driven by `setColorScheme()` in `_layout.tsx:135`

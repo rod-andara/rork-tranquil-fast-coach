@@ -68,12 +68,17 @@ export default function AppleHealthCard() {
 
     try {
       const result = await syncWeightData('both');
-      setSyncSuccess(true);
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setSyncSuccess(false);
-      }, 3000);
+      if (result.imported === 0 && result.exported === 0) {
+        // iOS hides read-permission status: a denied read looks like an empty result.
+        setSyncError(
+          'No new weight data found. If you expected some, open Settings › Health › Data Access & Devices › Tranquil Fast and turn on Weight.'
+        );
+      } else {
+        setSyncSuccess(true);
+        setTimeout(() => {
+          setSyncSuccess(false);
+        }, 3000);
+      }
 
       if (__DEV__) console.log(`[SUCCESS] Synced ${result.imported} entries from Health, ${result.exported} entries to Health`);
     } catch (error) {

@@ -29,7 +29,7 @@ After a long break the owner reported Apple Health sync "not working well". Code
 
 ## Known gaps (deliberately not fixed)
 - Editing or deleting an entry in the app is not mirrored to Health.
-- An imported entry deleted locally can be re-imported within the 30-day lookback window (needs tombstones to fix).
+- (Superseded by follow-up below: import is now full-history with `deletedHealthIds` tombstones; the 30-day lookback was removed.)
 - Entries from Health are assumed to arrive in pounds (library default) and converted to the user's unit.
 
 ## Verification (on physical iPhone, TestFlight build 103)
@@ -52,4 +52,15 @@ After a long break the owner reported Apple Health sync "not working well". Code
 - Xcode license on the dev Mac was not accepted (`sudo xcodebuild -license`), which breaks the `/usr/bin/python3` shim. EAS cloud builds are unaffected.
 
 ## Progress Notes
-(Add on-device verification results here.)
+
+### 2026-10-17 — Follow-up: build 103 on TestFlight imported NO weight data, yet reported "success"
+Debug findings (code review incl. `node_modules/react-native-health/RCTAppleHealthKit/*.m`; no device logs):
+- Native `getWeightSamples` is correct (all `BodyMass` samples in range, no source filter) and JS does no filtering, so the loss is either iOS returning empty or our import window.
+- `AppleHealthCard` showed "Successfully synced" unconditionally when nothing threw → 0 results looked like success.
+- iOS never reveals READ denial; denied read = empty result with no error. This is the only cause that explains zero data of any age. **Not provable from code — confirm on device:** Settings › Health › Data Access & Devices › Tranquil Fast › Weight must be ON, and the Health app must actually contain weight samples.
+- Regression introduced by the first SPEC-23 commit: `lastHealthSync` now always updated + import limited to `lastSync − 30d`, so one empty/early sync hid all older weights. Fixed: import always reads full history.
+- Bug: native `saveWeight` reads `startDate`, we passed `date` → exported samples were dated "now". Fixed.
+- Added `deletedHealthIds` (weightStore, no version bump needed; defaults merge) so full-history import doesn't resurrect deleted entries (removes the earlier "known gap").
+- Card now shows a Settings hint when a sync imports/exports nothing.
+
+**Needs a new build (104)** — fixes are source-only until rebuilt. Then re-run the verification checklist above. If still empty after confirming Weight read is ON and Health has data, next step is a dev-client build with `__DEV__` logging of `getWeightSamples` result count.

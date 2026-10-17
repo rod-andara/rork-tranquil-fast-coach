@@ -8,9 +8,6 @@ import * as Sentry from '@sentry/react-native';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
 const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
-// Re-scan recent history on each import so late-syncing / backdated samples
-// (smart scales, other apps) are not skipped.
-const IMPORT_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000;
 const SAME_SAMPLE_TOLERANCE_MS = 1000;
 
 // Track if HealthKit has been successfully initialized
@@ -340,7 +337,8 @@ export const saveWeightToHealth = (
       const options = {
         value: valueToSave,
         unit: hkUnit,
-        date: (date ?? new Date()).toISOString(),
+        // react-native-health's native saveWeight reads `startDate` (not `date`).
+        startDate: (date ?? new Date()).toISOString(),
       };
 
       if (typeof AppleHealthKit?.saveWeight !== 'function') {
@@ -409,20 +407,17 @@ export const syncWeightData = async (
   try {
     if (direction === 'import' || direction === 'both') {
       // Import from Apple Health
-      const lastSync = useWeightStore.getState().lastHealthSync;
-      const startDate =
-        typeof lastSync === 'number' && Number.isFinite(lastSync)
-          ? new Date(lastSync - IMPORT_LOOKBACK_MS)
-          : undefined;
-
-      const healthEntries = await getWeightFromHealth(startDate);
+      // Always read full history: an earlier empty sync (permission not yet
+      // effective) must never hide older samples. Duplicates are filtered below.
+      const healthEntries = await getWeightFromHealth();
 
       // Skip samples we already have: same HealthKit id, or same timestamp
       // (covers entries we exported ourselves, which have no healthId).
       const existing = useWeightStore.getState().entries;
-      const knownIds = new Set(
-        existing.map((e) => e.healthId).filter((id): id is string => !!id)
-      );
+      const knownIds = new Set([
+        ...existing.map((e) => e.healthId).filter((id): id is string => !!id),
+        ...(useWeightStore.getState().deletedHealthIds || []),
+      ]);
 
       const newEntries = healthEntries.filter(
         (entry) =>
