@@ -70,7 +70,7 @@ export default function SettingsScreen() {
   }, [router]);
 
   const handleHelpSupport = useCallback(async () => {
-    const email = 'support@tranquilfastcoach.com';
+    const email = 'support@tranquilfast.app';
     const subject = 'Help & Support - Tranquil Fast Coach';
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 

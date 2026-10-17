@@ -22,15 +22,14 @@ type ContentType = 'All' | 'Recipes' | 'Articles' | 'Products';
 
 const handleOpenLink = async (url: string, title: string) => {
   if (Platform.OS !== 'web') {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   }
 
   if (url) {
-    const canOpen = await Linking.canOpenURL(url);
-    if (canOpen) {
+    try {
       await Linking.openURL(url);
-    } else {
-      Alert.alert('Error', 'Unable to open this link');
+    } catch {
+      Alert.alert('Link Unavailable', "We couldn't open that page right now. Please try again in a moment.");
     }
   } else {
     Alert.alert('Coming Soon', `${title} will be available soon!`);
