@@ -29,7 +29,7 @@ app/onboarding/           3-step flow: welcome -> track-succeed -> choose-plan
 app/_paywall.tsx          RevenueCat subscription screen — deactivated route in v1.0 (leading underscore = expo-router ignores); rename back to `paywall.tsx` for v1.1 (SPEC-17)
 
 store/fastStore.ts        Fasting state (MANUAL AsyncStorage persist via save/loadFromStorage)
-store/weightStore.ts      Weight state (zustand persist middleware with AsyncStorage, version 2)
+store/weightStore.ts      Weight state (zustand persist middleware with AsyncStorage, version 4)
 
 utils/fastingUtils.ts     formatTime, formatDate, calculateProgress, getPlanDuration, getFastingMessage
 utils/appleHealth.ts      HealthKit init, read/write weight, sync
@@ -60,7 +60,14 @@ The `startFast()` method in `fastStore.ts:71-72` correctly calculates `plannedDu
 4. Read in `loadFromStorage()` (happens automatically via spread: `set({ ...data, hasHydrated: true })`)
 
 ### weightStore uses zustand persist middleware
-`weightStore` uses `persist()` with `createJSONStorage(() => AsyncStorage)`. New fields are automatically persisted. Has a version 2 migration system.
+`weightStore` uses `persist()` with `createJSONStorage(() => AsyncStorage)`. New fields are automatically persisted. Has a version 4 migration system (bump `version` and add a `version < N` block when changing persisted shape).
+
+### Apple Health sync invariants (SPEC-23)
+- Manual entries carry `healthSynced`; export only sends `source === 'manual' && !healthSynced` and flags each entry after a successful save. Any new code that writes weight to Health MUST set `healthSynced: true` on the entry, or it will be exported twice.
+- Imported entries carry `healthId` (HealthKit sample id). Import dedupes by `healthId` or timestamp within 1s, and re-scans the last 30 days each sync.
+- `lastHealthSync` is set on every successful sync (even when nothing changed).
+- Launch-time `initHealthKit({ keepConnectedOnFailure: true })` must never clear `isHealthConnected`; only an explicit user-initiated connect failure may.
+- HealthKit can only be verified on a physical device. Known gaps: edits/deletes not mirrored to Health; locally deleted imports can reappear within the 30-day window.
 
 ### Dark mode: dual system
 - NativeWind `dark:` classes driven by `setColorScheme()` in `_layout.tsx:135`
@@ -190,7 +197,7 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
 
-**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check).
+**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check), SPEC-23 (Apple Health sync fixes; code complete, on-device verification pending).
 **In progress:** SPEC-21 (App Store submission punch list — paperwork checklist; build + ASC listing).
 **Pending:** SPEC-05 (Apple Health onboarding), SPEC-06 (Learn tab images), SPEC-08 (App Store submission — superseded by SPEC-21).
 **Deferred to v1.1:** SPEC-07 (premium gating) — depends on SPEC-17 reactivation; see SPEC-17 §10 checklist.
@@ -202,10 +209,15 @@ screenshots, App Privacy labels, and the ASC listing. The compliance-clean
 build candidate is built via `eas build --platform ios --profile production`
 from `app.json` (NOT from any local native dir — see Known Constraints).
 
+**Latest build:** iOS buildNumber **103** (EAS build `9fd1da62-41bf-4273-bebc-c7b747fbb403`, 2026-10-17, production profile, includes SPEC-23). Not yet submitted to TestFlight at time of writing — see SPEC-23 "Build / release log".
+
 ## Build Commands
+`preview` is internal/ad hoc distribution and does NOT reach TestFlight; use `production` + `eas submit` for TestFlight. If credentials/provisioning profile expired, run the build interactively once (non-interactive fails). The dev Mac's Xcode license must be accepted (`sudo xcodebuild -license`) or `/usr/bin/python3` breaks (EAS cloud builds are unaffected).
 ```bash
 npx expo start                              # Dev server
-eas build --platform ios --profile preview  # TestFlight build
+eas build --platform ios --profile production   # Store build (TestFlight/App Store); auto-increments buildNumber
+eas submit --platform ios --profile production  # Upload latest build to App Store Connect/TestFlight
+eas build --platform ios --profile preview  # Internal ad hoc build (registered devices only)
 eas submit --platform ios                   # App Store submission
 npx tsc --noEmit                            # Type check
 npx expo-doctor                             # Health check

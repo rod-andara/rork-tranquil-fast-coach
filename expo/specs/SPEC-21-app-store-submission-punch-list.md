@@ -703,3 +703,5 @@ Each of these is a 15-30 minute human task. None require engineering.
 ## Progress Notes
 
 (To be filled in as you work through the punch list)
+
+- 2026-10-17: Fresh production build **103** created after Health sync fixes (see SPEC-23). Provisioning profile and distribution cert renewed. Not yet submitted to TestFlight/App Store Connect. Build 103 supersedes the `155dd7f` build candidate referenced above; re-verify the on-device Health checklist in SPEC-23 before App Review submission.

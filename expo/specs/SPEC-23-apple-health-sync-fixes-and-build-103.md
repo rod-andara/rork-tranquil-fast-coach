@@ -1,0 +1,55 @@
+# SPEC-23: Apple Health sync reliability fixes + TestFlight build 103
+
+**Status:** Code complete and committed (`dd28cff`, branch `sdk-upgrade`). Build 103 built on EAS. **Pending:** TestFlight submit + on-device verification (HealthKit cannot be tested in the simulator).
+
+## Problem
+After a long break the owner reported Apple Health sync "not working well". Code review of `utils/appleHealth.ts`, `components/WeightEntryModal.tsx`, `components/AppleHealthCard.tsx`, `app/_layout.tsx` and `store/weightStore.ts` found four root causes. No device logs were available; these are code-level findings, so on-device confirmation is still required.
+
+| # | Cause | Effect |
+|---|---|---|
+| 1 | `WeightEntryModal` wrote to Health at `Date.now()`, then `syncWeightData('both')` exported the same manual entry again (it only filtered on `date > lastHealthSync`) | Duplicate samples in Health; they re-imported as extra local entries (timestamps differed by ms) |
+| 2 | Import only fetched samples newer than `lastHealthSync`, limit 100 | Late-syncing / backdated samples (smart scales, other apps) never imported |
+| 3 | `lastHealthSync` only updated when `imported > 0 \|\| exported > 0` | UI showed "Last sync: Never" after a successful no-op sync |
+| 4 | `initHealthKit()` failure on launch called `setHealthConnected(false)` | A transient failure (e.g. device locked) permanently disconnected the user |
+
+## Changes
+- `store/weightStore.ts`: `WeightEntry` gains optional `healthId` (HealthKit sample id, imported entries) and `healthSynced` (manual entry already written to Health). Persist version **3 → 4**; migration marks all legacy manual entries `healthSynced: true` so they are not exported twice.
+- `utils/appleHealth.ts`:
+  - Export filter is now `source === 'manual' && !healthSynced`; each entry is flagged after a successful save.
+  - Import re-scans `lastHealthSync - 30 days` (`IMPORT_LOOKBACK_MS`), limit 100 → 1000. Dedupe by `healthId` or timestamp within 1s (`SAME_SAMPLE_TOLERANCE_MS`).
+  - `lastHealthSync` set on every successful sync.
+  - `initHealthKit({ keepConnectedOnFailure })` option; failures no longer clear `isHealthConnected` when set.
+- `components/WeightEntryModal.tsx`: single `entryDate` used for both Health write and local entry; entry saved with `healthSynced` result. Removed non-`__DEV__` console output.
+- `app/_layout.tsx`: launch reinit uses `keepConnectedOnFailure: true` and fires a background `syncWeightData('both')` on success. Initialization order (hydration → RevenueCat gate → HealthKit) unchanged.
+
+## Invariants to preserve
+- Privacy (SPEC-16): no weight/date values in Sentry; `console.*` only under `__DEV__`. Nothing added here violates that.
+- A manual entry must be exported to Health **at most once** (`healthSynced`). Any new code path that writes to Health must set it.
+- Imported entries must carry `healthId`.
+
+## Known gaps (deliberately not fixed)
+- Editing or deleting an entry in the app is not mirrored to Health.
+- An imported entry deleted locally can be re-imported within the 30-day lookback window (needs tombstones to fix).
+- Entries from Health are assumed to arrive in pounds (library default) and converted to the user's unit.
+
+## Verification (on physical iPhone, TestFlight build 103)
+- [ ] Add weight in app with "sync to Health" on → exactly one sample in Health.
+- [ ] Add weight in Health app, reopen Tranquil Fast → appears once.
+- [ ] Tap Sync in the Apple Health card with nothing new → "Last sync" updates (not "Never").
+- [ ] Lock phone, cold-launch from a notification/background → still shows Connected.
+- [ ] Upgrade path: install over a build-102 install with existing weights → no duplicates exported.
+- [ ] Test both lbs and kg.
+
+## Build / release log
+- 2026-10-17: `npx tsc --noEmit` clean. `expo-doctor`: 3 non-blocking warnings (patch-level SDK 54 drift, duplicate `@expo/fingerprint`, RN Directory metadata); dependencies intentionally not bumped.
+- 2026-10-17: Provisioning profile had expired → regenerated interactively (new Apple Distribution cert, serial ending `...21A7B`, valid to 2027-10-17; profile `M848KB5MRM`, valid to 2027-10-17).
+- 2026-10-17: `eas build --platform ios --profile production` → **buildNumber 103** (102 → 103), build id `9fd1da62-41bf-4273-bebc-c7b747fbb403`, status finished.
+- **Submit not yet done.** Run: `eas submit --platform ios --profile production --id 9fd1da62-41bf-4273-bebc-c7b747fbb403`
+
+## Environment notes
+- `preview` profile = internal/ad hoc distribution (NOT TestFlight). Use `production` for TestFlight.
+- Non-interactive EAS builds fail when credentials are expired; run the build interactively once to renew.
+- Xcode license on the dev Mac was not accepted (`sudo xcodebuild -license`), which breaks the `/usr/bin/python3` shim. EAS cloud builds are unaffected.
+
+## Progress Notes
+(Add on-device verification results here.)
