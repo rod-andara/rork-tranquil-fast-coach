@@ -6,7 +6,7 @@
 
   <!-- Primary SEO -->
   <title>Tranquil Fast — Mindful Intermittent Fasting App for iPhone</title>
-  <meta name="description" content="A calm, private intermittent fasting timer and weight tracker for iPhone. No ads, no account required. Supports 16:8, 18:6, OMAD and more. Free to download.">
+  <meta name="description" content="A calm, private intermittent fasting timer and weight tracker for iPhone. No ads, no account required. Supports 16:8, 18:6, OMAD and more. Coming soon to the App Store.">
   <meta name="keywords" content="intermittent fasting app, fasting timer, weight tracker, 16:8 fasting, iPhone fasting app, no ads fasting, mindful fasting, apple health sync">
   <meta name="author" content="Rodrigo Andara, Andara Digital">
   <link rel="canonical" href="https://tranquilfast.app/">
@@ -37,11 +37,6 @@
     "description": "A calm, private intermittent fasting timer and weight tracker for iPhone. No ads, no account required. Supports 16:8, 18:6, OMAD and custom plans.",
     "operatingSystem": "iOS",
     "applicationCategory": "HealthApplication",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
     "author": {
       "@type": "Person",
       "name": "Rodrigo Andara",
@@ -52,27 +47,28 @@
       "name": "Andara Digital",
       "url": "https://tranquilfast.app"
     },
-    "screenshot": "https://tranquilfast.app/og-image.png",
+    "screenshot": "https://tranquilfast.app/screenshot-track-succeed.jpg",
     "featureList": ["Fasting timer", "Weight tracking", "Apple Health sync", "No ads", "No account required", "16:8, 18:6, OMAD plans"],
     "url": "https://tranquilfast.app"
   }
   </script>
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="styles.css">
+  <script src="/theme-init.js"></script>
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/site.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 
   <!-- ═══ NAV ═══ -->
   <header class="nav-wrap">
     <div class="container nav">
-      <a class="logo" href="index.html" aria-label="Tranquil Fast home">
+      <a class="logo" href="/" aria-label="Tranquil Fast home">
         <span class="logo-icon" aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
             <circle cx="14" cy="14" r="14" fill="url(#lg)"/>
@@ -83,21 +79,22 @@
         </span>
         <span class="logo-text">Tranquil Fast</span>
       </a>
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="index.html">Home</a>
-        <a href="index.html#features">Features</a>
-        <a href="index.html#download">Download</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-        <a href="support.html">Support</a>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNavigation" hidden>Menu</button>
+      <nav id="mainNavigation" class="nav-links" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/#features">Features</a>
+        <a href="/#download">Download</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/support">Support</a>
       </nav>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" hidden aria-label="Toggle dark mode">
         <span class="toggle-icon">◐</span>
       </button>
     </div>
   </header>
 
-  <main>
+  <main id="main" tabindex="-1">
 
     <!-- ═══ HERO ═══ -->
     <section class="hero">
@@ -105,19 +102,15 @@
         <div class="hero-content">
           <div class="eyebrow">
             <span class="eyebrow-dot"></span>
-            Now on iPhone
+            Coming soon for iPhone
           </div>
           <h1 class="hero-h1">The fasting app<br>that doesn't<br><em>stress you out.</em></h1>
           <p class="hero-lede">Track your fasts, monitor progress, and return to your routine without ads, accounts, or aggressive paywalls.</p>
-          <!-- TODO_APP_STORE_URL: Replace placeholder button/link with the real App Store URL after approval. -->
           <div class="hero-cta">
-            <a class="btn-store" href="#download" id="appStoreBtn" aria-disabled="true">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M13.5 2c-.8.8-1.4 2-.4 3.6C14.3 4.2 14.9 2.8 13.5 2zM16.6 9.8c-1.2.7-1.8 2-.5 3.7 1 1.3 2 .9 2.6.4-.6-1.4-.2-2.9-2.1-4.1zM7.6 4.2C4.5 4.7 2 7.4 2 10.6c0 4.2 3.7 7.4 7 7.4 1.2 0 2.5-.4 3.1-.7-1-.6-1.5-1.7-1.5-2.8 0-1.5 1-2.7 2.4-3.1-.5-1.1-1.4-1.9-2.5-2.1-.6-.1-1.3 0-2 .2l-.1.1c-.4.1-.8.2-1.1.2-.4 0-.9-.2-1.3-.3-.3-.1-.5-.3-.8-.3z" fill="currentColor"/></svg>
-              App Store link coming soon
-            </a>
+            <span class="release-status">Coming soon to the App Store</span>
             <a class="btn-ghost" href="#features">See features ↓</a>
           </div>
-          <p class="hero-note">iPhone · iOS 16+ · No account needed</p>
+          <p class="hero-note">For iPhone · No account needed</p>
         </div>
 
         <!-- Real app screenshot -->
@@ -145,7 +138,7 @@
       <div class="container trust-inner">
         <div class="trust-item">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 1l2.39 6.26L19 7.64l-5 4.73L15.56 19 10 15.63 4.44 19 6 12.37 1 7.64l6.61-.38L10 1z" fill="#7C3AED"/></svg>
-          No ads, ever
+          No ads
         </div>
         <div class="trust-sep" aria-hidden="true">·</div>
         <div class="trust-item">
@@ -195,7 +188,7 @@
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 4l2.5 7H23l-6 4.4 2.3 7-5.8-4.3-5.8 4.3L9.8 15.4 4 11h6.5L14 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
             </div>
             <h3>No ads. No tracking.</h3>
-            <p>No advertising SDKs. No cross-app tracking. Limited, privacy-safe crash diagnostics only — to fix bugs, nothing else.</p>
+            <p>No advertising SDKs. No cross-app tracking. Crash diagnostics help us fix bugs. Read our <a href="/privacy#diagnostics">privacy policy</a> for the information involved.</p>
           </article>
 
           <article class="feat-card">
@@ -203,7 +196,7 @@
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M9 14a5 5 0 100-10 5 5 0 000 10zm0 0v10M5 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 8v8M15 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             </div>
             <h3>Apple Health sync</h3>
-            <p>Optionally sync weight bidirectionally with Apple Health. Weight-only access — no blood glucose, sleep, or activity data requested.</p>
+            <p>Import weight from Apple Health and choose whether to export new manual entries. Access is optional and limited to weight. Edits and deletions are managed separately in each app.</p>
           </article>
 
           <article class="feat-card">
@@ -228,70 +221,14 @@
           <div class="dl-content">
             <div class="section-label light">Coming soon</div>
             <h2 class="section-h2">Ready to fast<br>with intention?</h2>
-            <p class="section-sub light-sub">Tranquil Fast is preparing for App Store release. Core tools are free to use, with optional premium features planned for a future update.</p>
+            <p class="section-sub light-sub">Tranquil Fast is preparing for App Store release. Core tools will be free at launch. Optional premium features may be introduced in a future update.</p>
             <div class="dl-cta">
-              <a class="btn-store" href="#" id="appStoreBtnMain" aria-disabled="true" aria-label="Download Tranquil Fast on the App Store">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M13.5 2c-.8.8-1.4 2-.4 3.6C14.3 4.2 14.9 2.8 13.5 2zM16.6 9.8c-1.2.7-1.8 2-.5 3.7 1 1.3 2 .9 2.6.4-.6-1.4-.2-2.9-2.1-4.1zM7.6 4.2C4.5 4.7 2 7.4 2 10.6c0 4.2 3.7 7.4 7 7.4 1.2 0 2.5-.4 3.1-.7-1-.6-1.5-1.7-1.5-2.8 0-1.5 1-2.7 2.4-3.1-.5-1.1-1.4-1.9-2.5-2.1-.6-.1-1.3 0-2 .2l-.1.1c-.4.1-.8.2-1.1.2-.4 0-.9-.2-1.3-.3-.3-.1-.5-.3-.8-.3z" fill="currentColor"/></svg>
-                App Store link coming soon
-              </a>
+              <p class="release-status release-status-light">App Store release in preparation</p>
+              <a class="btn-store" href="/support">Questions? Get in touch</a>
             </div>
-            <div class="dl-meta">iPhone · iOS 16+ · Free</div>
+            <div class="dl-meta">For iPhone · Core tools free</div>
           </div>
-          <div class="dl-qr" aria-label="QR code to download app">
-            <div class="qr-frame">
-              <!-- QR Code placeholder — replace with real QR SVG after App Store approval -->
-              <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="QR code placeholder">
-                <rect width="120" height="120" rx="16" fill="white"/>
-                <!-- Corner squares -->
-                <rect x="10" y="10" width="35" height="35" rx="4" fill="#1A1625"/>
-                <rect x="16" y="16" width="23" height="23" rx="2" fill="white"/>
-                <rect x="20" y="20" width="15" height="15" rx="1" fill="#7C3AED"/>
-                <rect x="75" y="10" width="35" height="35" rx="4" fill="#1A1625"/>
-                <rect x="81" y="16" width="23" height="23" rx="2" fill="white"/>
-                <rect x="85" y="20" width="15" height="15" rx="1" fill="#7C3AED"/>
-                <rect x="10" y="75" width="35" height="35" rx="4" fill="#1A1625"/>
-                <rect x="16" y="81" width="23" height="23" rx="2" fill="white"/>
-                <rect x="20" y="85" width="15" height="15" rx="1" fill="#7C3AED"/>
-                <!-- Data dots pattern -->
-                <rect x="52" y="10" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="62" y="10" width="8" height="8" rx="2" fill="#1A1625" opacity=".4"/>
-                <rect x="52" y="20" width="8" height="8" rx="2" fill="#1A1625" opacity=".6"/>
-                <rect x="62" y="22" width="5" height="5" rx="1" fill="#7C3AED"/>
-                <rect x="52" y="32" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="10" y="52" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="20" y="50" width="5" height="5" rx="1" fill="#7C3AED"/>
-                <rect x="28" y="52" width="8" height="8" rx="2" fill="#1A1625" opacity=".5"/>
-                <rect x="38" y="52" width="8" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="48" y="52" width="8" height="8" rx="2" fill="#1A1625" opacity=".3"/>
-                <rect x="58" y="52" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="68" y="50" width="5" height="5" rx="1" fill="#7C3AED"/>
-                <rect x="78" y="52" width="8" height="8" rx="2" fill="#1A1625" opacity=".4"/>
-                <rect x="88" y="52" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="100" y="52" width="10" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="48" y="62" width="8" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="60" y="62" width="8" height="8" rx="2" fill="#1A1625" opacity=".5"/>
-                <rect x="70" y="64" width="5" height="5" rx="1" fill="#1A1625"/>
-                <rect x="80" y="62" width="8" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="92" y="62" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="48" y="72" width="8" height="8" rx="2" fill="#1A1625" opacity=".3"/>
-                <rect x="60" y="72" width="8" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="72" y="72" width="8" height="8" rx="2" fill="#1A1625" opacity=".5"/>
-                <rect x="84" y="72" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="96" y="72" width="8" height="8" rx="2" fill="#7C3AED" opacity=".7"/>
-                <rect x="48" y="82" width="8" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="60" y="84" width="5" height="5" rx="1" fill="#1A1625" opacity=".4"/>
-                <rect x="68" y="82" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="80" y="82" width="8" height="8" rx="2" fill="#7C3AED" opacity=".5"/>
-                <rect x="92" y="82" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="48" y="94" width="8" height="8" rx="2" fill="#1A1625" opacity=".3"/>
-                <rect x="60" y="94" width="8" height="8" rx="2" fill="#7C3AED"/>
-                <rect x="72" y="94" width="8" height="8" rx="2" fill="#1A1625" opacity=".6"/>
-                <rect x="84" y="94" width="8" height="8" rx="2" fill="#1A1625"/>
-                <rect x="96" y="96" width="5" height="5" rx="1" fill="#7C3AED" opacity=".8"/>
-              </svg>
-              <p class="qr-label">Scan to download<br><span>Replace with App Store QR</span></p>
-            </div>
-          </div>
+
         </div>
       </div>
     </section>
@@ -302,25 +239,26 @@
         <div class="section-label">Questions</div>
         <h2 class="section-h2 faq-h2">Common questions</h2>
         <div class="faq-list">
+          <details class="faq-item"><summary>Who is Tranquil Fast for?</summary><p>Tranquil Fast is intended for adults aged 18 and over. Fasting is not suitable for everyone. Speak with a qualified healthcare professional before starting; see our <a href="/terms#health">health guidance</a>. The app does not provide medical advice.</p></details>
           <details class="faq-item">
             <summary>Is Tranquil Fast really free?</summary>
-            <p>Yes. Core tools — timer, fasting plans, weight logging, progress charts — are free and remain free. We may introduce optional premium features later, but the essentials will always be free.</p>
+            <p>Core tools — timer, fasting plans, weight logging, and progress charts — will be free at launch. Optional premium features may be introduced later; any prices and purchase terms will be shown before purchase.</p>
           </details>
           <details class="faq-item">
             <summary>Does it require an account?</summary>
-            <p>No account, no sign-up, no email address. You open the app and use it. Your data stays on your device.</p>
+            <p>No account, no sign-up, no email address. You open the app and use it. Your fasting history and weight entries are stored on your device. See our <a href="/privacy">privacy policy</a> for crash diagnostics and website information.</p>
           </details>
           <details class="faq-item">
             <summary>What fasting plans are supported?</summary>
-            <p>14:10, 16:8 (most popular), 18:6, 20:4, OMAD, and a fully custom fasting window where you set your own start and duration.</p>
+            <p>14:10, 16:8 (most popular), 18:6, 20:4, OMAD, and a custom fasting duration between 4 and 48 hours. Available plans are timer settings, not recommendations about how long you should fast.</p>
           </details>
           <details class="faq-item">
             <summary>How does Apple Health sync work?</summary>
-            <p>Apple Health sync is completely optional. If you enable it, the app can read and write weight data only — no other health data types. You can revoke access any time in iOS Settings.</p>
+            <p>Apple Health sync is optional and requests separate read and write permissions for weight. Allow reading to import existing weights; write permission alone does not allow imports. See our <a href="/support#apple-health">Apple Health help</a>.</p>
           </details>
           <details class="faq-item">
             <summary>Is my weight data private?</summary>
-            <p>Yes. Your weight, fasting history, and goal weight are stored on your device only. We never transmit this data to a server. Limited crash diagnostics (app version, device model, error traces) are collected to fix bugs — weight values are explicitly excluded from these.</p>
+            <p>Your weight entries, fasting history, and goal weight are stored locally. Optional Apple Health access is controlled by you. The app also sends technical crash diagnostics to Sentry; these may include installation identifiers and approximate location. See the <a href="/privacy">privacy policy</a> for details.</p>
           </details>
           <details class="faq-item">
             <summary>Is this available on Android?</summary>
@@ -336,7 +274,7 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <a class="logo footer-logo" href="index.html">
+        <a class="logo footer-logo" href="/">
           <span class="logo-icon" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
               <circle cx="14" cy="14" r="14" fill="url(#lg2)"/>
@@ -358,9 +296,9 @@
         </div>
         <div class="footer-col">
           <strong>Legal</strong>
-          <a href="privacy.html">Privacy Policy</a>
-          <a href="terms.html">Terms of Use</a>
-          <a href="support.html">Support</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Use</a>
+          <a href="/support">Support</a>
         </div>
         <div class="footer-col">
           <strong>Contact</strong>
@@ -369,26 +307,5 @@
       </nav>
     </div>
   </footer>
-
-  <script>
-    // Dark/light theme toggle
-    const toggle = document.getElementById('themeToggle');
-    const root = document.documentElement;
-    const saved = localStorage.getItem('tf-theme');
-    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      root.setAttribute('data-theme', 'dark');
-    }
-    toggle.addEventListener('click', () => {
-      const isDark = root.getAttribute('data-theme') === 'dark';
-      root.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      localStorage.setItem('tf-theme', isDark ? 'light' : 'dark');
-    });
-
-    // Scroll reveal
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-    }, { threshold: 0.12 });
-    document.querySelectorAll('.feat-card, .screen-item, .faq-item, .download-card').forEach(el => observer.observe(el));
-  </script>
 </body>
 </html>

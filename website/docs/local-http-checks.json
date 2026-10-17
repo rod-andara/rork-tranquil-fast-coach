@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "location": null,
+    "csp": true
+  },
+  {
+    "path": "/privacy",
+    "status": 200,
+    "location": null,
+    "csp": true
+  },
+  {
+    "path": "/terms",
+    "status": 200,
+    "location": null,
+    "csp": true
+  },
+  {
+    "path": "/support",
+    "status": 200,
+    "location": null,
+    "csp": true
+  },
+  {
+    "path": "/privacy.html",
+    "status": 308,
+    "location": "/privacy",
+    "csp": true
+  },
+  {
+    "path": "/terms.html",
+    "status": 308,
+    "location": "/terms",
+    "csp": true
+  },
+  {
+    "path": "/support.html",
+    "status": 308,
+    "location": "/support",
+    "csp": true
+  },
+  {
+    "path": "/index.html",
+    "status": 308,
+    "location": "/",
+    "csp": true
+  },
+  {
+    "path": "/this-page-does-not-exist",
+    "status": 404,
+    "location": null,
+    "csp": true
+  },
+  {
+    "path": "/fonts/dm-sans-0.woff2",
+    "status": 200,
+    "location": null,
+    "csp": true
+  }
+]
