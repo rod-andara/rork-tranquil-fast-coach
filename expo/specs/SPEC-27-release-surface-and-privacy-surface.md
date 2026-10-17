@@ -1,6 +1,6 @@
 # SPEC-27: Release surface, in-app legal links, Erase All Data, and submission record
 
-**Status:** Pending. Pre-launch **critical/high** (Manus findings A2, A8, A9). Contains code changes AND owner tasks.
+**Status:** Code complete (owner tasks open). Pre-launch **critical/high** (Manus findings A2, A8, A9). Contains code changes AND owner tasks.
 **Run order:** after SPEC-26. One session, one commit (docs edits in same commit). Trailer: `Spec: SPEC-27`.
 
 ## Files to Read
@@ -60,4 +60,4 @@
 Revert commit; move the paywall file back if needed.
 
 ## Progress Notes
-(none yet)
+Implemented: paywall moved to `dormant/paywall.tsx` (comments in `_layout.tsx`/`PremiumGate.tsx`, SPEC-17, CLAUDE.md updated); Erase All Data via `reset()` actions on both stores (`defaultFastState`, `defaultState`); `constants/links.ts` + Support/Privacy/Terms rows; `supportsTablet: false`; Settings footer now "Tranquil Fast Coach" (canonical-name default = `app.json` name; owner to confirm); SPEC-21 keywords/App Privacy/screenshots notes rewritten. `tsc --noEmit` clean. Not done: on-device deep-link and erase verification, and all owner tasks.

@@ -34,10 +34,10 @@ export default function PremiumGate({ children, feature }: PremiumGateProps) {
           {feature || 'Premium Feature'}
         </Text>
         {/*
-          SPEC-17 (v1.0): RevenueCat is disabled and app/paywall.tsx is renamed
-          to app/_paywall.tsx, so /paywall is NOT a registered route. This entire
-          component is currently unrendered. For v1.1 reactivation: rename
-          app/_paywall.tsx → app/paywall.tsx, restore the <Stack.Screen> entry
+          SPEC-17 (v1.0): RevenueCat is disabled and the paywall lives at
+          dormant/paywall.tsx (outside app/), so /paywall is NOT a route. This entire
+          component is currently unrendered. For v1.1 reactivation: move
+          dormant/paywall.tsx → app/paywall.tsx, restore the <Stack.Screen> entry
           in app/_layout.tsx, and start rendering <PremiumGate> around the
           features you want to gate.
         */}

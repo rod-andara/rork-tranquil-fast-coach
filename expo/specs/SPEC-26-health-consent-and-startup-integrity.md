@@ -1,6 +1,6 @@
 # SPEC-26: Apple Health export consent + startup/sync integrity
 
-**Status:** Pending. Pre-launch **high** (Manus findings A3, A4). Builds on SPEC-23/24 — read their invariants first.
+**Status:** Code complete (device verification pending). Pre-launch **high** (Manus findings A3, A4). Builds on SPEC-23/24 — read their invariants first.
 **Run order:** after SPEC-25. One session, one commit. Trailer: `Spec: SPEC-26`.
 
 ## Files to Read
@@ -56,4 +56,4 @@ Partial-sync reporting, history windowing/paging, mirroring edits/deletes (backl
 Revert commit; persisted v5 data would fail to downgrade cleanly — only revert before shipping a build that includes it.
 
 ## Progress Notes
-(none yet)
+Implemented. Deviation: the modal no longer calls saveWeightToHealth directly; it saves the entry as `pending` and calls `syncWeightData("export")` so the write goes through the single queue (a direct write could race a sync exporting the same pending entry). SPEC-23 `healthSynced` is superseded by `healthExport`.

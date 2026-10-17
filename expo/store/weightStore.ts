@@ -10,7 +10,10 @@ export interface WeightEntry {
   note?: string;
   source: 'manual' | 'apple_health';
   healthId?: string; // HealthKit sample id for imported entries
-  healthSynced?: boolean; // manual entry already written to Apple Health
+  // Manual entries only (SPEC-26): consent is separate from delivery state.
+  // opted_out = user kept it local, never exported; pending = consented, not yet
+  // written to Apple Health; synced = written.
+  healthExport?: 'opted_out' | 'pending' | 'synced';
 }
 
 // NOTE: `deletedHealthIds` (below) remembers HealthKit samples the user deleted
@@ -48,6 +51,7 @@ interface WeightState {
   getProgressPercentage: () => number | null;
   getPredictedGoalDate: () => number | null;
   getAverageWeeklyChange: () => number | null;
+  reset: () => void;
 }
 
 const defaultState = {
@@ -67,6 +71,14 @@ export const useWeightStore = create<WeightState>()(
 
       // Actions
       addEntry: (entry) => {
+        // Defense in depth against double imports (SPEC-26).
+        if (
+          entry.healthId &&
+          ((get().entries || []).some((e) => e.healthId === entry.healthId) ||
+            (get().deletedHealthIds || []).includes(entry.healthId))
+        ) {
+          return;
+        }
         const newEntry: WeightEntry = {
           ...entry,
           id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
@@ -161,6 +173,12 @@ export const useWeightStore = create<WeightState>()(
         if (!unitSetByUser) {
           get().setUnit(newUnit);
         }
+      },
+
+      // SPEC-27: Erase All Data. Replaces in-memory state with defaults; persist
+      // then writes only these defaults, never the stale pre-erase state.
+      reset: () => {
+        set({ ...defaultState });
       },
 
       setHealthConnected: (connected) => {
@@ -326,7 +344,7 @@ export const useWeightStore = create<WeightState>()(
     {
       name: 'weight-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 4,
+      version: 5,
       migrate: (persistedState: any, version) => {
         if (!persistedState) {
           return { ...defaultState };
@@ -357,8 +375,32 @@ export const useWeightStore = create<WeightState>()(
           );
         }
 
+        if (version < 5) {
+          // SPEC-26: replace boolean healthSynced with explicit consent state.
+          // Conservative: legacy entries not known to be in Health are opted_out
+          // so history is never silently exported.
+          stateWithDefaults.entries = (stateWithDefaults.entries || []).map((e: any) => {
+            const { healthSynced, ...rest } = e;
+            if (rest.source !== 'manual') return rest;
+            return { ...rest, healthExport: healthSynced === true ? 'synced' : 'opted_out' };
+          });
+        }
+
         return stateWithDefaults;
       },
     }
   )
 );
+
+// Resolves once the persisted weight store has been rehydrated (SPEC-26).
+export const waitForWeightStoreHydration = (): Promise<void> =>
+  new Promise((resolve) => {
+    if (useWeightStore.persist.hasHydrated()) {
+      resolve();
+      return;
+    }
+    const unsub = useWeightStore.persist.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+  });

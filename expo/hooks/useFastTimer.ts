@@ -1,11 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState } from 'react-native';
-import * as TaskManager from 'expo-task-manager';
+import { useCallback, useEffect, useState } from 'react';
 import { useFastStore } from '@/store/fastStore';
-import { storageKeys } from '@/utils';
-
-const TASK_NAME = 'fast-timer';
 
 export interface UseFastTimerResult {
   elapsedMs: number;
@@ -15,55 +9,19 @@ export interface UseFastTimerResult {
 
 export default function useFastTimer(): UseFastTimerResult {
   const currentFast = useFastStore((s) => s.currentFast);
-  const isRunning = Boolean(currentFast?.isRunning ?? currentFast);
   const [elapsedMs, setElapsedMs] = useState<number>(0);
-  const appState = useRef(AppState.currentState);
 
+  // Elapsed is always wall-clock from startTime while a fast exists (SPEC-25: no pause).
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(storageKeys.elapsedMs);
-        const parsed = stored ? Number(stored) : 0;
-        if (mounted) setElapsedMs(Number.isFinite(parsed) ? parsed : 0);
-      } catch (e) {
-        if (__DEV__) console.log('[useFastTimer] load elapsed error', e);
-      }
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (isRunning && currentFast) {
-      const tick = async () => {
-        const elapsed = Date.now() - currentFast.startTime;
-        setElapsedMs(elapsed);
-        try {
-          await AsyncStorage.setItem(storageKeys.elapsedMs, String(elapsed));
-        } catch (e) {
-          if (__DEV__) console.log('[useFastTimer] save elapsed error', e);
-        }
-      };
-      tick();
-      interval = setInterval(tick, 1000);
-    } else {
+    if (!currentFast) {
       setElapsedMs(0);
+      return;
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning, currentFast]);
-
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', async (next) => {
-      appState.current = next;
-    });
-    return () => sub.remove();
-  }, []);
+    const tick = () => setElapsedMs(Date.now() - currentFast.startTime);
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [currentFast]);
 
   const formatTime = useCallback((ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -82,14 +40,3 @@ export default function useFastTimer(): UseFastTimerResult {
 
   return { elapsedMs, formatTime, calculateProgress };
 }
-
-TaskManager.defineTask(TASK_NAME, async () => {
-  try {
-    const state = useFastStore.getState();
-    const start = state.currentFast?.startTime ?? 0;
-    const elapsed = start ? Date.now() - start : 0;
-    await AsyncStorage.setItem(storageKeys.elapsedMs, String(elapsed));
-  } catch (e) {
-    if (__DEV__) console.log('[fast-timer task] error', e);
-  }
-});

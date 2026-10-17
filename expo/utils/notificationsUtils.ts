@@ -19,13 +19,13 @@ let notificationsSetup = false;
 // identifier-based cancellation so unrelated schedules are not affected.
 // ---------------------------------------------------------------------------
 
-/**
- * Cancel any scheduled fasting milestone notifications. Safe to call at any
- * time. Logs errors only in development. Used at every lifecycle point where
- * the existing schedule becomes inaccurate: fast ended, paused, plan changed,
- * notifications disabled mid-fast.
- */
-export async function cancelFastingNotifications(): Promise<void> {
+// Generation guard (SPEC-25): every cancel/schedule bumps `generation`, and an
+// in-flight scheduler aborts after any await if it is no longer the newest.
+// This stops a stale scheduler from adding notifications after a cancel (or
+// from cancelling a newer fast's schedule).
+let generation = 0;
+
+async function cancelAllScheduled(): Promise<void> {
   try {
     if (Platform.OS === 'web') return;
     await Notifications.cancelAllScheduledNotificationsAsync();
@@ -35,7 +35,28 @@ export async function cancelFastingNotifications(): Promise<void> {
   }
 }
 
-export async function scheduleMilestones(totalSeconds: number, enabled: boolean): Promise<void> {
+/**
+ * Cancel any scheduled fasting milestone notifications. Safe to call at any
+ * time. Invalidates any in-flight scheduleMilestones call synchronously. Used
+ * wherever the existing schedule becomes inaccurate: fast ended, plan changed,
+ * notifications disabled mid-fast.
+ */
+export async function cancelFastingNotifications(): Promise<void> {
+  generation++;
+  await cancelAllScheduled();
+}
+
+/**
+ * Schedule milestone reminders for a fast of `totalSeconds`, given
+ * `elapsedSeconds` already elapsed. Only milestones still in the future and
+ * within the planned duration are scheduled.
+ */
+export async function scheduleMilestones(
+  totalSeconds: number,
+  enabled: boolean,
+  elapsedSeconds: number = 0
+): Promise<void> {
+  const myGen = ++generation;
   try {
     if (!enabled || Platform.OS === 'web') {
       if (__DEV__) console.log('[notificationsUtils] disabled or web');
@@ -44,11 +65,13 @@ export async function scheduleMilestones(totalSeconds: number, enabled: boolean)
 
     if (!notificationsSetup) {
       await setupNotifications();
+      if (myGen !== generation) return;
       notificationsSetup = true;
     }
 
     // Clear any previously-scheduled milestones before scheduling new ones.
-    await cancelFastingNotifications();
+    await cancelAllScheduled();
+    if (myGen !== generation) return;
     if (__DEV__) console.log('[notificationsUtils] scheduling milestones for', totalSeconds, 'seconds');
 
     // SPEC-20: calm, factual, non-shaming copy. No emoji. No exclamation marks
@@ -78,7 +101,7 @@ export async function scheduleMilestones(totalSeconds: number, enabled: boolean)
     ];
 
     for (const milestone of milestones) {
-      if (milestone.seconds <= totalSeconds) {
+      if (elapsedSeconds < milestone.seconds && milestone.seconds <= totalSeconds) {
         await Notifications.scheduleNotificationAsync({
           content: {
             title: milestone.title,
@@ -86,10 +109,11 @@ export async function scheduleMilestones(totalSeconds: number, enabled: boolean)
           },
           trigger: {
             type: 'timeInterval',
-            seconds: milestone.seconds,
+            seconds: milestone.seconds - elapsedSeconds,
             repeats: false,
           } as Notifications.TimeIntervalTriggerInput,
         });
+        if (myGen !== generation) return;
         if (__DEV__) console.log('[notificationsUtils] scheduled', milestone.title, 'at', milestone.seconds, 'seconds');
       }
     }

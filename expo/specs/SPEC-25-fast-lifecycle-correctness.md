@@ -83,4 +83,4 @@ Health sync (SPEC-26), Erase All Data and legal links (SPEC-27), accessibility (
 Revert the commit. Persisted data stays compatible (`isRunning` still optional).
 
 ## Progress Notes
-(none yet)
+Implemented in one session. tsc clean. Device checklist in Verification still to be run on-device. Also changed `getFastingMessage` to return goal-reached copy at 100%, and removed the `expo-task-manager` import from `useFastTimer` (package dependency left in place).

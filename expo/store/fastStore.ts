@@ -35,7 +35,6 @@ export interface FastState {
   hasHydrated: boolean;
 
   startFast: (planOrDuration: number | string) => void;
-  pauseFast: () => void;
   endFast: () => void;
   setSelectedPlan: (plan: FastingPlan) => void;
   updatePlan: (plan: FastingPlan) => Promise<void>;
@@ -48,14 +47,15 @@ export interface FastState {
   setUserName: (name: string) => void;
   loadFromStorage: () => Promise<void>;
   saveToStorage: () => Promise<void>;
+  reset: () => void;
 }
 
 const STORAGE_KEY = '@tranquil_fast_coach';
 
-export const useFastStore = create<FastState>((set, get) => ({
-  currentFast: null,
-  fastHistory: [],
-  selectedPlan: '16:8',
+const defaultFastState = {
+  currentFast: null as FastSession | null,
+  fastHistory: [] as FastSession[],
+  selectedPlan: '16:8' as FastingPlan,
   customDuration: 16,
   notificationsEnabled: true,
   isDarkMode: false,
@@ -63,7 +63,17 @@ export const useFastStore = create<FastState>((set, get) => ({
   onboardingComplete: false,
   isPremium: false,
   userName: '',
+};
+
+export const useFastStore = create<FastState>((set, get) => ({
+  ...defaultFastState,
   hasHydrated: false,
+
+  // SPEC-27: Erase All Data. In-memory only; deliberately does not call
+  // saveToStorage (storage was just cleared; onboarding persists naturally).
+  reset: () => {
+    set({ ...defaultFastState, hasHydrated: true });
+  },
 
   startFast: (planOrDuration: number | string) => {
     const state = get();
@@ -103,19 +113,6 @@ export const useFastStore = create<FastState>((set, get) => ({
     get().saveToStorage();
   },
 
-  pauseFast: () => {
-    const { currentFast } = get();
-    if (!currentFast) return;
-    const toggled = { ...currentFast, isRunning: !currentFast.isRunning };
-    set({ currentFast: toggled });
-    // SPEC-20: scheduled milestones fire at absolute times, so any pause/resume
-    // desynchronizes them from actual elapsed time. Cancelling on toggle is
-    // safer than firing inaccurate milestones. v1.1 may re-schedule on resume
-    // based on adjusted elapsed time.
-    cancelFastingNotifications();
-    get().saveToStorage();
-  },
-
   endFast: async () => {
     const { currentFast, fastHistory } = get();
     if (currentFast) {
@@ -130,6 +127,9 @@ export const useFastStore = create<FastState>((set, get) => ({
       });
       // SPEC-20: cancel any milestone notifications still scheduled for this fast.
       cancelFastingNotifications();
+      // SPEC-25: persist before any network work so killing the app mid-await
+      // cannot resurrect the ended fast.
+      await get().saveToStorage();
       try {
         const state = await NetInfo.fetch();
         if (state.isConnected) {
@@ -140,7 +140,6 @@ export const useFastStore = create<FastState>((set, get) => ({
       } catch (e) {
         enqueueOffline({ type: 'upsertFast', payload: { user_id: 'stub', ...completedFast } });
       }
-      get().saveToStorage();
     }
   },
 
@@ -150,13 +149,18 @@ export const useFastStore = create<FastState>((set, get) => ({
   },
 
   updatePlan: async (plan: FastingPlan) => {
-    const { currentFast } = get();
-    if (currentFast) {
-      set({ currentFast: null });
-      // SPEC-20: changing the plan ends the active fast; cancel its milestones.
-      cancelFastingNotifications();
-    }
+    const { currentFast, customDuration, notificationsEnabled } = get();
     set({ selectedPlan: plan });
+    if (currentFast) {
+      // SPEC-25: adjust the running fast (keep id/startTime); never discard it.
+      const plannedDuration = getPlanDuration(plan, customDuration);
+      set({ currentFast: { ...currentFast, plan, plannedDuration } });
+      cancelFastingNotifications();
+      if (notificationsEnabled) {
+        const elapsedSec = Math.floor((Date.now() - currentFast.startTime) / 1000);
+        scheduleMilestones(Math.floor(plannedDuration / 1000), true, elapsedSec);
+      }
+    }
     await get().saveToStorage();
   },
 
@@ -219,6 +223,12 @@ export const useFastStore = create<FastState>((set, get) => ({
 
           // Save the migrated data immediately
           await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // SPEC-25: Pause was removed. Elapsed time is wall-clock from startTime,
+        // so a session persisted as paused (build <= 104) simply resumes counting.
+        if (data.currentFast && data.currentFast.isRunning === false) {
+          data.currentFast = { ...data.currentFast, isRunning: true };
         }
 
         set({ ...data, hasHydrated: true });

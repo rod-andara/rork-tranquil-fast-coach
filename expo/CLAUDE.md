@@ -21,12 +21,13 @@ app/index.tsx             Entry: hydration guard -> onboarding or home
 app/_layout.tsx           Root: Sentry wrap, store hydration, RevenueCat init (gated, off in v1.0), HealthKit reinit
 app/(tabs)/_layout.tsx    Tab navigator (5 tabs)
 app/(tabs)/home.tsx       Timer display, start fast, stats summary
-app/(tabs)/fast.tsx       Active fast: progress ring, pause/resume, end, tips
+app/(tabs)/fast.tsx       Active fast: progress ring, end, tips (no Pause since SPEC-25)
 app/(tabs)/progress.tsx   Weight tracking, fasting stats, charts, achievements
 app/(tabs)/learn.tsx      Content feed (recipes, articles, products)
 app/(tabs)/settings.tsx   Preferences, premium card, help/support
 app/onboarding/           3-step flow: welcome -> track-succeed -> choose-plan
-app/_paywall.tsx          RevenueCat subscription screen — deactivated route in v1.0 (leading underscore = expo-router ignores); rename back to `paywall.tsx` for v1.1 (SPEC-17)
+dormant/paywall.tsx       RevenueCat subscription screen — OUTSIDE app/ (not a route) in v1.0; move to `app/paywall.tsx` for v1.1 (SPEC-17, SPEC-27)
+constants/links.ts        Privacy/Terms/Support URLs (tranquilfast.app) used by Settings
 
 store/fastStore.ts        Fasting state (MANUAL AsyncStorage persist via save/loadFromStorage)
 store/weightStore.ts      Weight state (zustand persist middleware with AsyncStorage, version 4)
@@ -60,10 +61,10 @@ The `startFast()` method in `fastStore.ts:71-72` correctly calculates `plannedDu
 4. Read in `loadFromStorage()` (happens automatically via spread: `set({ ...data, hasHydrated: true })`)
 
 ### weightStore uses zustand persist middleware
-`weightStore` uses `persist()` with `createJSONStorage(() => AsyncStorage)`. New fields are automatically persisted. Has a version 4 migration system (bump `version` and add a `version < N` block when changing persisted shape).
+`weightStore` uses `persist()` with `createJSONStorage(() => AsyncStorage)`. New fields are automatically persisted. Has a version 5 migration system (bump `version` and add a `version < N` block when changing persisted shape).
 
 ### Apple Health sync invariants (SPEC-23)
-- Manual entries carry `healthSynced`; export only sends `source === 'manual' && !healthSynced` and flags each entry after a successful save. Any new code that writes weight to Health MUST set `healthSynced: true` on the entry, or it will be exported twice.
+- Manual entries carry `healthExport` (`opted_out` | `pending` | `synced`, SPEC-26). Consent is separate from delivery: the Add Weight modal saves `pending` when the Sync switch is ON (then exports via the serialized `syncWeightData('export')`), `opted_out` when OFF; editing never changes it. Export only sends `source === 'manual' && healthExport === 'pending'` and flips each to `synced` after a successful save. Persist v5 migration marked legacy manual entries `synced` (if previously flagged) else `opted_out` — history is never silently exported; a v1.1 "export older entries" action may be offered. `syncWeightData` and `saveWeightToHealth` run through a module-level promise queue (`runExclusive`) so they never interleave; `addEntry` ignores a `healthId` already present or in `deletedHealthIds`. `_layout.tsx` awaits `waitForWeightStoreHydration()` before `setUnitDefault`/reading `isHealthConnected`.
 - Imported entries carry `healthId` (HealthKit sample id). Import reads FULL history every sync (never a lastSync-limited window — an early empty sync would hide older data) and dedupes by `healthId` or timestamp within 1s. Locally deleted imports are remembered in `deletedHealthIds` so they don't return.
 - `saveWeight` in react-native-health reads the date from `startDate` (NOT `date`); keep it that way.
 - iOS hides READ permission status: denied read = empty result, no error. The Health card therefore shows a permission hint with an "Open Health" button when a sync finds nothing AND no `apple_health` entry was ever imported (SPEC-24); never show a plain "success" for that case. Confirmed in the field: Weight WRITE on / READ off happens, and iOS will not re-prompt.
@@ -125,7 +126,7 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 - The entire RevenueCat startup block is wrapped in `if (REVENUECAT_ENABLED) { ... }`. When disabled, `initializeRevenueCat`, `checkSubscriptionStatus`, and `setPremium` are never reached at app launch.
 
 **How the paywall route is hidden in v1.0:**
-- `app/paywall.tsx` has been renamed to `app/_paywall.tsx`. The leading underscore tells expo-router to treat the file as a private module, not a route. Deep links to `/paywall` return 404.
+- The paywall screen lives at `dormant/paywall.tsx`, outside `app/`, so no route exists (SPEC-27; the earlier `_paywall.tsx` underscore trick did NOT hide it — expo-router only ignores `+`-prefixed files). Deep links to `/paywall` and `/_paywall` hit `+not-found`.
 - `<Stack.Screen name="paywall" .../>` is no longer registered in `_layout.tsx`.
 - `components/PremiumGate.tsx` is defined but rendered zero times anywhere in the app tree. Its `router.push('/paywall' as any)` is dead code; the `as any` cast satisfies typed-routes since `/paywall` is no longer a valid route.
 
@@ -137,7 +138,7 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 
 - **NEVER** set RevenueCat log level to VERBOSE. It caused a memory leak / OOM crash (fixed in commit f2e7779). Log level must stay at WARN.
 - **NEVER** modify the initialization order in `_layout.tsx`: store hydration -> RevenueCat init (gated, may no-op in v1.0) -> HealthKit reinit. Changing order causes race conditions. In v1.0 the RevenueCat block is wrapped in `if (REVENUECAT_ENABLED) { ... }` and skipped entirely — that gate stays.
-- **NEVER** render `<PremiumGate>` or navigate to `/paywall` in v1.0. RevenueCat is disabled; the paywall route is unregistered and the file is renamed to `app/_paywall.tsx`. See SPEC-17 §10 for v1.1 reactivation.
+- **NEVER** render `<PremiumGate>` or navigate to `/paywall` in v1.0. RevenueCat is disabled; the paywall route is unregistered and the file lives at `dormant/paywall.tsx` (outside `app/`). See SPEC-17 §10 for v1.1 reactivation.
 - **NEVER** restore the placeholder API key fallback `'appl_YOUR_API_KEY_HERE'` in `services/revenuecat.ts`. The constants must remain `string | undefined`, sourced exclusively from env vars (SPEC-17).
 - **NEVER** call `getPlanDuration(selectedPlan)` without the `customDuration` parameter when `selectedPlan` could be `'custom'`. This is a known bug source.
 - **NEVER** add `console.log` to production paths without `__DEV__` guards. Many debug logs exist from prior sessions -- clean them up when touching those files.
@@ -173,7 +174,7 @@ v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SD
 ## Testing Checklist (per area)
 
 ### After changing fastStore.ts:
-- [ ] Timer start/stop/pause works
+- [ ] Timer start/stop works; plan change mid-fast keeps the fast
 - [ ] Persistence survives app restart (kill and relaunch)
 - [ ] Custom plan duration is preserved correctly
 
@@ -200,7 +201,7 @@ See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
 
 **Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check), SPEC-23 (Apple Health sync fixes; code complete, on-device verification pending), SPEC-24 (pre-submission hardening; code complete, ships in build 104).
-**Pre-launch blockers from the independent (Manus) review, run in order, fresh session each:** SPEC-25 (fast lifecycle: remove Pause, safe plan change) → SPEC-26 (Health export consent, hydration, serialization) → SPEC-27 (paywall route, Erase All Data, in-app legal links, privacy docs) → SPEC-28 (verification matrix on build 105). Review text: `specs/reference/MANUS-prelaunch-review-2026-10.md`; post-launch items: `specs/BACKLOG-v1.1.md`. **Known-wrong statements until SPEC-27 lands:** "`_paywall.tsx` is ignored by expo-router" is false (it is a real `/_paywall` route reachable by deep link); "Log Out" does not actually reset in-memory stores; there is no in-app Privacy Policy link yet; Pause/plan-change behavior is described in SPEC-25. `tranquilfast.app` is not yet hosted (owner task).
+**Pre-launch blockers from the independent (Manus) review, run in order, fresh session each:** SPEC-25 (fast lifecycle: remove Pause, safe plan change) → SPEC-26 (Health export consent, hydration, serialization) → SPEC-27 (paywall route, Erase All Data, in-app legal links, privacy docs) → SPEC-28 (verification matrix on build 105). Review text: `specs/reference/MANUS-prelaunch-review-2026-10.md`; post-launch items: `specs/BACKLOG-v1.1.md`. **SPEC-27 landed (code):** paywall moved to `dormant/`, Settings "Erase All Data" (cancels notifications, clears AsyncStorage, calls `reset()` on both stores, routes to onboarding; never re-persists stale state), in-app Privacy/Terms/Support links via `constants/links.ts`, `supportsTablet: false`. `tranquilfast.app` is not yet hosted (owner task; hard submission blocker). Next: SPEC-28.
 **In progress:** SPEC-21 (App Store submission punch list — paperwork checklist; build + ASC listing).
 **Pending:** SPEC-05 (Apple Health onboarding), SPEC-06 (Learn tab images), SPEC-08 (App Store submission — superseded by SPEC-21).
 **Deferred to v1.1:** SPEC-07 (premium gating) — depends on SPEC-17 reactivation; see SPEC-17 §10 checklist.
@@ -230,3 +231,10 @@ eas submit --platform ios                   # App Store submission
 npx tsc --noEmit                            # Type check
 npx expo-doctor                             # Health check
 ```
+
+### Fast lifecycle (SPEC-25)
+- Pause was removed. `FastSession.isRunning` is optional/ignored; `loadFromStorage` flips a persisted `isRunning === false` to `true`. Elapsed is always wall-clock from `startTime`.
+- `updatePlan(plan)` never discards the fast: it keeps `id`/`startTime`, sets `plan` + `plannedDuration` (via `getPlanDuration(plan, customDuration)`), and reschedules remaining milestones. Elapsed > target shows "goal reached".
+- `choose-plan.tsx` only mutates the store from the footer button, never on card tap.
+- `notificationsUtils` uses a module-level generation counter: `cancelFastingNotifications()` bumps it synchronously; `scheduleMilestones(total, enabled, elapsedSeconds)` aborts after any await if superseded. `setNotificationsEnabled(true)` mid-fast still does not reschedule (known, acceptable).
+- `endFast` saves to storage before any NetInfo/stub work.

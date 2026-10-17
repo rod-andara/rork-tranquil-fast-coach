@@ -108,7 +108,7 @@ After the initial SPEC-17 audit confirmed the paywall was not reachable from any
 
 Three changes were applied:
 
-1. **`app/paywall.tsx` → `app/_paywall.tsx`** — renamed via `git mv`. The leading underscore tells expo-router to treat the file as a private module rather than a file-based route. The file content is preserved verbatim; only the path changed.
+1. **`app/paywall.tsx` → `dormant/paywall.tsx`** — moved via `git mv` (SPEC-27). The original `_paywall.tsx` rename was wrong: expo-router 6 only ignores `+html`/`+native-intent`/`+api`/`+middleware`, so `/_paywall` was still a live route. `dormant/` is outside `app/`, so no route exists.
 
 2. **`app/_layout.tsx`** — removed the `<Stack.Screen name="paywall" options={...} />` line. Replaced with an in-file comment block documenting the deactivation and the v1.1 reactivation steps.
 
@@ -117,7 +117,7 @@ Three changes were applied:
 After these changes, the paywall is unreachable by **four independent mechanisms**:
 - No UI button links to it (PremiumGate is unrendered)
 - No Stack.Screen registers it
-- No file-based route exists (the file is now `_paywall.tsx`, ignored by expo-router)
+- No file-based route exists (the file is now `dormant/paywall.tsx`, outside `app/`)
 - Typed routes do not include `/paywall` in the generated type union
 
 ### 4.5 EAS environment
@@ -243,7 +243,7 @@ When ready to ship the paywall in v1.1, perform every step in this list. None re
 
 A. **Restore the paywall route file:**
 ```bash
-git mv app/_paywall.tsx app/paywall.tsx
+git mv dormant/paywall.tsx app/paywall.tsx
 ```
 
 B. **Re-register the paywall in the navigation Stack** — `app/_layout.tsx`. Replace the SPEC-17 comment block (immediately above `<Stack.Screen name="index" ... />`) with:
@@ -306,7 +306,7 @@ K. **Submit v1.1 for review** with subscription notes in the App Review Informat
 
 After completing steps A–K, verify before submission:
 
-- [ ] `git mv app/_paywall.tsx app/paywall.tsx` completed
+- [ ] `git mv dormant/paywall.tsx app/paywall.tsx` completed
 - [ ] `<Stack.Screen name="paywall" ... />` re-registered in `_layout.tsx`
 - [ ] `'/paywall' as any` cast removed from `PremiumGate.tsx`
 - [ ] `EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY` set in EAS production (sensitive visibility)

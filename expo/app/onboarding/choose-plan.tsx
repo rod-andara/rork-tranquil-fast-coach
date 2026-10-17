@@ -78,31 +78,30 @@ function ClockIllustration() {
 }
 
 export default function ChoosePlanScreen() {
-  const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
-  const [showCustomModal, setShowCustomModal] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
   const fromSettings = params.fromSettings === 'true';
   const {
     setSelectedPlan: saveSelectedPlan,
+    selectedPlan: persistedPlan,
     updatePlan,
     onboardingComplete,
     completeOnboarding,
     isDarkMode,
-    startFast,
+    currentFast,
     customDuration,
     setCustomDuration,
   } = useFastStore();
+  // SPEC-25: card taps only change local selection; the footer button is the single commit.
+  const [selectedPlan, setSelectedPlan] = useState<FastingPlan>(persistedPlan);
+  const [showCustomModal, setShowCustomModal] = useState(false);
+
   const handleSaveCustomDuration = (hours: number, minutes: number) => {
     // Convert hours and minutes to total hours (decimal)
     const totalHours = hours + minutes / 60;
     if (__DEV__) console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
     setCustomDuration(totalHours);
     setSelectedPlan('custom');
-
-    if (fromSettings) {
-      updatePlan('custom');
-    }
   };
 
   const formatCustomDuration = () => {
@@ -191,14 +190,11 @@ export default function ChoosePlanScreen() {
                 popular={plan.popular}
                 selected={selectedPlan === plan.id}
                 isDarkMode={isDarkMode}
-                onPress={async () => {
+                onPress={() => {
                   if (plan.id === 'custom') {
                     setShowCustomModal(true);
                   } else {
                     setSelectedPlan(plan.id);
-                    if (fromSettings) {
-                      await updatePlan(plan.id);
-                    }
                   }
                 }}
               />
@@ -213,7 +209,11 @@ export default function ChoosePlanScreen() {
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>
-              Start {selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan
+              {fromSettings
+                ? currentFast
+                  ? 'Apply to current fast'
+                  : 'Save plan'
+                : `Start ${selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan`}
             </Text>
           </TouchableOpacity>
         </View>

@@ -17,7 +17,7 @@ import {
 import { X, Save, Scale } from 'lucide-react-native';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
-import { saveWeightToHealth, isHealthKitReady } from '@/utils/appleHealth';
+import { syncWeightData, isHealthKitReady } from '@/utils/appleHealth';
 
 interface WeightEntryModalProps {
   visible: boolean;
@@ -74,28 +74,24 @@ export default function WeightEntryModal({
           note: (note ?? '').trim() || undefined,
         });
       } else {
-        // Add new entry. Write to Apple Health first using the same timestamp so
-        // the entry is flagged as synced and never exported (or re-imported) twice.
-        const entryDate = Date.now();
-        let healthSynced = false;
-
-        if (syncToHealth && isHealthKitReady()) {
-          try {
-            await saveWeightToHealth(weightNum, unit, new Date(entryDate));
-            healthSynced = true;
-          } catch {
-            // Don't block saving locally; the next sync retries unsynced entries.
-          }
-        }
+        // Add new entry with its consent state (SPEC-26). Opted-in entries are
+        // saved as 'pending' and exported through the serialized sync queue, so
+        // the modal write can never interleave with another sync (no duplicates).
+        const consented = syncToHealth && isHealthConnected;
 
         addEntry({
           weight: weightNum,
-          date: entryDate,
+          date: Date.now(),
           unit: unit,
           note: (note ?? '').trim() || undefined,
           source: 'manual',
-          healthSynced,
+          healthExport: consented ? 'pending' : 'opted_out',
         });
+
+        if (consented && isHealthKitReady()) {
+          // Failure leaves the entry pending; the next sync retries it.
+          syncWeightData('export').catch(() => {});
+        }
       }
 
       // ✅ CORRECT: Set isSaving to false BEFORE closing modal

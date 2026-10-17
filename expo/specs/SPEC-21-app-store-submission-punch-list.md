@@ -336,11 +336,11 @@ Char count: ~1,840. Well within the 4,000 limit.
 ### E. Keywords (100 char max, comma-separated, NO spaces after commas)
 
 ```
-fasting,intermittent,fast,16:8,timer,weight,tracker,health,wellness,IF,OMAD,fastic,zero,calm
+fasting,intermittent,fast,16:8,timer,weight,tracker,health,wellness,IF,OMAD,calm,hydration
 ```
-Char count: 96. Within limit.
+Char count: under 100. Within limit.
 
-- Includes competitor names (`fastic`, `zero`) — standard practice; legal because they are app names, not trademarks-as-product-claims. Removes if Apple flags but unlikely.
+- SPEC-27: competitor/brand names removed (Guideline 2.3.7 risk); generic terms only.
 - No "diet" word — too generic and could attract weight-loss-product association.
 - No "lose", "burn", "fat" — avoids medical/outcome claim discoverability framing.
 
@@ -400,33 +400,12 @@ Add only if you have a public landing page. Skipping is fine.
 
 In App Store Connect: **My Apps → Tranquil Fast → App Privacy** → click **Get Started** (or **Edit** if you've started before).
 
-### Step 1 — "Data Used to Track You"
-- Click **No, we do not collect data from this app that is used to track the user**
+> **Decision record (SPEC-27).** Answer from the final ASC screens, not from pre-baked answers here.
 
-### Step 2 — "Data Collected"
-- Click **Yes** (because we do receive crash diagnostics and process Apple Health weight data locally)
-
-### Step 3 — declare each data type. Apple groups by category. Click into each and answer:
-
-**Health & Fitness → Health**
-- Is this data linked to the user's identity? → **No**
-- Is this data used for tracking purposes? → **No**
-- What is the purpose of collecting this data? → check **App Functionality**
-- (No other purposes checked)
-
-**Diagnostics → Crash Data**
-- Is this data linked to the user's identity? → **No**
-- Is this data used for tracking purposes? → **No**
-- What is the purpose? → check **App Functionality**
-
-**Diagnostics → Other Diagnostic Data**
-- Is this data linked to the user's identity? → **No**
-- Is this data used for tracking purposes? → **No**
-- What is the purpose? → check **App Functionality**
-
-### Step 4 — Save and publish
-
-Click **Save** and then **Publish** when prompted.
+- **Tracking:** none (no ad SDKs, no cross-app identifiers).
+- **Health & Fitness (Health, Fitness):** **Not collected.** Weight is read from / written to Apple Health on device only; the app never transmits it, and Sentry is scrubbed of it (SPEC-16). Do not declare Health as collected.
+- **Diagnostics → Crash Data, Other Diagnostic Data:** **Collected** via Sentry, purpose **App Functionality**, not used for tracking. Whether they count as "linked to the user" must be confirmed from a real raw Sentry event (installation ID, IP address) — see SPEC-27 owner task 3. Enable "Prevent storing of IP addresses" in Sentry first.
+- **Age rating / Medical-Wellness questionnaires:** answer from the final binary (SPEC-27 owner task 4); no pre-set answers.
 
 ### Explicitly DO NOT declare any of the following for v1.0:
 
@@ -492,6 +471,8 @@ Thank you for reviewing.
 ---
 
 ## 10. Screenshot Checklist
+
+> SPEC-27: required sizes depend on `supportsTablet`. It is now `false` (iPhone only), so 13" iPad screenshots are NOT required. If set back to `true`, iPad screenshots become mandatory.
 
 Apple requires screenshots at minimum **2 device sizes**:
 - 6.9" Display (iPhone 16 Pro Max) — 1320 × 2868 px

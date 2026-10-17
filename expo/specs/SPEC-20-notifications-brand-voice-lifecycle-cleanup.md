@@ -291,3 +291,5 @@ Unchanged. Notifications remain local-only. No new entries required. Combined SP
 ### Final yes/no for App Store submission — Notifications
 
 **Yes.** All four blockers from the audit are resolved. Copy is brand-aligned, cancellation lifecycle is complete, app.json no longer declares an unused remote-notification capability, and console output is production-suppressed. The notification surface is App Store submission-ready.
+
+> **SPEC-25 note:** Pause was removed in v1.0, so the `pauseFast` cancellation described above is moot.

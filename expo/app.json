@@ -14,7 +14,7 @@
       "backgroundColor": "#8B5CF6"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.tranquilfastcoach.app",
       "infoPlist": {
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",

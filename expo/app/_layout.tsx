@@ -14,7 +14,7 @@ import * as Sentry from "@sentry/react-native";
 import * as Localization from 'expo-localization';
 
 import { useFastStore } from "@/store/fastStore";
-import { useWeightStore } from "@/store/weightStore";
+import { useWeightStore, waitForWeightStoreHydration } from "@/store/weightStore";
 import { initHealthKit, syncWeightData } from "@/utils/appleHealth";
 import { initializeRevenueCat, checkSubscriptionStatus, REVENUECAT_ENABLED } from "@/services/revenuecat";
 import AppSetup from "@/App";
@@ -119,6 +119,9 @@ function RootLayoutNav() {
         // Load store data from storage
         await useFastStore.getState().loadFromStorage();
 
+        // Wait for persisted weight data before reading unit/connection state (SPEC-26)
+        await waitForWeightStoreHydration();
+
         // Auto-detect dark mode on first launch (no-op if user already chose)
         const systemColorScheme = Appearance.getColorScheme();
         useFastStore.getState().setDarkModeDefault(systemColorScheme === 'dark');
@@ -206,9 +209,9 @@ function RootLayoutNav() {
       {/*
         SPEC-17: paywall route deliberately NOT registered in v1.0.
         RevenueCat is disabled (EXPO_PUBLIC_ENABLE_REVENUECAT !== 'true'), so the
-        paywall has no offerings and no purchase flow. The file app/paywall.tsx is
-        retained for v1.1 reactivation — restore this <Stack.Screen> line when
-        re-enabling premium subscriptions.
+        paywall has no offerings and no purchase flow. The screen lives outside the
+        route tree at dormant/paywall.tsx. For v1.1: move it to app/paywall.tsx and
+        restore the <Stack.Screen name="paywall" /> entry here.
       */}
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>

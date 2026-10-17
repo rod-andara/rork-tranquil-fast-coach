@@ -299,8 +299,23 @@ export const getWeightFromHealth = (
   });
 };
 
+// Serializes Health writes/syncs so launch sync, card sync and modal writes
+// never interleave (SPEC-26). Never held across initHealthKit prompts.
+let queue: Promise<unknown> = Promise.resolve();
+const runExclusive = <T>(fn: () => Promise<T>): Promise<T> => {
+  const run = queue.then(fn, fn);
+  queue = run.catch(() => undefined);
+  return run;
+};
+
 // Save weight to Apple Health
 export const saveWeightToHealth = (
+  weight: number,
+  unit: 'lbs' | 'kg',
+  date?: Date
+): Promise<boolean> => runExclusive(() => saveWeightToHealthUnsafe(weight, unit, date));
+
+const saveWeightToHealthUnsafe = (
   weight: number,
   unit: 'lbs' | 'kg',
   date?: Date
@@ -394,8 +409,13 @@ export const saveWeightToHealth = (
 };
 
 // Sync weight data bidirectionally
-export const syncWeightData = async (
+export const syncWeightData = (
   direction: 'import' | 'export' | 'both' = 'both'
+): Promise<{ imported: number; exported: number }> =>
+  runExclusive(() => syncWeightDataUnsafe(direction));
+
+const syncWeightDataUnsafe = async (
+  direction: 'import' | 'export' | 'both'
 ): Promise<{ imported: number; exported: number }> => {
   let imported = 0;
   let exported = 0;
@@ -442,14 +462,14 @@ export const syncWeightData = async (
     }
 
     if (direction === 'export' || direction === 'both') {
-      // Export manual entries to Apple Health
+      // Export only entries the user consented to (SPEC-26)
       const manualEntries = useWeightStore
         .getState()
-        .entries.filter((e) => e.source === 'manual' && !e.healthSynced);
+        .entries.filter((e) => e.source === 'manual' && e.healthExport === 'pending');
 
       for (const entry of manualEntries) {
-        await saveWeightToHealth(entry.weight, entry.unit, new Date(entry.date));
-        useWeightStore.getState().updateEntry(entry.id, { healthSynced: true });
+        await saveWeightToHealthUnsafe(entry.weight, entry.unit, new Date(entry.date));
+        useWeightStore.getState().updateEntry(entry.id, { healthExport: 'synced' });
         exported++;
       }
     }

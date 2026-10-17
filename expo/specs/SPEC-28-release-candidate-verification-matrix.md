@@ -56,4 +56,13 @@
 All critical sections PASS and owner tasks in SPEC-27 complete → submit for review. Any FAIL in Fasting, Health, or Release surface → fix, rebuild (new SPEC or addendum), re-run affected rows.
 
 ## Progress Notes
-(none yet)
+### Static pre-checks (2026-10-17, Claude Code, working tree at 0b4ab76 + uncommitted SPEC-25..27 changes)
+Not a substitute for the matrix. The matrix must still be run by the owner on the signed build on a physical iPhone.
+- `npx tsc --noEmit`: clean.
+- No `expo/ios` or `expo/android` directory present.
+- `console.*` grep: every hit is inside a braced `__DEV__` block.
+- `app/` has no paywall route (only `_layout`, `(tabs)`, `+not-found`, `index`, `onboarding`); `dormant/paywall.tsx` exists; `_layout.tsx` registers no paywall screen.
+- `app.json`: no `NSAppTransportSecurity`; `supportsTablet: false`; name "Tranquil Fast Coach"; scheme `tranquilfastcoach`.
+- `EXPO_PUBLIC_ENABLE_REVENUECAT` not set in `eas.json` or `.env*`. EAS dashboard env vars were not checked.
+- Working tree is NOT clean (SPEC-25..27 changes uncommitted), so the release record's "git status clean" box cannot be ticked yet. Commit before building 105.
+- Matrix rows: all still open (device-only).

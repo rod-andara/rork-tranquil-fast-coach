@@ -50,8 +50,10 @@ export function getFastingMessage(progressPercent: number): string {
     return "Great progress! Your body is adapting.";
   } else if (progressPercent < 90) {
     return "Almost there! You're in the final stretch.";
-  } else {
+  } else if (progressPercent < 100) {
     return "Amazing! You're about to complete your fast!";
+  } else {
+    return "Goal reached. End your fast whenever you're ready.";
   }
 }
 
