@@ -33,6 +33,11 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 22 | External link health check + broken link replacement | Compliance | Small | **Completed** — Amazon glass container 404 replaced with People.com editorial; Healthline electrolyte 404 replaced with durable explainer; Healthline workout+IF 404 removed (no verified replacement); 12 → 11 cards |
 | 23 | Apple Health sync fixes + TestFlight build 103 | Bug fix | Medium | **Code complete** (`dd28cff`) — no duplicate exports, 30-day import lookback, lastSync always recorded, launch no longer disconnects; build 103 built, TestFlight submit + on-device verification pending |
 | 24 | Pre-submission hardening (Health read hint, ATS exception removed, console gating, stub audit, buildNumber) | Compliance | Small | **Code complete** — ships in build 104; on-device verification pending |
+| 25 | Fast lifecycle correctness: remove Pause, reversible plan selection + adjust running fast, notification generation guard, endFast save order | Bug fix | Medium | **Pending — pre-launch critical** (Manus A1/A5/A6). Run first. |
+| 26 | Apple Health export consent (`healthExport` state, weightStore v5) + hydration gate + serialized sync | Bug fix | Medium | **Pending — pre-launch high** (Manus A3/A4). After 25. |
+| 27 | Paywall out of route tree, Erase All Data, in-app Privacy/Terms/Support links, tablet/name alignment, SPEC-21 privacy doc fixes + owner tasks | Compliance | Medium | **Pending — pre-launch critical** (Manus A2/A8/A9). After 26. Owner must host tranquilfast.app. |
+| 28 | Release-candidate verification matrix on the signed build | Checklist | N/A | **Pending** — run after 25–27 on build 105. |
+| — | `BACKLOG-v1.1.md` post-launch enhancements (Manus B1–B12) | Backlog | — | Reference: `reference/MANUS-prelaunch-review-2026-10.md` |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 
