@@ -8,6 +8,10 @@ import * as Sentry from '@sentry/react-native';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
 
 const TEN_YEARS_IN_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+// Re-scan recent history on each import so late-syncing / backdated samples
+// (smart scales, other apps) are not skipped.
+const IMPORT_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000;
+const SAME_SAMPLE_TOLERANCE_MS = 1000;
 
 // Track if HealthKit has been successfully initialized
 let healthKitInitialized = false;
@@ -129,8 +133,16 @@ export const isHealthKitAvailable = (): boolean => {
 };
 
 // Initialize HealthKit and request permissions
-export const initHealthKit = async (): Promise<boolean> => {
-  const { setHealthConnected } = useWeightStore.getState();
+// keepConnectedOnFailure: used for the silent launch-time reinit so a transient
+// failure (e.g. device locked) doesn't permanently flip the user to "disconnected".
+export const initHealthKit = async (
+  options: { keepConnectedOnFailure?: boolean } = {}
+): Promise<boolean> => {
+  const store = useWeightStore.getState();
+  const setHealthConnected = (connected: boolean) => {
+    if (!connected && options.keepConnectedOnFailure) return;
+    store.setHealthConnected(connected);
+  };
 
   if (Platform.OS !== 'ios') {
     setHealthConnected(false);
@@ -242,7 +254,7 @@ export const getWeightFromHealth = (
 
     const options = {
       startDate: effectiveStartDate.toISOString(),
-      limit: limit || 100,
+      limit: limit || 1000,
       ascending: false,
     };
 
@@ -400,18 +412,24 @@ export const syncWeightData = async (
       const lastSync = useWeightStore.getState().lastHealthSync;
       const startDate =
         typeof lastSync === 'number' && Number.isFinite(lastSync)
-          ? new Date(lastSync)
+          ? new Date(lastSync - IMPORT_LOOKBACK_MS)
           : undefined;
 
       const healthEntries = await getWeightFromHealth(startDate);
 
-      // Filter out entries that already exist (by date)
-      const existingDates = new Set(
-        useWeightStore.getState().entries.map((e) => e.date)
+      // Skip samples we already have: same HealthKit id, or same timestamp
+      // (covers entries we exported ourselves, which have no healthId).
+      const existing = useWeightStore.getState().entries;
+      const knownIds = new Set(
+        existing.map((e) => e.healthId).filter((id): id is string => !!id)
       );
 
       const newEntries = healthEntries.filter(
-        (entry) => !existingDates.has(entry.date)
+        (entry) =>
+          !knownIds.has(entry.id) &&
+          !existing.some(
+            (e) => Math.abs(e.date - entry.date) < SAME_SAMPLE_TOLERANCE_MS
+          )
       );
 
       // Add new entries to store
@@ -421,6 +439,7 @@ export const syncWeightData = async (
           date: entry.date,
           unit: entry.unit,
           source: 'apple_health',
+          healthId: entry.id,
         });
       });
 
@@ -429,23 +448,19 @@ export const syncWeightData = async (
 
     if (direction === 'export' || direction === 'both') {
       // Export manual entries to Apple Health
-      const lastSync = useWeightStore.getState().lastHealthSync;
       const manualEntries = useWeightStore
         .getState()
-        .entries.filter(
-          (e) =>
-            e.source === 'manual' && (!lastSync || e.date > lastSync)
-        );
+        .entries.filter((e) => e.source === 'manual' && !e.healthSynced);
 
       for (const entry of manualEntries) {
         await saveWeightToHealth(entry.weight, entry.unit, new Date(entry.date));
+        useWeightStore.getState().updateEntry(entry.id, { healthSynced: true });
         exported++;
       }
     }
 
-    if (imported > 0 || exported > 0) {
-      useWeightStore.getState().setLastHealthSync(Date.now());
-    }
+    // Record every successful sync, even when nothing changed.
+    useWeightStore.getState().setLastHealthSync(Date.now());
 
     return { imported, exported };
   } catch (error) {

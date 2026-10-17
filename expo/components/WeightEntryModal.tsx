@@ -74,28 +74,28 @@ export default function WeightEntryModal({
           note: (note ?? '').trim() || undefined,
         });
       } else {
-        // Add new entry
+        // Add new entry. Write to Apple Health first using the same timestamp so
+        // the entry is flagged as synced and never exported (or re-imported) twice.
+        const entryDate = Date.now();
+        let healthSynced = false;
+
+        if (syncToHealth && isHealthKitReady()) {
+          try {
+            await saveWeightToHealth(weightNum, unit, new Date(entryDate));
+            healthSynced = true;
+          } catch {
+            // Don't block saving locally; the next sync retries unsynced entries.
+          }
+        }
+
         addEntry({
           weight: weightNum,
-          date: Date.now(),
+          date: entryDate,
           unit: unit,
           note: (note ?? '').trim() || undefined,
           source: 'manual',
+          healthSynced,
         });
-
-        // Wait for Apple Health sync to complete (only if ready and enabled)
-        const canSync = syncToHealth && isHealthKitReady();
-        if (canSync) {
-          try {
-            await saveWeightToHealth(weightNum, unit);
-            console.log('[SUCCESS] Weight saved to Apple Health');
-          } catch (healthError) {
-            console.warn('[WARN] Health sync failed:', healthError instanceof Error ? healthError.message : String(healthError));
-            // Continue - don't block on Health sync failure
-          }
-        } else if (syncToHealth && !isHealthKitReady()) {
-          console.warn('[WARN] Health sync requested but HealthKit is not ready - saving locally only');
-        }
       }
 
       // ✅ CORRECT: Set isSaving to false BEFORE closing modal

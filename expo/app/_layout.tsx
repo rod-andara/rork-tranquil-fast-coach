@@ -15,7 +15,7 @@ import * as Localization from 'expo-localization';
 
 import { useFastStore } from "@/store/fastStore";
 import { useWeightStore } from "@/store/weightStore";
-import { initHealthKit } from "@/utils/appleHealth";
+import { initHealthKit, syncWeightData } from "@/utils/appleHealth";
 import { initializeRevenueCat, checkSubscriptionStatus, REVENUECAT_ENABLED } from "@/services/revenuecat";
 import AppSetup from "@/App";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -155,9 +155,11 @@ function RootLayoutNav() {
       const isHealthConnected = useWeightStore.getState().isHealthConnected;
       if (isHealthConnected && Platform.OS === 'ios') {
         try {
-          await initHealthKit();
+          const ok = await initHealthKit({ keepConnectedOnFailure: true });
+          // Pull in new Health samples in the background; never block startup.
+          if (ok) syncWeightData('both').catch(() => {});
         } catch (error) {
-          console.error('[App] Failed to reinitialize HealthKit:', error);
+          if (__DEV__) console.error('[App] Failed to reinitialize HealthKit:', error);
         }
       }
 

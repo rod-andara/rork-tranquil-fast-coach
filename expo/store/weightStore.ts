@@ -9,6 +9,8 @@ export interface WeightEntry {
   unit: 'lbs' | 'kg';
   note?: string;
   source: 'manual' | 'apple_health';
+  healthId?: string; // HealthKit sample id for imported entries
+  healthSynced?: boolean; // manual entry already written to Apple Health
 }
 
 export interface WeightGoal {
@@ -313,7 +315,7 @@ export const useWeightStore = create<WeightState>()(
     {
       name: 'weight-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState: any, version) => {
         if (!persistedState) {
           return { ...defaultState };
@@ -334,6 +336,14 @@ export const useWeightStore = create<WeightState>()(
 
         if (version < 3) {
           stateWithDefaults.unitSetByUser = false;
+        }
+
+        if (version < 4) {
+          // Legacy manual entries may already be in Apple Health (the entry modal
+          // wrote them directly). Mark them synced so they aren't exported twice.
+          stateWithDefaults.entries = (stateWithDefaults.entries || []).map((e: WeightEntry) =>
+            e.source === 'manual' ? { ...e, healthSynced: true } : e
+          );
         }
 
         return stateWithDefaults;
