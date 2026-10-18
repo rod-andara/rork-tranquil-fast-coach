@@ -13,6 +13,8 @@ App: Tranquil Fast Coach. Apple ID `6753986331`; bundle `com.tranquilfastcoach.a
 - Privacy responses are **published by the owner**, independently verified in ASC: “Published a few seconds ago by Rodrigo Andara.” Owner confirmed their accuracy. The declaration describes the current free release; it does not prohibit future subscriptions. Update it and the privacy policy when actual data practices change.
 - Free pricing configured: US base USD0.00 and Apple's equivalent zero prices across175 storefronts. This is price configuration, not territory availability.
 - Initial platform scope: Apple Silicon Mac and Vision Pro availability disabled; iPhone is the tested release platform. Public distribution retained. School volume-price discount disabled (free adult app).
+- Content Rights: owner selected Yes; saved and observed in ASC as “Yes, this app has the necessary rights to its third-party content.” This does not assert individual negotiated publisher licenses.
+- Availability: owner selected option2, **all countries Apple permits**. Configured All Countries or Regions; ASC reports **175 Available**, with “Available on App Release” in its territory table. Includes automatic availability in future Apple storefronts under that setting. This does not release the app or override regional compliance rules.
 - Regulated medical device question: **No**, saved and verified after reloading App Information: “This app has been declared not a regulated medical device in any country or region.” This matches the general-wellness purpose and existing HealthKit `isMedicalDevice:false` config.
 
 ## Saved version page
@@ -58,7 +60,7 @@ Support: https://tranquilfast.app/support
 
 ### Reviewer notes
 
-Build107, version1.0.0. This is a free app with no in-app purchases or subscriptions. No sign-in or demo account is required.
+Version1.0.0. This is a free app with no in-app purchases or subscriptions. No sign-in or demo account is required.
 
 Core functions: choose a fasting plan, start and end a fast, review fasting history, log weight, set a weight goal, and browse curated learning resources.
 
@@ -66,14 +68,23 @@ Apple Health integration is optional and limited to body weight. In Settings, en
 
 The app is intended for adults18+ and provides general wellness information, not medical diagnosis or treatment. Privacy Policy, Terms, and Support are accessible from Settings and the website.
 
+LEARN EXTERNAL RESOURCES
+The Learn section is a curated directory of external resources. Cards contain titles and short descriptions. Selecting a card opens the publisher’s original website outside the app through the system URL handler. We do not host, scrape or reproduce full articles, recipes or publisher media, bypass access restrictions, or claim publisher affiliation. This release contains no affiliate links or commissions.
+
+These updated reviewer notes were saved in ASC18October. The obsolete107-specific introduction was removed so the note can accompany the upcoming build; the attached build itself must still be replaced after testing.
+
 ## Actual remaining dependencies
 
 1. **Developer agreement — ACCEPTED:** owner accepted the updated agreement. Independently verified in Apple Developer Account → Agreements: Apple Developer Program License Agreement issued14October2026, accepted18October2026. App Store Connect Business still displayed the previous agreement notice after refresh immediately afterward; do not ask the owner to accept it again based solely on that stale/conflicting notice. Recheck ASC before submission. No agreement accepted by agent. Paid-app setup/bank/tax changes are not needed merely for this free release.
 2. **New icon build:** SPEC-30 changes the bundled icon assets. Build, upload, install and briefly verify a new production artifact, then replace107 in the listing and update reviewer notes. No cloud build started yet. The reviewer-phone dependency is resolved.
 3. **Privacy publication — COMPLETE:** owner published the responses; ASC publication verified. Future subscriptions remain intended; see `docs/Monetization-Roadmap.md`. This is a current data-practices declaration, not a permanent business-model commitment.
-4. **Content rights:** owner names ChatGPT, Claude, Manus and Grok; onboarding media was personally generated with Grok. Current official Grok FAQ permits commercial output use; terms/brand guidelines call for attribution, now added to app onboarding in SPEC-31. Other named providers' output terms were reviewed and referenced there. Historical generation terms/account surface and third-party inputs were not independently established. Learn also accesses external publisher links. Content-rights declaration remains unsubmitted; do not answer “no third-party content” solely because bundled media is AI-generated. The new build must include both SPEC-30 branding and SPEC-31 credits.
-5. **Availability:** no launch territories configured initially. Owner asked whether all permitted storefronts or an initial Switzerland/EU/UK/US group; no answer assumed.
-6. **Screenshots:** no screenshots uploaded. Available older `IMG_7454(1).png` sample has Rork overlays and is not a clean current-build asset. The version UI accepts1179×2556 or1206×2622 portrait screenshots for its medium Dynamic Island slot. Use clean current-app screenshots without the owner's real health information. Additional marketing header and preview video are not immediate essentials. Required size validation remains to be completed in Media Manager.
+4. **Content rights — COMPLETE IN ASC:** owner answered Yes after the external-link clarification; saved and observed in App Information. Owner names ChatGPT, Claude, Manus and Grok; onboarding media was personally generated with Grok. Current provider-output findings and their limits are recorded in SPEC-31; this is not evidence of individual publisher agreements. New build must include SPEC-30 branding and SPEC-31 credits. Learn reviewer explanation is now saved.
+5. **Availability — COMPLETE:** owner selected all permitted countries; worldwide setting saved and ASC reports175Available. No pre-order configured. Manual release retained.
+6. **Screenshots:** no screenshots uploaded. Available older `IMG_7454(1).png` sample has Rork overlays and is not a clean current-build asset. The version UI accepts1179×2556 or1206×2622 portrait screenshots for its medium Dynamic Island slot; Apple's current screenshot reference requires at least one screenshot in that size category (or an accepted scaled source). iPad screenshots apply only if the build supports iPadOS. Use clean current-app screenshots without the owner's real health information; prefer the upcoming build to show the final credits/branding. Header and preview video are not immediate essentials. Required upload validation remains open.
+
+7. **Accessibility listing:** inspected, currently “Get Started.” No feature support was certified: comprehensive VoiceOver,200% text, contrast and motion testing is not complete, and a sampled dark-status-bar defect is recorded. Do not infer full support from the presence of dark mode or accessibility labels. This section was left unclaimed.
+
+8. **Final submission check:** app remains Prepare for Submission, with107 still attached and manual release retained. No Add for Review or submission/release action clicked. New artifact must be installed/tested (including affected icon/onboarding/Health/privacy paths), attached, and reviewed with screenshots before owner authorizes submission. ASC Business still shows the old agreement warning despite independently verified Developer agreement acceptance; recheck synchronization before submission.
 
 ## Already verified; no new work needed
 
