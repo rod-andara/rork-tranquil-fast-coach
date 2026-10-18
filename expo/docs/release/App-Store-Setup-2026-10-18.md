@@ -68,7 +68,7 @@ The app is intended for adults18+ and provides general wellness information, not
 
 ## Actual remaining dependencies
 
-1. **Developer agreement:** Business explicitly states the updated Apple Developer Program License Agreement must be reviewed and accepted by the Account Holder before submissions. Free Apps Agreement is Active (New Agreement Available). Owner was directed to `https://developer.apple.com/account` to review/accept personally. No agreement accepted by agent. Paid-app setup/bank/tax changes are not needed merely for this free release.
+1. **Developer agreement — ACCEPTED:** owner accepted the updated agreement. Independently verified in Apple Developer Account → Agreements: Apple Developer Program License Agreement issued14October2026, accepted18October2026. App Store Connect Business still displayed the previous agreement notice after refresh immediately afterward; do not ask the owner to accept it again based solely on that stale/conflicting notice. Recheck ASC before submission. No agreement accepted by agent. Paid-app setup/bank/tax changes are not needed merely for this free release.
 2. **New icon build:** SPEC-30 changes the bundled icon assets. Build, upload, install and briefly verify a new production artifact, then replace107 in the listing and update reviewer notes. No cloud build started yet. The reviewer-phone dependency is resolved.
 3. **Privacy publication:** saved responses require owner confirmation of Apple's declaration before publishing.
 4. **Content rights:** Apple asks whether third-party content is accessed and the necessary rights held. Learn has external publisher links; onboarding includes videos/artwork. Owner asked to confirm media licensing; no rights assertion submitted yet.
