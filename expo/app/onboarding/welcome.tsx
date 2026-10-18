@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { spacing, borderRadius } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 
@@ -66,6 +67,7 @@ export default function WelcomeScreen() {
           >
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
+          <MediaAttribution />
         </View>
       </SafeAreaView>
     </VideoBackground>

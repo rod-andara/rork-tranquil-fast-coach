@@ -6,6 +6,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import FastPlanCard from '@/components/FastPlanCard';
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { CustomDurationModal } from '@/components/CustomDurationModal';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
 import { borderRadius, colors, spacing, typography } from '@/constants/theme';
@@ -216,6 +217,7 @@ export default function ChoosePlanScreen() {
                 : `Start ${selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan`}
             </Text>
           </TouchableOpacity>
+          <MediaAttribution />
         </View>
 
         <CustomDurationModal

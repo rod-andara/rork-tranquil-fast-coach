@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { spacing, borderRadius } from '@/constants/theme';
 
 export default function TrackSucceedScreen() {
@@ -39,6 +40,7 @@ export default function TrackSucceedScreen() {
           >
             <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
+          <MediaAttribution />
         </View>
       </SafeAreaView>
     </VideoBackground>
