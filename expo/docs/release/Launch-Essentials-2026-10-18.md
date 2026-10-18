@@ -52,7 +52,7 @@ Reviewed 18 October 2026 (Europe/Zurich). Target: submit as soon as the essentia
 
 ## Current open statuses
 
-- App Store Connect version: **Ready for Review** after Add for Review draft validation, with **109** listed as Item Ready to Submit. Final **Submit for Review** remains untouched; manual release retained. Five approved screenshots uploaded and order persisted after reload; correct purple icon visually verified. See [109 preparation](Build-109-App-Store-Preparation-2026-10-18.md). This state is not Waiting for Review or a public release.
+- Submission: **owner reports clicking Submit for Review for build 109** after preparation. Agent did not submit; resulting Apple review status has not been independently re-read. Last verified draft was Ready for Review with 109, five approved screenshots, correct purple icon and manual release. Do not repeat the submission based on that historical draft state. No public release reported. See [109 preparation](Build-109-App-Store-Preparation-2026-10-18.md) and [promotion kit](../marketing/Launch-Promotion-Kit-2026-10-18.md).
 - TestFlight107 is processed and listed **Ready to Submit**, with an installation recorded in the owner's screenshot. Owner separately confirmed **107 installed** on their iPhone.
 - Running-fast/relaunch check: **PASS (owner-reported)**. Owner followed the guided check to close/reopen the app and reported that everything was working. Not independently timed by the agent.
 - Apple Health import/repeat-sync check: **PASS (owner-reported)**. Owner followed the guided latest-Health-entry comparison/repeat sync and confirmed no duplicate entries. No actual weight values were requested or recorded. This does not certify export, denied permissions, deletion, or race conditions.

@@ -1,5 +1,7 @@
 # Build 109 App Store preparation — 18 October 2026
 
+**Subsequent owner report:** the owner states they clicked Submit for Review after this preparation. The agent did not submit it. The resulting Apple status has not been independently re-read; do not repeat the submission based on the historical draft state below. Manual release remains the last independently verified setting. Promotion preparation is in [the launch kit](../marketing/Launch-Promotion-Kit-2026-10-18.md).
+
 ## Saved and verified
 
 App: Tranquil Fast Coach, Apple ID `6753986331`, bundle `com.tranquilfastcoach.app`. Work performed through the owner's signed-in Safari session. Owner approved the displayed screenshot designs and requested their upload to App Store Connect. No App Review submission, public release, agreement acceptance, paid-app setup or app-source change was performed.

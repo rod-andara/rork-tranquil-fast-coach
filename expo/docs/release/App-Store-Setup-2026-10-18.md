@@ -2,6 +2,8 @@
 
 App: Tranquil Fast Coach. Apple ID `6753986331`; bundle `com.tranquilfastcoach.app`. Settings were edited through the owner's signed-in Safari session. No submission or release was performed.
 
+**Owner update after preparation:** owner reports clicking Submit for Review themselves. No public release reported; manual release is the last verified setting. The preparation/draft facts below precede that owner action. Do not submit again without checking Apple's actual current status.
+
 Latest candidate: **109**, independently visible as Ready to Submit in TestFlight; owner reports installed and working. Version 1.0 now attaches **109**, replacing 107. Five owner-approved screenshots are uploaded in English (U.S.) and their order persisted after reloading. Store draft validation completed: version is **Ready for Review**, build 109 is an **Item Ready to Submit**, and the final **Submit for Review** button remains untouched. See [109 preparation record](Build-109-App-Store-Preparation-2026-10-18.md). Neither TestFlight delivery nor draft creation sends the app to App Review.
 
 ## Saved settings
