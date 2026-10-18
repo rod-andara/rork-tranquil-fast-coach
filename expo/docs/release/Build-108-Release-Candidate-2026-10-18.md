@@ -28,3 +28,9 @@
 6. Replace attached107 with verified108 in the distribution version; retain manual release and saved Learn review notes. Final metadata, agreements and regional compliance check follows.
 
 No App Review submission or public release authorized/performed. Owner explicitly requires preparing the app first and a separate decision before submission.
+
+## Subsequent owner checks and screenshot findings
+
+- Owner confirmed108installed from TestFlight, new purple icon present, existing fast/weight history retained, and repeat Sync Now produced no duplicates. These are owner-reported checks, not an independent certification of all Health permission/export paths.
+- Screenshot review found a confirmed top Change-card baseline-selection defect in the source; see [screenshot assessment](Build-108-Screenshot-Assessment-2026-10-18.md). Do not treat the three passing smoke checks as clearance of this newly identified issue. Progress calculation fix and affected-path verification are recommended before launch; no fix or new artifact yet.
+- Grok onboarding-credit layout remains unverified on device. Screenshot upload/public-use approval remains open.
