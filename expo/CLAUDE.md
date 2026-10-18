@@ -1,5 +1,7 @@
 # Tranquil Fast Coach - Claude Code Project Reference
 
+> Current launch handoff (18 October 2026): see `docs/release/App-Store-Setup-2026-10-18.md` and `docs/release/Launch-Essentials-2026-10-18.md` for verified store/website/privacy status. Older build104, unhosted-site and diagnostics-not-linked statements below are historical assumptions, not current release facts. SPEC-30 replaces placeholder icons with the website brand and requires a new native build after107. Do not treat107 as the final candidate once those assets change.
+
 ## What This App Is
 An iOS intermittent fasting timer app built with Expo/React Native, ~90% complete, live on TestFlight, targeting App Store submission. Users select a fasting plan (16:8, 18:6, etc.), start/stop fasts, track weight via Apple Health, and view progress charts.
 
