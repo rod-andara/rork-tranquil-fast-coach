@@ -16,11 +16,11 @@
 - Retried with the **exact build ID**, not an ambiguous latest-build selection.
 - Existing EAS-managed App Store Connect API credential reused; no new access created.
 - EAS upload scheduled: [delivery record](https://expo.dev/accounts/rod_andara/projects/tranquil-fast-coach/submissions/d30bcd98-9c78-426d-aca3-4fc091b560e7).
-- **EAS delivery completed successfully**: CLI confirms the binary was uploaded to App Store Connect. Apple receipt independently verified in ASC TestFlight → Build Uploads: **Version1.0.0, Build108, Processing**. Processing/installability is not yet complete. EAS calls this operation a submission; it uploads to App Store Connect/TestFlight and does **not** submit the app for App Review.
+- **EAS delivery completed successfully**: CLI confirms the binary was uploaded to App Store Connect. Apple processing subsequently finished: a fresh ASC TestFlight page lists **Version1.0.0, Build108, Ready to Submit**, assigned to the existing **Team (Expo)** internal group, with2invites and no installs yet. This is TestFlight status, not App Review submission or public availability. EAS calls its delivery operation a submission; it uploads the binary and does **not** submit the app for App Review.
 
 ## Before replacing107 and requesting App Review
 
-1. Confirm108 appears and finishes processing in TestFlight; resolve actual export-compliance questions if shown using the reviewed binary/configuration, without inventing declarations.
+1. **Complete:**108 processed and is listed for the Team (Expo) internal testing group; no Missing Compliance banner observed in its build row. No export-compliance answers changed during this delivery.
 2. Install108. Check the new purple home-screen icon and normal launch. Confirm existing fasting/weight data is preserved.
 3. Check Grok credits in welcome, track-succeed and choose-plan screens, including legibility and accessible buttons with larger text. Do not erase the owner's app/data just to force onboarding; use a safe navigation/test-device approach.
 4. Brief core/Health smoke test with no duplicates and correct optional export behavior; verify affected final-build diagnostic privacy before release. Prior107 results remain prior-build evidence.
