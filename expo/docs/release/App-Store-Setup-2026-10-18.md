@@ -77,6 +77,16 @@ The app is intended for adults18+ and provides general wellness information, not
 
 ## Already verified; no new work needed
 
+### Learn content-rights clarification
+
+Owner states no publisher was contacted: Learn currently provides recommendations linking to original websites; affiliate links are a possible future feature, not implemented. Source inspection confirms `Linking.openURL` handoff, static titles/short descriptions, local gradient/icon cards, and no embedded publisher article/recipe bodies, publisher image fetching, scraping or in-app webview in this screen. Do not describe publishers as partners or claim written licenses.
+
+The broad ASC question includes accessing third-party content; the recommended category is Yes, based on permission for the limited linking use rather than ownership of destination articles. Apple's reference permits use where rights are held **or use is otherwise permitted by law**. This is an interpretation for the observed implementation, not an Apple ruling that every external link needs a negotiated license or that every destination is automatically authorized. Individual publisher terms and intended territories have not all been audited. If challenged, explain the external-link-only implementation factually; do not invent permission documents. See [Apple Content Rights reference](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information) and [guideline5.2.2](https://developer.apple.com/app-store/review/guidelines/#intellectual-property). The EU court's [Svensson explanation](https://curia.europa.eu/site/upload/docs/application/pdf/2014-02/cp140020en.pdf) distinguishes hyperlinks to freely accessible authorized publications from reproducing or bypassing restricted content; this is not a global legal clearance.
+
+Suggested reviewer explanation: “The Learn section is a curated directory of external resources. Cards contain titles and short descriptions. Tapping a card opens the publisher's original page outside the app through the system URL handler. The app does not host, scrape or reproduce full articles, recipes or publisher media, or bypass access restrictions. There are no affiliate links or commissions in this release.”
+
+Future affiliate use requires approval under each affiliate program's terms and clear commission disclosures before release, alongside review of data practices and applicable Apple rules. No affiliate activation or ASC content-rights answer was submitted during this guidance check.
+
 - Business → Compliance: **Digital Services Act Active**, updated22October2025. App already declares trader status. No trader/contact changes made; no personal address copied into this record.
 - Support mailbox access and receiving/replying verified by owner; forwarding enabled.
 - Build107 installed and owner reports core/Health repeat-sync checks pass. See the separate smoke-test record for scope and limitations.
