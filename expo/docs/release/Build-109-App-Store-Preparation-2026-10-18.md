@@ -26,14 +26,18 @@ App: Tranquil Fast Coach, Apple ID `6753986331`, bundle `com.tranquilfastcoach.a
 
 ## Final-validation status
 
-The last verified version state is **Prepare for Submission**, with Add for Review enabled. Add for Review has not been clicked. The Mac locked while inspecting the included app-icon preview; owner was asked to unlock it. The icon preview had not been independently verified, and its display alone does not establish an icon defect in the signed app.
+After the owner unlocked the Mac, the draft-validation check completed. **Add for Review** was clicked to prepare the draft; ASC now shows **1.0 Ready for Review**, **Draft Submissions (1)**, and **Item Ready to Submit: iOS App 1.0, 1.0.0 (109)**. No missing-field errors were displayed at this step. The final **Submit for Review** button is enabled and was **not clicked**. The app has not been sent to Apple or publicly released.
 
-After access resumes, finish the draft-validation check. Apple's documented Add for Review step creates a draft and changes the app to Ready for Review; **Submit for Review** is the separate action that sends it to Apple. Leave that final action untouched until the owner authorizes it. Resolve actual required-field errors without inventing legal/compliance facts. Do not mark the historical SPEC-28 matrix or outstanding diagnostic checks complete from the saved form alone.
+The correct purple website-brand icon is now visibly rendered beside build 109, under Included Assets, and in the draft panel. The earlier blank preview/black placeholder is not an established signed-build icon defect. The conflicting agreement notice did not prevent creation of this draft; this does not guarantee the final send will have no additional validation.
+
+Apple's documented Add for Review step creates a draft and changes the app to Ready for Review; **Submit for Review** is the separate action that sends it to Apple. Leave that final action untouched until the owner authorizes it. Resolve any actual final-step errors without inventing legal/compliance facts. Do not mark the historical SPEC-28 matrix or outstanding diagnostic checks complete from the store's metadata validation alone.
 
 ## Local evidence and assets
 
 Private folder: `/Users/rodrigoandara/.codex/visualizations/2026/10/17/01a14a2e-5a70-7990-8826-2a09ca0b4f50/app-store-build-109/`.
 
 `asc-screenshots-uploaded.jpg` shows the saved five-image gallery, app identity, Prepare for Submission and disabled Save. Capture/design source files and SVGs embed owner-approved personal data; keep all of these out of GitHub. Only non-sensitive release documentation is committed.
+
+`asc-ready-for-review-draft.jpg` records the subsequent Ready for Review state, correct build/icon and enabled but untouched Submit for Review button. This supersedes the earlier Prepare for Submission status; neither screenshot represents an actual submission to Apple.
 
 References: [Apple submission workflow](https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-an-app/), [app information and regional requirements](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information).
