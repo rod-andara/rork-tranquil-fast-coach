@@ -64,6 +64,20 @@ const defaultState = {
   deletedHealthIds: [] as string[],
 };
 
+/**
+ * Shared baseline for "change" and goal progress. Without a goal: the oldest entry
+ * (all-time). With a goal: the earliest entry at/after the goal start, else the most
+ * recent entry before it, so a goal set after the latest sample starts at zero change.
+ * Callers guarantee `entries` is non-empty.
+ */
+export function getBaselineWeight(entries: WeightEntry[], goal: WeightGoal | null): number {
+  const oldestFirst = [...entries].sort((a, b) => a.date - b.date);
+  if (!goal) return oldestFirst[0].weight;
+  const atOrAfter = oldestFirst.find((e) => e.date >= goal.startDate);
+  if (atOrAfter) return atOrAfter.weight;
+  return oldestFirst[oldestFirst.length - 1].weight;
+}
+
 export const useWeightStore = create<WeightState>()(
   persist(
     (set, get) => ({
@@ -201,10 +215,7 @@ export const useWeightStore = create<WeightState>()(
         if (state.entries.length < 2) return null;
 
         const currentWeight = state.entries[0].weight;
-        const startWeight = state.goal
-          ? state.entries.find((e) => e.date >= state.goal!.startDate)?.weight ||
-            state.entries[state.entries.length - 1].weight
-          : state.entries[state.entries.length - 1].weight;
+        const startWeight = getBaselineWeight(state.entries, state.goal);
 
         return currentWeight - startWeight;
       },
@@ -216,21 +227,7 @@ export const useWeightStore = create<WeightState>()(
         const currentWeight = state.entries[0].weight;
         const goalWeight = state.goal.targetWeight;
 
-        // Find the weight entry closest to when the goal was set (but not after)
-        // Entries are sorted newest-first, so we need to find the right start weight
-        // Sort entries by date (oldest first) to find correct start weight
-        const sortedEntries = [...state.entries].sort((a, b) => a.date - b.date);
-
-        // Find the first entry at or after the goal start date
-        let startWeight = sortedEntries.find((e) => e.date >= state.goal!.startDate)?.weight;
-
-        // If no entry found at or after goal start, use the most recent entry before goal start
-        if (!startWeight) {
-          const entriesBeforeGoal = sortedEntries.filter((e) => e.date < state.goal!.startDate);
-          startWeight = entriesBeforeGoal.length > 0
-            ? entriesBeforeGoal[entriesBeforeGoal.length - 1].weight
-            : currentWeight;
-        }
+        const startWeight = getBaselineWeight(state.entries, state.goal);
 
         // SPEC-16: all weight-bearing logs are dev-only. In production these
         // never run, so the Sentry console integration cannot capture them as

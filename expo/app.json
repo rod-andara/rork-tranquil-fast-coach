@@ -17,7 +17,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.tranquilfastcoach.app",
       "infoPlist": {
-        "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserNotificationsUsageDescription": "Tranquil Fast can send gentle reminders when you reach fasting milestones. You can change this anytime in Settings.",
         "NSHealthShareUsageDescription": "We read your weight from Apple Health so your existing entries appear in Tranquil Fast automatically — no need to re-enter them.",

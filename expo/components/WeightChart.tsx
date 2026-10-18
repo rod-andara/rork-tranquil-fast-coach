@@ -444,9 +444,9 @@ export default function WeightChart() {
           data={chartData!}
           width={screenWidth - 80}
           height={220}
-          spacing={(screenWidth - 80 - 40) / Math.max(chartData!.length - 1, 1)}
-          initialSpacing={10}
-          endSpacing={10}
+          spacing={(screenWidth - 80 - 60) / Math.max(chartData!.length - 1, 1)}
+          initialSpacing={24}
+          endSpacing={24}
 
           yAxisOffset={minValue}
           maxValue={maxValue - minValue}

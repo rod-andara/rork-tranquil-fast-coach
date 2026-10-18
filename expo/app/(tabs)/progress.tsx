@@ -268,7 +268,7 @@ export default function ProgressScreen() {
                           isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
                         }`}
                       >
-                        Change
+                        {goal ? 'Since goal set' : 'All-time change'}
                       </Text>
                     </View>
                     <Text

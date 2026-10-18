@@ -11,7 +11,7 @@ import { useFastStore } from '@/store/fastStore';
 
 export default function WelcomeScreen() {
   const [name, setName] = React.useState('');
-  const { setUserName } = useFastStore();
+  const { setUserName, completeOnboarding } = useFastStore();
 
   return (
     <VideoBackground source={require('@/assets/videos/welcome.mp4')}>
@@ -61,6 +61,7 @@ export default function WelcomeScreen() {
 
           <TouchableOpacity
             onPress={() => {
+              completeOnboarding();
               router.replace('/(tabs)/home');
             }}
             activeOpacity={0.7}

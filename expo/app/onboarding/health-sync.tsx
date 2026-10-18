@@ -6,6 +6,7 @@ import { BlurView } from 'expo-blur';
 import { Heart } from 'lucide-react-native';
 
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { spacing, borderRadius } from '@/constants/theme';
 import { initHealthKit } from '@/utils/appleHealth';
 import { useWeightStore } from '@/store/weightStore';
@@ -87,6 +88,7 @@ export default function HealthSyncScreen() {
           >
             <Text style={styles.skipText}>Skip for now</Text>
           </TouchableOpacity>
+          <MediaAttribution />
         </View>
       </SafeAreaView>
     </VideoBackground>

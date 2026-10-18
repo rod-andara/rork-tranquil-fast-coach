@@ -119,7 +119,7 @@ export default function SettingsScreen() {
   const handleShare = useCallback(async () => {
     try {
       const result = await Share.share({
-        message: 'Check out Tranquil Fast Coach! A simple and effective intermittent fasting tracker that helps you achieve your wellness goals. Download it now!',
+        message: 'Check out Tranquil Fast Coach! A simple and effective intermittent fasting tracker that helps you achieve your wellness goals. Download it now! https://tranquilfast.app',
         title: 'Tranquil Fast Coach',
       });
 

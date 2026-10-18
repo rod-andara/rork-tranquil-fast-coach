@@ -90,9 +90,12 @@ export default function ChoosePlanScreen() {
     completeOnboarding,
     isDarkMode,
     currentFast,
-    customDuration,
+    customDuration: persistedCustomDuration,
     setCustomDuration,
   } = useFastStore();
+  // Custom duration stays local until the footer button commits it.
+  const [customDuration, setLocalCustomDuration] = useState(persistedCustomDuration);
+  const [isSaving, setIsSaving] = useState(false);
   // SPEC-25: card taps only change local selection; the footer button is the single commit.
   const [selectedPlan, setSelectedPlan] = useState<FastingPlan>(persistedPlan);
   const [showCustomModal, setShowCustomModal] = useState(false);
@@ -101,7 +104,7 @@ export default function ChoosePlanScreen() {
     // Convert hours and minutes to total hours (decimal)
     const totalHours = hours + minutes / 60;
     if (__DEV__) console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
-    setCustomDuration(totalHours);
+    setLocalCustomDuration(totalHours);
     setSelectedPlan('custom');
   };
 
@@ -115,7 +118,8 @@ export default function ChoosePlanScreen() {
     return `${hours}h ${minutes}m`;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    if (isSaving) return;
     if (__DEV__) console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
     if (__DEV__) console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
     if (__DEV__) console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
@@ -125,11 +129,14 @@ export default function ChoosePlanScreen() {
       if (fromSettings) {
         // Changing plan from Settings - just update and go back
         if (__DEV__) console.log('[ChoosePlan] Updating plan from Settings');
-        updatePlan(selectedPlan);
+        setIsSaving(true);
+        if (selectedPlan === 'custom') setCustomDuration(customDuration);
+        await updatePlan(selectedPlan);
         router.back();
       } else {
         // Completing onboarding for first time
         if (__DEV__) console.log('[ChoosePlan] Step 1: Saving selected plan');
+        if (selectedPlan === 'custom') setCustomDuration(customDuration);
         saveSelectedPlan(selectedPlan);
 
         if (__DEV__) console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
@@ -144,6 +151,8 @@ export default function ChoosePlanScreen() {
       if (__DEV__) console.error('[ChoosePlan] ERROR in handleContinue:', e);
       if (__DEV__) console.error('[ChoosePlan] Error stack:', (e as Error).stack);
       alert(`Error: ${(e as Error).message}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -208,6 +217,7 @@ export default function ChoosePlanScreen() {
             style={styles.button}
             onPress={handleContinue}
             activeOpacity={0.8}
+            disabled={isSaving}
           >
             <Text style={styles.buttonText}>
               {fromSettings
@@ -217,6 +227,11 @@ export default function ChoosePlanScreen() {
                 : `Start ${selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan`}
             </Text>
           </TouchableOpacity>
+          {fromSettings && (
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={styles.cancel}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          )}
           <MediaAttribution />
         </View>
 
@@ -296,6 +311,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
+  },
+  cancel: {
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  cancelText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: '600' as const,
   },
   buttonText: {
     ...typography.h3,
