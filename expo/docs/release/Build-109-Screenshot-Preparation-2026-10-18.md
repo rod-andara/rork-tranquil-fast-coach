@@ -30,3 +30,7 @@ Artifacts contain personal name/fasting/weight information. Keep the captures an
 Next: owner reviews the designs/content, native originals if desired for sharpness, then approved screenshot upload and final App Store Connect preparation with verified build 109. App Review submission still needs separate owner authorization.
 
 References: [Apple product-page guidance](https://developer.apple.com/app-store/product-page/), [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/).
+
+## Subsequent upload authorization and result
+
+Owner approved the displayed screenshots and explicitly requested uploading/setting them up in App Store Connect. Five recommended images (including pounds and dark mode) were uploaded in the documented order; the metric alternative was not uploaded. The gallery shows 5 of 10 App Screenshots in English (U.S.), iPhone with Dynamic Island (medium display), and persisted after reload. Private original/source assets remain out of GitHub. See the build 109 App Store preparation record for current saved build, notes and final-validation status. No App Review submission or release is implied.

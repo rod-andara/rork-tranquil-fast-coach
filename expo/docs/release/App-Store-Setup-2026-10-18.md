@@ -2,7 +2,7 @@
 
 App: Tranquil Fast Coach. Apple ID `6753986331`; bundle `com.tranquilfastcoach.app`. Settings were edited through the owner's signed-in Safari session. No submission or release was performed.
 
-Latest candidate: **108**, EAS FINISHED, source acb0b86 with SPEC-30/31 changes. Exact-artifact TestFlight delivery is tracked in [the108candidate record](Build-108-Release-Candidate-2026-10-18.md). Store version still attaches107 until108 is processed and tested. TestFlight delivery is distinct from App Review submission.
+Latest candidate: **109**, independently visible as Ready to Submit in TestFlight; owner reports installed and working. Version 1.0 now attaches **109**, replacing 107. Five owner-approved screenshots are uploaded in English (U.S.) and their order persisted after reloading. See [109 preparation record](Build-109-App-Store-Preparation-2026-10-18.md). TestFlight delivery is distinct from App Review submission.
 
 ## Saved settings
 
@@ -21,9 +21,9 @@ Latest candidate: **108**, EAS FINISHED, source acb0b86 with SPEC-30/31 changes.
 
 ## Saved version page
 
-Owner entered the App Review phone number. The page now shows Save disabled with no validation errors; reloading retains the metadata, attached107 and manual-release selection. The private number is intentionally omitted from this document.
+Owner entered the App Review phone number. After saving and reloading, the metadata, attached 109, updated reviewer notes and manual-release selection persisted; Save is disabled. The private number is intentionally omitted from this document. A saved form is not proof that every final submission validation has passed.
 
-- Build107, version1.0.0 attached. **Replace this after the SPEC-30 icon rebuild**; the saved listing still describes107 until a new build is processed and tested.
+- Build 109, version 1.0.0 attached. Owner-approved screenshot order: Timer, Your Fast, Progress in pounds, Learn, dark mode. The metric alternative remains local.
 - No sign-in required; no credentials supplied.
 - Manual release selected.
 - Reviewer: Rodrigo Andara, `support@tranquilfast.app`; private phone entered by owner.
@@ -62,31 +62,31 @@ Support: https://tranquilfast.app/support
 
 ### Reviewer notes
 
-Version1.0.0. This is a free app with no in-app purchases or subscriptions. No sign-in or demo account is required.
+Version 1.0.0 (build 109). This is a free app with no in-app purchases or subscriptions. No sign-in or demo account is required.
 
 Core functions: choose a fasting plan, start and end a fast, review fasting history, log weight, set a weight goal, and browse curated learning resources.
 
-Apple Health integration is optional and limited to body weight. In Settings, enable Apple Health and grant the requested Weight read/write permissions. Sync Now imports available weight measurements. A separate export preference controls writing newly entered manual weights to Apple Health. If Health access is declined or no weight measurements exist, manual weight logging remains available. Imported records are not repeatedly duplicated.
+Apple Health integration is optional and limited to body weight. Open Progress and scroll to Apple Health to connect and grant the requested Weight read/write permissions. Sync Now imports available weight measurements. When adding a new weight, the Sync to Apple Health switch controls exporting that entry; turn it off to keep the entry local. If Health access is declined or no weight measurements exist, manual weight logging remains available. Imported records are not repeatedly duplicated.
 
 The app is intended for adults18+ and provides general wellness information, not medical diagnosis or treatment. Privacy Policy, Terms, and Support are accessible from Settings and the website.
 
 LEARN EXTERNAL RESOURCES
 The Learn section is a curated directory of external resources. Cards contain titles and short descriptions. Selecting a card opens the publisher’s original website outside the app through the system URL handler. We do not host, scrape or reproduce full articles, recipes or publisher media, bypass access restrictions, or claim publisher affiliation. This release contains no affiliate links or commissions.
 
-These updated reviewer notes were saved in ASC18October. The obsolete107-specific introduction was removed so the note can accompany the upcoming build; the attached build itself must still be replaced after testing.
+These reviewer notes were saved in ASC on 18 October and verified after reloading. The Health navigation instructions were corrected against the current source; build 109 is attached.
 
 ## Actual remaining dependencies
 
 1. **Developer agreement — ACCEPTED:** owner accepted the updated agreement. Independently verified in Apple Developer Account → Agreements: Apple Developer Program License Agreement issued14October2026, accepted18October2026. App Store Connect Business still displayed the previous agreement notice after refresh immediately afterward; do not ask the owner to accept it again based solely on that stale/conflicting notice. Recheck ASC before submission. No agreement accepted by agent. Paid-app setup/bank/tax changes are not needed merely for this free release.
-2. **New icon build:** SPEC-30 changes the bundled icon assets. Build, upload, install and briefly verify a new production artifact, then replace107 in the listing and update reviewer notes. No cloud build started yet. The reviewer-phone dependency is resolved.
+2. **Build selection — COMPLETE:** 109 is processed in TestFlight, owner-reported installed/working, and attached to version 1.0. The reviewer-phone dependency is resolved. This does not certify every device/privacy test.
 3. **Privacy publication — COMPLETE:** owner published the responses; ASC publication verified. Future subscriptions remain intended; see `docs/Monetization-Roadmap.md`. This is a current data-practices declaration, not a permanent business-model commitment.
 4. **Content rights — COMPLETE IN ASC:** owner answered Yes after the external-link clarification; saved and observed in App Information. Owner names ChatGPT, Claude, Manus and Grok; onboarding media was personally generated with Grok. Current provider-output findings and their limits are recorded in SPEC-31; this is not evidence of individual publisher agreements. New build must include SPEC-30 branding and SPEC-31 credits. Learn reviewer explanation is now saved.
 5. **Availability — COMPLETE:** owner selected all permitted countries; worldwide setting saved and ASC reports175Available. No pre-order configured. Manual release retained.
-6. **Screenshots:** no screenshots uploaded. Available older `IMG_7454(1).png` sample has Rork overlays and is not a clean current-build asset. The version UI accepts1179×2556 or1206×2622 portrait screenshots for its medium Dynamic Island slot; Apple's current screenshot reference requires at least one screenshot in that size category (or an accepted scaled source). iPad screenshots apply only if the build supports iPadOS. Use clean current-app screenshots without the owner's real health information; prefer the upcoming build to show the final credits/branding. Header and preview video are not immediate essentials. Required upload validation remains open.
+6. **Screenshots — UPLOADED:** owner approved the displayed designs and explicitly requested upload. Five opaque 1206 × 2622 PNGs are saved in English (U.S.), iPhone with Dynamic Island (medium display); ASC shows 5 of 10 App Screenshots, with order verified after reload. They contain owner-approved visible name/health information and enlarged Mirroring captures; native-resolution alternatives remain a quality option, not a new-build requirement. Private image/SVG files remain outside GitHub. Header and preview video remain optional and empty. No iPad/watch assets were uploaded for this iPhone-only build.
 
 7. **Accessibility listing:** inspected, currently “Get Started.” No feature support was certified: comprehensive VoiceOver,200% text, contrast and motion testing is not complete, and a sampled dark-status-bar defect is recorded. Do not infer full support from the presence of dark mode or accessibility labels. This section was left unclaimed.
 
-8. **Final submission check:** app remains Prepare for Submission, with107 still attached and manual release retained. No Add for Review or submission/release action clicked. New artifact must be installed/tested (including affected icon/onboarding/Health/privacy paths), attached, and reviewed with screenshots before owner authorizes submission. ASC Business still shows the old agreement warning despite independently verified Developer agreement acceptance; recheck synchronization before submission.
+8. **Final submission check:** the saved version attaches 109 with manual release retained. See the 109 preparation record for the latest draft-validation status; do not infer a submission from a screenshot upload or enabled Add for Review button. ASC Business still shows the old agreement warning; a fresh visit to Apple Developer independently reconfirmed the October 14 agreement accepted October 18. No agreement was accepted by the agent. Final diagnostic/Health checks retain their actual evidence limits in Launch Essentials; do not mark the historical full matrix passed.
 
 ## Already verified; no new work needed
 
