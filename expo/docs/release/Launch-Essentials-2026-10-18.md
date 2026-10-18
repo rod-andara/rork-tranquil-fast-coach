@@ -64,6 +64,7 @@ Reviewed 18 October 2026 (Europe/Zurich). Target: submit as soon as the essentia
 - Privacy responses: **published by owner and verified in ASC18October2026**. The earlier pending-publication status is resolved. Owner intends to add subscriptions once premium features justify them; free launch and current privacy answers do not waive that option. Follow `docs/Monetization-Roadmap.md` before enabling payments.
 - Final diagnostic/health-data review: **not signed off**.
 - Submission/release: **not performed in this review**.
+- New candidate108: EAS FINISHED, source acb0b86 including SPEC-30/31. Exact-artifact TestFlight upload completed successfully; ASC shows108Processing. Installation/testing and replacing attached107 remain pending. See [108record](Build-108-Release-Candidate-2026-10-18.md). This delivery is not an App Review submission.
 
 ## Official references checked18October2026
 

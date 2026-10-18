@@ -2,6 +2,8 @@
 
 App: Tranquil Fast Coach. Apple ID `6753986331`; bundle `com.tranquilfastcoach.app`. Settings were edited through the owner's signed-in Safari session. No submission or release was performed.
 
+Latest candidate: **108**, EAS FINISHED, source acb0b86 with SPEC-30/31 changes. Exact-artifact TestFlight delivery is tracked in [the108candidate record](Build-108-Release-Candidate-2026-10-18.md). Store version still attaches107 until108 is processed and tested. TestFlight delivery is distinct from App Review submission.
+
 ## Saved settings
 
 - English (US) subtitle: `Fasting & Weight Tracker`.
