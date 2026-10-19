@@ -1,0 +1,16 @@
+{
+  "name": "Canonical HTTPS and www redirect",
+  "enabled": true,
+  "order": 1,
+  "filter": "(http.host eq \"www.tranquilfast.app\") or ((http.host eq \"tranquilfast.app\") and (not ssl))",
+  "action": "redirect",
+  "type": "dynamic",
+  "target_expression": "concat(\"https://tranquilfast.app\", http.request.uri.path)",
+  "status_code": 301,
+  "preserve_query_string": true,
+  "dns_changes": false,
+  "worker_assets": {
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

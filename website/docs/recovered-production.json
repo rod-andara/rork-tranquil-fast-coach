@@ -1,0 +1,80 @@
+{
+  "source": "https://tranquilfast.app",
+  "recovered_date": "2026-10-17",
+  "cloudflare_worker": "tranquilfast",
+  "production_version_prefix": "66777db0",
+  "files": [
+    {
+      "file": "index.html",
+      "response": "200 https://tranquilfast.app/ text/html",
+      "bytes": 22273,
+      "sha256": "ef28c541122127ec799ba9d636da7bf483263b4281c5bfb67b6abc79a370ba02"
+    },
+    {
+      "file": "privacy.html",
+      "response": "200 https://tranquilfast.app/privacy text/html",
+      "bytes": 8679,
+      "sha256": "e0db4b19248b58bc39703f2e8279f20b3019126df678974104b9a2e07d6c5d96"
+    },
+    {
+      "file": "terms.html",
+      "response": "200 https://tranquilfast.app/terms text/html",
+      "bytes": 7787,
+      "sha256": "0bf7132799412880e43cd1c5a293f007559737388bde0f91a928154d765644f8"
+    },
+    {
+      "file": "support.html",
+      "response": "200 https://tranquilfast.app/support text/html",
+      "bytes": 9579,
+      "sha256": "fe2517a8d472b7adf44ab49644e4b8a45474856f1ce3e0318038a15117ce7241"
+    },
+    {
+      "file": "styles.css",
+      "response": "200 https://tranquilfast.app/styles.css text/css",
+      "bytes": 30589,
+      "sha256": "38c0bace004d30f10552e4928143b1e873e9a500910bec549f5417f35ac93557"
+    },
+    {
+      "file": "robots.txt",
+      "response": "200 https://tranquilfast.app/robots.txt text/plain",
+      "bytes": 70,
+      "sha256": "468199703a399d3a294cd341d16a8ea3f872b1b8fab0991efcaadcb7625cfef5"
+    },
+    {
+      "file": "sitemap.xml",
+      "response": "200 https://tranquilfast.app/sitemap.xml text/xml",
+      "bytes": 774,
+      "sha256": "db78fb8b32dd6e41308e3965af29b0020da1b3f064a7b2ea76f7233e681a36af"
+    },
+    {
+      "file": "screenshot-track-succeed.jpg",
+      "response": "200 https://tranquilfast.app/screenshot-track-succeed.jpg image/jpeg",
+      "bytes": 191531,
+      "sha256": "fb496b5d3499e6f9bf9e0267000fc65d4c8e40c8f56c3aaf7b51547d298a9c9d"
+    },
+    {
+      "file": "screenshot-welcome.jpg",
+      "response": "200 https://tranquilfast.app/screenshot-welcome.jpg image/jpeg",
+      "bytes": 43562,
+      "sha256": "ab17c9779366429d4af06552c5165d0730f9f1b4b3a55196a840aebad97f1b62"
+    },
+    {
+      "file": "og-image.png",
+      "response": "200 https://tranquilfast.app/og-image.png image/png",
+      "bytes": 230194,
+      "sha256": "5e6278dc961f52841db415b7e7ee245efd3a46195f087e6716b77f9ef9b01f89"
+    },
+    {
+      "file": "favicon.svg",
+      "response": "200 https://tranquilfast.app/favicon.svg image/svg+xml",
+      "bytes": 428,
+      "sha256": "552fa0ef35f173ca52ceb0a60e02d5a4c36bdfc4793e1de5db2cf75bb791c2bf"
+    },
+    {
+      "file": "apple-touch-icon.png",
+      "response": "200 https://tranquilfast.app/apple-touch-icon.png image/png",
+      "bytes": 1915,
+      "sha256": "5dfb56b40c9d30ae85433420e1073115401e9825fecbb55f2f5c3a433f36c98b"
+    }
+  ]
+}
