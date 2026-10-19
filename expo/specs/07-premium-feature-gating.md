@@ -1,6 +1,8 @@
 # SPEC-07: Premium Feature Gating
 
-**Status:** pending
+**Status:** historical proposal — superseded for product scope; do not execute as written
+
+The owner confirms a free initial launch. See [Premium roadmap — 19 October 2026](PREMIUM-ROADMAP-2026-10-19.md) for proposed new paid features and retained free functionality. In particular, do not apply the custom-plan/history gates below. SPEC-17 governs the dormant runtime; future purchases need a new implementation spec and validated entitlement lifecycle. The remainder is retained as historical context, not current implementation instructions.
 **Priority:** P1 (should fix)
 **Estimated Effort:** high (90+ min)
 

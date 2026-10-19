@@ -1,5 +1,9 @@
 # Spec-Driven Development Guide
 
+## Premium planning after the free launch
+
+See [Premium enhancement roadmap — 19 October 2026](PREMIUM-ROADMAP-2026-10-19.md) for ranked user benefit, engineering effort, Apple Watch feasibility/MVP, shared foundations and briefs ready to turn into implementation specs. This is planning only: free v1 and SPEC-17 runtime disablement remain unchanged. The roadmap replaces SPEC-07's historical proposal to gate existing custom plans and chart history; do not execute those gates as written.
+
 ## How This Works
 Each remaining task has a numbered spec file in this directory. Specs are self-contained: they include the problem, root cause, exact fix, files to read, files to modify, verification steps, and rollback plan.
 
@@ -16,7 +20,7 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 04 | Add user name to greeting | Feature | Low | None |
 | 05 | Apple Health sync onboarding screen | Feature | Low | None |
 | 06 | Learn tab images | Feature | Low | Deferred/optional |
-| 07 | Premium feature gating | Feature | Medium | Deferred to v1.1 — see SPEC-17 reactivation checklist |
+| 07 | Premium feature gating | Historical proposal | — | Product gates superseded by `PREMIUM-ROADMAP-2026-10-19.md`; future implementation needs new specs and SPEC-17 lifecycle review |
 | 08 | App Store submission | Checklist | N/A | All above complete |
 | 09 | Auto-detect lbs/kg from device locale | Feature | Low | Folded into SPEC-11 |
 | 10 | Expo SDK 52 → 54 upgrade (iOS 26 compliance) | Upgrade | High | **Completed** |

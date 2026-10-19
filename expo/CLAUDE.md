@@ -1,5 +1,7 @@
 # Tranquil Fast Coach - Claude Code Project Reference
 
+> Premium planning (19 October 2026): `specs/PREMIUM-ROADMAP-2026-10-19.md` ranks proposed enhancements and defines an Apple Watch feasibility track. Planning only; free launch and dormant RevenueCat remain unchanged. SPEC-07's historical custom-plan/chart-history gates are superseded; write fresh implementation specs before paid work.
+
 > Current launch handoff (18 October 2026): see `docs/release/App-Store-Setup-2026-10-18.md` and `docs/release/Launch-Essentials-2026-10-18.md` for verified store/website/privacy status. Older build104, unhosted-site and diagnostics-not-linked statements below are historical assumptions, not current release facts. SPEC-30 replaces placeholder icons with the website brand and requires a new native build after107. Do not treat107 as the final candidate once those assets change.
 
 ## What This App Is

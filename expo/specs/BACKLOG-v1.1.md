@@ -1,5 +1,7 @@
 # Backlog: post-launch enhancements (v1.1+)
 
+Premium product planning now lives in [PREMIUM-ROADMAP-2026-10-19.md](PREMIUM-ROADMAP-2026-10-19.md), including ranked benefit/effort and the Apple Watch feasibility track. Keep this historical maintenance backlog separate; verify whether each item was subsequently fixed before scheduling. No premium implementation is authorized by that roadmap.
+
 Source: independent Manus pre-launch review of commit `6115283` (full text in `specs/reference/MANUS-prelaunch-review-2026-10.md`). Items B1–B12 are **not** launch blockers. Each should become its own SPEC when scheduled. Evidence references were verified or noted below.
 
 | ID | Pri | Effort | Item | Notes / where |
