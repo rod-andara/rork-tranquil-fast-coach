@@ -11,7 +11,7 @@ export function getFastingMessage(progress: number): string {
 
 export function errorHandler(err: unknown, context: string): void {
   const message = err instanceof Error ? err.message : String(err);
-  console.error(`[Error] ${context}:`, err);
+  if (__DEV__) console.error(`[Error] ${context}:`, err);
   try {
     Alert.alert(context, message);
   } catch {}

@@ -1,45 +1,19 @@
 import { router } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { spacing, borderRadius } from '@/constants/theme';
 
 export default function TrackSucceedScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1000,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
 
   return (
     <VideoBackground source={require('@/assets/videos/track-succeed.mp4')}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <Animated.View
-          style={[
-            styles.content,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+        <View style={styles.content}>
           {/* Glassmorphism Text Container */}
           <BlurView intensity={20} tint="dark" style={styles.textContainer}>
             <Text style={styles.title}>Track &{'\n'}Succeed</Text>
@@ -55,18 +29,10 @@ export default function TrackSucceedScreen() {
             <View style={styles.dot} />
             <View style={styles.dot} />
           </View>
-        </Animated.View>
+        </View>
 
         {/* Footer Button */}
-        <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+        <View style={styles.footer}>
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.push('/onboarding/health-sync')}
@@ -74,7 +40,8 @@ export default function TrackSucceedScreen() {
           >
             <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
-        </Animated.View>
+          <MediaAttribution />
+        </View>
       </SafeAreaView>
     </VideoBackground>
   );

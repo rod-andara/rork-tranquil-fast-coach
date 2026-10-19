@@ -36,7 +36,7 @@ export default function VideoBackground({
         setIsVideoReady(true);
       }
     } else if (status.error) {
-      console.error('Video playback error:', status.error);
+      if (__DEV__) console.error('Video playback error:', status.error);
       setVideoError(true);
     }
   };
@@ -69,7 +69,7 @@ export default function VideoBackground({
         isMuted
         onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
         onError={(error) => {
-          console.error('Video error:', error);
+          if (__DEV__) console.error('Video error:', error);
           setVideoError(true);
         }}
       />

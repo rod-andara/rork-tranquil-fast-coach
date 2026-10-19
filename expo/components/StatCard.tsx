@@ -47,10 +47,15 @@ function StatCardComponent({
       >
         <Icon size={28} color="#FFFFFF" strokeWidth={2} />
       </LinearGradient>
-      <Text style={[
-        styles.value,
-        { color: isDarkMode ? '#FFFFFF' : '#111827' }
-      ]}>
+      <Text
+        style={[
+          styles.value,
+          { color: isDarkMode ? '#FFFFFF' : '#111827' }
+        ]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.75}
+      >
         {value}
       </Text>
       <Text style={[
@@ -88,6 +93,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.5,
     marginBottom: 4,
+    // SPEC: keep numeric stat values on a single line. The stretched,
+    // centered box gives adjustsFontSizeToFit the full card content width
+    // to measure against; tabular-nums keeps digit widths stable so values
+    // like 39.4 and 100.0 never wrap to a second line on narrow iPhones.
+    alignSelf: 'stretch',
+    textAlign: 'center',
+    fontVariant: ['tabular-nums'],
   },
   label: {
     fontSize: 14,

@@ -1,5 +1,9 @@
 # Spec-Driven Development Guide
 
+## Premium planning after the free launch
+
+See [Premium enhancement roadmap — 19 October 2026](PREMIUM-ROADMAP-2026-10-19.md) for ranked user benefit, engineering effort, Apple Watch feasibility/MVP, shared foundations and briefs ready to turn into implementation specs. This is planning only: free v1 and SPEC-17 runtime disablement remain unchanged. The roadmap replaces SPEC-07's historical proposal to gate existing custom plans and chart history; do not execute those gates as written.
+
 ## How This Works
 Each remaining task has a numbered spec file in this directory. Specs are self-contained: they include the problem, root cause, exact fix, files to read, files to modify, verification steps, and rollback plan.
 
@@ -16,8 +20,28 @@ Each remaining task has a numbered spec file in this directory. Specs are self-c
 | 04 | Add user name to greeting | Feature | Low | None |
 | 05 | Apple Health sync onboarding screen | Feature | Low | None |
 | 06 | Learn tab images | Feature | Low | Deferred/optional |
-| 07 | Premium feature gating | Feature | Medium | RevenueCat dashboard configured |
+| 07 | Premium feature gating | Historical proposal | — | Product gates superseded by `PREMIUM-ROADMAP-2026-10-19.md`; future implementation needs new specs and SPEC-17 lifecycle review |
 | 08 | App Store submission | Checklist | N/A | All above complete |
+| 09 | Auto-detect lbs/kg from device locale | Feature | Low | Folded into SPEC-11 |
+| 10 | Expo SDK 52 → 54 upgrade (iOS 26 compliance) | Upgrade | High | **Completed** |
+| 11 | Post-upgrade polish (dark mode, unit detect, header layout) | Feature | Low | **Completed** (includes SPEC-09) |
+| 12 | SDK upgrade regression fixes (Animated API, onboarding) | Bug fix | Medium | **Completed** |
+| 13 | Migrate WeightChart to react-native-gifted-charts | Feature | Medium | **Completed** |
+| 14 | NativeWind 4.2 upgrade attempt + React 19 css-interop fix | Bug fix | High | **Completed** (rolled back to 4.1.23) |
+| 16 | Sentry privacy hardening (App Store submission blocker) | Security | Medium | **Completed** |
+| 17 | RevenueCat runtime disablement for free v1 launch | Compliance | Medium | **Completed** — paywall hidden, RC dormant; reactivation §10 |
+| 18 | HealthKit usage description fix + App Review cleanup | Compliance | Small | **Completed** — write desc no longer mentions fasting data; HealthKit consumer logs gated; medical-professional copy softened |
+| 19 | Learn-tab external links cleanup | Compliance | Small | **Completed** — supplement health claim removed; "fat burning" + "therapeutic" softened; wellness disclaimer + "Opens in Safari" indicator added |
+| 20 | Notifications brand-voice + lifecycle cleanup | Compliance | Small | **Completed** — milestone copy rewritten (no "fat-burning"/"autophagy"/hype); cancellation wired into endFast / pauseFast / updatePlan / setNotificationsEnabled(false); UIBackgroundModes remote-notification removed; usage description softened |
+| 21 | App Store submission punch list | Checklist | Medium | **Pending execution** — paperwork-only spec; exact ASC copy, App Privacy label clicks, screenshot plan, reviewer note, rejection response templates, go/no-go checklist |
+| 22 | External link health check + broken link replacement | Compliance | Small | **Completed** — Amazon glass container 404 replaced with People.com editorial; Healthline electrolyte 404 replaced with durable explainer; Healthline workout+IF 404 removed (no verified replacement); 12 → 11 cards |
+| 23 | Apple Health sync fixes + TestFlight build 103 | Bug fix | Medium | **Code complete** (`dd28cff`) — no duplicate exports, 30-day import lookback, lastSync always recorded, launch no longer disconnects; build 103 built, TestFlight submit + on-device verification pending |
+| 24 | Pre-submission hardening (Health read hint, ATS exception removed, console gating, stub audit, buildNumber) | Compliance | Small | **Code complete** — ships in build 104; on-device verification pending |
+| 25 | Fast lifecycle correctness: remove Pause, reversible plan selection + adjust running fast, notification generation guard, endFast save order | Bug fix | Medium | **Completed** (code; device verification pending). Pause removed, `updatePlan` adjusts the running fast, notification generation guard. |
+| 26 | Apple Health export consent (`healthExport` state, weightStore v5) + hydration gate + serialized sync | Bug fix | Medium | **Code complete (device verification pending)** — pre-launch high (Manus A3/A4). After 25. |
+| 27 | Paywall out of route tree, Erase All Data, in-app Privacy/Terms/Support links, tablet/name alignment, SPEC-21 privacy doc fixes + owner tasks | Compliance | Medium | **Code complete** — owner tasks (host site, Sentry check, ASC) open. |
+| 28 | Release-candidate verification matrix on the signed build | Checklist | N/A | **Pending** — run after 25–27 on build 105. |
+| — | `BACKLOG-v1.1.md` post-launch enhancements (Manus B1–B12) | Backlog | — | Reference: `reference/MANUS-prelaunch-review-2026-10.md` |
 
 **SPEC-02 and SPEC-03 can be combined** into one session since they both modify `WeightChart.tsx`. All others should be separate sessions.
 

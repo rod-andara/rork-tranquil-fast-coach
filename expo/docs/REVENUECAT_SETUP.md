@@ -1,5 +1,7 @@
 # RevenueCat Setup Guide - TranquilFast Coach
 
+> Historical implementation notes. For the owner's current monetization decision and activation checklist, start with [Monetization-Roadmap.md](Monetization-Roadmap.md) and SPEC-17. RevenueCat is currently dormant and the paywall lives in `dormant/paywall.tsx`, not an active app route. Subscription pricing, vendor plan limits, plugin examples and credentials instructions below require fresh verification; do not enable billing by following this old guide alone. Never embed an App Store Connect private API key in app.json or an EXPO_PUBLIC variable.
+
 This guide walks you through setting up RevenueCat for in-app subscriptions in TranquilFast Coach.
 
 ## ✅ Already Completed

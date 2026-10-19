@@ -1,48 +1,22 @@
 import { router } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { spacing, borderRadius } from '@/constants/theme';
 import { useFastStore } from '@/store/fastStore';
 
 export default function WelcomeScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
   const [name, setName] = React.useState('');
-  const { setUserName } = useFastStore();
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1000,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
+  const { setUserName, completeOnboarding } = useFastStore();
 
   return (
     <VideoBackground source={require('@/assets/videos/welcome.mp4')}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <Animated.View
-          style={[
-            styles.content,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+        <View style={styles.content}>
           {/* Glassmorphism Text Container */}
           <BlurView intensity={20} tint="dark" style={styles.textContainer}>
             <Text style={styles.title}>Welcome to{'\n'}Tranquil Fast</Text>
@@ -68,18 +42,10 @@ export default function WelcomeScreen() {
             <View style={styles.dot} />
             <View style={styles.dot} />
           </View>
-        </Animated.View>
+        </View>
 
         {/* Footer Buttons */}
-        <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+        <View style={styles.footer}>
           <TouchableOpacity
             style={styles.button}
             onPress={() => {
@@ -95,13 +61,15 @@ export default function WelcomeScreen() {
 
           <TouchableOpacity
             onPress={() => {
+              completeOnboarding();
               router.replace('/(tabs)/home');
             }}
             activeOpacity={0.7}
           >
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
-        </Animated.View>
+          <MediaAttribution />
+        </View>
       </SafeAreaView>
     </VideoBackground>
   );

@@ -1,11 +1,12 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import FastPlanCard from '@/components/FastPlanCard';
 import VideoBackground from '@/components/VideoBackground';
+import MediaAttribution from '@/components/MediaAttribution';
 import { CustomDurationModal } from '@/components/CustomDurationModal';
 import { useFastStore, FastingPlan } from '@/store/fastStore';
 import { borderRadius, colors, spacing, typography } from '@/constants/theme';
@@ -78,49 +79,33 @@ function ClockIllustration() {
 }
 
 export default function ChoosePlanScreen() {
-  const [selectedPlan, setSelectedPlan] = useState<FastingPlan>('16:8');
-  const [showCustomModal, setShowCustomModal] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
   const fromSettings = params.fromSettings === 'true';
   const {
     setSelectedPlan: saveSelectedPlan,
+    selectedPlan: persistedPlan,
     updatePlan,
     onboardingComplete,
     completeOnboarding,
     isDarkMode,
-    startFast,
-    customDuration,
+    currentFast,
+    customDuration: persistedCustomDuration,
     setCustomDuration,
   } = useFastStore();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
+  // Custom duration stays local until the footer button commits it.
+  const [customDuration, setLocalCustomDuration] = useState(persistedCustomDuration);
+  const [isSaving, setIsSaving] = useState(false);
+  // SPEC-25: card taps only change local selection; the footer button is the single commit.
+  const [selectedPlan, setSelectedPlan] = useState<FastingPlan>(persistedPlan);
+  const [showCustomModal, setShowCustomModal] = useState(false);
 
   const handleSaveCustomDuration = (hours: number, minutes: number) => {
     // Convert hours and minutes to total hours (decimal)
     const totalHours = hours + minutes / 60;
-    console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
-    setCustomDuration(totalHours);
+    if (__DEV__) console.log(`[ChoosePlan] Saving custom duration: ${hours}h ${minutes}m = ${totalHours} hours`);
+    setLocalCustomDuration(totalHours);
     setSelectedPlan('custom');
-
-    if (fromSettings) {
-      updatePlan('custom');
-    }
   };
 
   const formatCustomDuration = () => {
@@ -133,35 +118,41 @@ export default function ChoosePlanScreen() {
     return `${hours}h ${minutes}m`;
   };
 
-  const handleContinue = () => {
-    console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
-    console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
-    console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
-    console.log('[ChoosePlan] fromSettings:', fromSettings);
+  const handleContinue = async () => {
+    if (isSaving) return;
+    if (__DEV__) console.log('[ChoosePlan] ========== BUTTON PRESSED ==========');
+    if (__DEV__) console.log('[ChoosePlan] handleContinue called, selectedPlan:', selectedPlan);
+    if (__DEV__) console.log('[ChoosePlan] onboardingComplete:', onboardingComplete);
+    if (__DEV__) console.log('[ChoosePlan] fromSettings:', fromSettings);
 
     try {
       if (fromSettings) {
         // Changing plan from Settings - just update and go back
-        console.log('[ChoosePlan] Updating plan from Settings');
-        updatePlan(selectedPlan);
+        if (__DEV__) console.log('[ChoosePlan] Updating plan from Settings');
+        setIsSaving(true);
+        if (selectedPlan === 'custom') setCustomDuration(customDuration);
+        await updatePlan(selectedPlan);
         router.back();
       } else {
         // Completing onboarding for first time
-        console.log('[ChoosePlan] Step 1: Saving selected plan');
+        if (__DEV__) console.log('[ChoosePlan] Step 1: Saving selected plan');
+        if (selectedPlan === 'custom') setCustomDuration(customDuration);
         saveSelectedPlan(selectedPlan);
 
-        console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
+        if (__DEV__) console.log('[ChoosePlan] Step 2: Marking onboarding as complete');
         completeOnboarding();
 
-        console.log('[ChoosePlan] Step 3: Navigating to Home tab (user will manually start fast)');
+        if (__DEV__) console.log('[ChoosePlan] Step 3: Navigating to Home tab (user will manually start fast)');
         // Replace the entire onboarding stack with the Home tab
         // User will manually start the fast from the Home screen
         router.replace('/(tabs)/home');
       }
     } catch (e) {
-      console.error('[ChoosePlan] ERROR in handleContinue:', e);
-      console.error('[ChoosePlan] Error stack:', (e as Error).stack);
+      if (__DEV__) console.error('[ChoosePlan] ERROR in handleContinue:', e);
+      if (__DEV__) console.error('[ChoosePlan] Error stack:', (e as Error).stack);
       alert(`Error: ${(e as Error).message}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -209,14 +200,11 @@ export default function ChoosePlanScreen() {
                 popular={plan.popular}
                 selected={selectedPlan === plan.id}
                 isDarkMode={isDarkMode}
-                onPress={async () => {
+                onPress={() => {
                   if (plan.id === 'custom') {
                     setShowCustomModal(true);
                   } else {
                     setSelectedPlan(plan.id);
-                    if (fromSettings) {
-                      await updatePlan(plan.id);
-                    }
                   }
                 }}
               />
@@ -224,25 +212,28 @@ export default function ChoosePlanScreen() {
           </View>
         </ScrollView>
 
-        <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
+        <View style={styles.footer}>
           <TouchableOpacity
             style={styles.button}
             onPress={handleContinue}
             activeOpacity={0.8}
+            disabled={isSaving}
           >
             <Text style={styles.buttonText}>
-              Start {selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan
+              {fromSettings
+                ? currentFast
+                  ? 'Apply to current fast'
+                  : 'Save plan'
+                : `Start ${selectedPlan === 'custom' ? `Custom (${formatCustomDuration()})` : selectedPlanData?.title} Plan`}
             </Text>
           </TouchableOpacity>
-        </Animated.View>
+          {fromSettings && (
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={styles.cancel}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          )}
+          <MediaAttribution />
+        </View>
 
         <CustomDurationModal
           visible={showCustomModal}
@@ -320,6 +311,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
+  },
+  cancel: {
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  cancelText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: '600' as const,
   },
   buttonText: {
     ...typography.h3,

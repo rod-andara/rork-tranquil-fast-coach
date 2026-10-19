@@ -9,7 +9,15 @@ export interface WeightEntry {
   unit: 'lbs' | 'kg';
   note?: string;
   source: 'manual' | 'apple_health';
+  healthId?: string; // HealthKit sample id for imported entries
+  // Manual entries only (SPEC-26): consent is separate from delivery state.
+  // opted_out = user kept it local, never exported; pending = consented, not yet
+  // written to Apple Health; synced = written.
+  healthExport?: 'opted_out' | 'pending' | 'synced';
 }
+
+// NOTE: `deletedHealthIds` (below) remembers HealthKit samples the user deleted
+// locally so a full-history import doesn't bring them back.
 
 export interface WeightGoal {
   targetWeight: number;
@@ -25,6 +33,7 @@ interface WeightState {
   isHealthConnected: boolean;
   lastHealthSync: number | null;
   unitSetByUser: boolean;
+  deletedHealthIds: string[];
 
   // Actions
   addEntry: (entry: Omit<WeightEntry, 'id'>) => void;
@@ -42,6 +51,7 @@ interface WeightState {
   getProgressPercentage: () => number | null;
   getPredictedGoalDate: () => number | null;
   getAverageWeeklyChange: () => number | null;
+  reset: () => void;
 }
 
 const defaultState = {
@@ -51,7 +61,22 @@ const defaultState = {
   isHealthConnected: false,
   lastHealthSync: null as number | null,
   unitSetByUser: false as boolean,
+  deletedHealthIds: [] as string[],
 };
+
+/**
+ * Shared baseline for "change" and goal progress. Without a goal: the oldest entry
+ * (all-time). With a goal: the earliest entry at/after the goal start, else the most
+ * recent entry before it, so a goal set after the latest sample starts at zero change.
+ * Callers guarantee `entries` is non-empty.
+ */
+export function getBaselineWeight(entries: WeightEntry[], goal: WeightGoal | null): number {
+  const oldestFirst = [...entries].sort((a, b) => a.date - b.date);
+  if (!goal) return oldestFirst[0].weight;
+  const atOrAfter = oldestFirst.find((e) => e.date >= goal.startDate);
+  if (atOrAfter) return atOrAfter.weight;
+  return oldestFirst[oldestFirst.length - 1].weight;
+}
 
 export const useWeightStore = create<WeightState>()(
   persist(
@@ -60,6 +85,14 @@ export const useWeightStore = create<WeightState>()(
 
       // Actions
       addEntry: (entry) => {
+        // Defense in depth against double imports (SPEC-26).
+        if (
+          entry.healthId &&
+          ((get().entries || []).some((e) => e.healthId === entry.healthId) ||
+            (get().deletedHealthIds || []).includes(entry.healthId))
+        ) {
+          return;
+        }
         const newEntry: WeightEntry = {
           ...entry,
           id: Date.now().toString() + Math.random().toString(36).substring(2, 11),
@@ -78,9 +111,15 @@ export const useWeightStore = create<WeightState>()(
       },
 
       deleteEntry: (id) => {
-        set((state) => ({
-          entries: (state.entries || []).filter((entry) => entry.id !== id),
-        }));
+        set((state) => {
+          const removed = (state.entries || []).find((entry) => entry.id === id);
+          return {
+            entries: (state.entries || []).filter((entry) => entry.id !== id),
+            deletedHealthIds: removed?.healthId
+              ? [...(state.deletedHealthIds || []), removed.healthId]
+              : state.deletedHealthIds || [],
+          };
+        });
       },
 
       setGoal: (goal) => {
@@ -150,6 +189,12 @@ export const useWeightStore = create<WeightState>()(
         }
       },
 
+      // SPEC-27: Erase All Data. Replaces in-memory state with defaults; persist
+      // then writes only these defaults, never the stale pre-erase state.
+      reset: () => {
+        set({ ...defaultState });
+      },
+
       setHealthConnected: (connected) => {
         set({ isHealthConnected: connected });
       },
@@ -170,10 +215,7 @@ export const useWeightStore = create<WeightState>()(
         if (state.entries.length < 2) return null;
 
         const currentWeight = state.entries[0].weight;
-        const startWeight = state.goal
-          ? state.entries.find((e) => e.date >= state.goal!.startDate)?.weight ||
-            state.entries[state.entries.length - 1].weight
-          : state.entries[state.entries.length - 1].weight;
+        const startWeight = getBaselineWeight(state.entries, state.goal);
 
         return currentWeight - startWeight;
       },
@@ -185,35 +227,26 @@ export const useWeightStore = create<WeightState>()(
         const currentWeight = state.entries[0].weight;
         const goalWeight = state.goal.targetWeight;
 
-        // Find the weight entry closest to when the goal was set (but not after)
-        // Entries are sorted newest-first, so we need to find the right start weight
-        // Sort entries by date (oldest first) to find correct start weight
-        const sortedEntries = [...state.entries].sort((a, b) => a.date - b.date);
+        const startWeight = getBaselineWeight(state.entries, state.goal);
 
-        // Find the first entry at or after the goal start date
-        let startWeight = sortedEntries.find((e) => e.date >= state.goal!.startDate)?.weight;
-
-        // If no entry found at or after goal start, use the most recent entry before goal start
-        if (!startWeight) {
-          const entriesBeforeGoal = sortedEntries.filter((e) => e.date < state.goal!.startDate);
-          startWeight = entriesBeforeGoal.length > 0
-            ? entriesBeforeGoal[entriesBeforeGoal.length - 1].weight
-            : currentWeight;
+        // SPEC-16: all weight-bearing logs are dev-only. In production these
+        // never run, so the Sentry console integration cannot capture them as
+        // breadcrumbs. Do NOT log weight/goal values in production.
+        if (__DEV__) {
+          console.log(`[WeightStore] Progress calculation:`, {
+            currentWeight,
+            startWeight,
+            goalWeight,
+            goalStartDate: new Date(state.goal.startDate).toISOString(),
+          });
         }
-
-        console.log(`[WeightStore] Progress calculation:`, {
-          currentWeight,
-          startWeight,
-          goalWeight,
-          goalStartDate: new Date(state.goal.startDate).toISOString(),
-        });
 
         // Determine if this is a weight loss or weight gain goal
         const isWeightLoss = goalWeight < startWeight;
 
         // If current weight equals start weight, progress is 0%
         if (Math.abs(currentWeight - startWeight) < 0.01) {
-          console.log(`[WeightStore] No progress yet (current === start)`);
+          if (__DEV__) console.log(`[WeightStore] No progress yet (current === start)`);
           return 0;
         }
 
@@ -222,7 +255,7 @@ export const useWeightStore = create<WeightState>()(
           (isWeightLoss && currentWeight <= goalWeight) || // Weight loss goal achieved
           (!isWeightLoss && currentWeight >= goalWeight)   // Weight gain goal achieved
         ) {
-          console.log(`[WeightStore] Goal achieved!`);
+          if (__DEV__) console.log(`[WeightStore] Goal achieved!`);
           return 100;
         }
 
@@ -231,7 +264,7 @@ export const useWeightStore = create<WeightState>()(
           (isWeightLoss && currentWeight > startWeight) || // Weight increased when trying to lose
           (!isWeightLoss && currentWeight < startWeight)   // Weight decreased when trying to gain
         ) {
-          console.log(`[WeightStore] Regression detected (moving away from goal)`);
+          if (__DEV__) console.log(`[WeightStore] Regression detected (moving away from goal)`);
           return 0;
         }
 
@@ -242,10 +275,12 @@ export const useWeightStore = create<WeightState>()(
         // Progress is how much of the total change has been achieved
         const progress = (currentChange / totalChange) * 100;
 
-        console.log(`[WeightStore] Progress: ${progress.toFixed(1)}%`, {
-          totalChange: totalChange.toFixed(2),
-          currentChange: currentChange.toFixed(2),
-        });
+        if (__DEV__) {
+          console.log(`[WeightStore] Progress: ${progress.toFixed(1)}%`, {
+            totalChange: totalChange.toFixed(2),
+            currentChange: currentChange.toFixed(2),
+          });
+        }
 
         // Clamp between 0 and 100
         return Math.min(100, Math.max(0, progress));
@@ -306,7 +341,7 @@ export const useWeightStore = create<WeightState>()(
     {
       name: 'weight-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 3,
+      version: 5,
       migrate: (persistedState: any, version) => {
         if (!persistedState) {
           return { ...defaultState };
@@ -329,8 +364,40 @@ export const useWeightStore = create<WeightState>()(
           stateWithDefaults.unitSetByUser = false;
         }
 
+        if (version < 4) {
+          // Legacy manual entries may already be in Apple Health (the entry modal
+          // wrote them directly). Mark them synced so they aren't exported twice.
+          stateWithDefaults.entries = (stateWithDefaults.entries || []).map((e: WeightEntry) =>
+            e.source === 'manual' ? { ...e, healthSynced: true } : e
+          );
+        }
+
+        if (version < 5) {
+          // SPEC-26: replace boolean healthSynced with explicit consent state.
+          // Conservative: legacy entries not known to be in Health are opted_out
+          // so history is never silently exported.
+          stateWithDefaults.entries = (stateWithDefaults.entries || []).map((e: any) => {
+            const { healthSynced, ...rest } = e;
+            if (rest.source !== 'manual') return rest;
+            return { ...rest, healthExport: healthSynced === true ? 'synced' : 'opted_out' };
+          });
+        }
+
         return stateWithDefaults;
       },
     }
   )
 );
+
+// Resolves once the persisted weight store has been rehydrated (SPEC-26).
+export const waitForWeightStoreHydration = (): Promise<void> =>
+  new Promise((resolve) => {
+    if (useWeightStore.persist.hasHydrated()) {
+      resolve();
+      return;
+    }
+    const unsub = useWeightStore.persist.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+  });

@@ -33,9 +33,17 @@ export default function PremiumGate({ children, feature }: PremiumGateProps) {
         <Text style={[styles.text, isDarkMode && styles.textDark]}>
           {feature || 'Premium Feature'}
         </Text>
+        {/*
+          SPEC-17 (v1.0): RevenueCat is disabled and the paywall lives at
+          dormant/paywall.tsx (outside app/), so /paywall is NOT a route. This entire
+          component is currently unrendered. For v1.1 reactivation: move
+          dormant/paywall.tsx → app/paywall.tsx, restore the <Stack.Screen> entry
+          in app/_layout.tsx, and start rendering <PremiumGate> around the
+          features you want to gate.
+        */}
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push('/paywall')}
+          onPress={() => router.push('/paywall' as any)}
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>Unlock Premium</Text>

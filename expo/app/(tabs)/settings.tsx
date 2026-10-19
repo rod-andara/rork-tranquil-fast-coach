@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Text, View, ScrollView, Platform, TouchableOpacity, Alert, Linking, Share } from 'react-native';
-import { Bell, Moon, HelpCircle, Heart, Share2, Clock, LogOut, Scale } from 'lucide-react-native';
+import { Bell, Moon, HelpCircle, Heart, Share2, Clock, Trash2, Scale, Shield, FileText, LifeBuoy } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as StoreReview from 'expo-store-review';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +11,8 @@ import { useRouter } from 'expo-router';
 import SwitchRow from '@/components/SwitchRow';
 import UnitSelectorRow from '@/components/UnitSelectorRow';
 import ListItem from '@/components/ListItem';
+import { LINKS } from '@/constants/links';
+import { cancelFastingNotifications } from '@/utils/notificationsUtils';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -40,7 +42,7 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     setNotificationsEnabled(val);
   }, [setNotificationsEnabled]);
@@ -49,7 +51,7 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     setDarkMode(val);
   }, [setDarkMode]);
@@ -58,7 +60,7 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     } else {
-      console.log('Haptics not available on web');
+      if (__DEV__) console.log('Haptics not available on web');
     }
     setUnit(val);
   }, [setUnit]);
@@ -68,7 +70,7 @@ export default function SettingsScreen() {
   }, [router]);
 
   const handleHelpSupport = useCallback(async () => {
-    const email = 'support@tranquilfastcoach.com';
+    const email = 'support@tranquilfast.app';
     const subject = 'Help & Support - Tranquil Fast Coach';
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 
@@ -105,7 +107,7 @@ export default function SettingsScreen() {
         );
       }
     } catch (error) {
-      console.error('Error requesting review:', error);
+      if (__DEV__) console.error('Error requesting review:', error);
       Alert.alert(
         'Rate App',
         'Thank you for your support! Please rate us on the App Store.',
@@ -117,7 +119,7 @@ export default function SettingsScreen() {
   const handleShare = useCallback(async () => {
     try {
       const result = await Share.share({
-        message: 'Check out Tranquil Fast Coach! A simple and effective intermittent fasting tracker that helps you achieve your wellness goals. Download it now!',
+        message: 'Check out Tranquil Fast Coach! A simple and effective intermittent fasting tracker that helps you achieve your wellness goals. Download it now! https://tranquilfast.app',
         title: 'Tranquil Fast Coach',
       });
 
@@ -127,7 +129,7 @@ export default function SettingsScreen() {
         }
       }
     } catch (error) {
-      console.error('Error sharing:', error);
+      if (__DEV__) console.error('Error sharing:', error);
       Alert.alert(
         'Share Failed',
         'Unable to share at this time. Please try again later.',
@@ -136,21 +138,37 @@ export default function SettingsScreen() {
     }
   }, []);
 
-  const handleLogOut = useCallback(() => {
+  const openLink = useCallback(async (url: string) => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert(
+        'Link Unavailable',
+        'We couldn\'t open that page right now. Please try again in a moment.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, []);
+
+  const handleEraseAllData = useCallback(() => {
     Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out? Your data will be cleared.',
+      'Erase All Data',
+      'Erases all fasts, weights and settings on this device. Data already saved in Apple Health is not deleted.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Log Out',
+          text: 'Erase',
           style: 'destructive',
           onPress: async () => {
             try {
+              await cancelFastingNotifications();
               await AsyncStorage.clear();
+              useFastStore.getState().reset();
+              useWeightStore.getState().reset();
               router.replace('/onboarding/welcome');
             } catch (error) {
-              console.error('Failed to clear storage:', error);
+              if (__DEV__) console.error('Failed to erase data:', error);
+              Alert.alert('Something went wrong', 'We couldn\'t erase your data. Please try again.', [{ text: 'OK' }]);
             }
           },
         },
@@ -286,23 +304,53 @@ export default function SettingsScreen() {
               textColor={isDarkMode ? "#F9FAFB" : "#111827"}
               chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
             />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
+            <ListItem
+              testID="support-row"
+              Icon={LifeBuoy}
+              text="Support"
+              onPress={() => openLink(LINKS.support)}
+              iconColor="#7C3AED"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+            />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
+            <ListItem
+              testID="privacy-row"
+              Icon={Shield}
+              text="Privacy Policy"
+              onPress={() => openLink(LINKS.privacy)}
+              iconColor="#7C3AED"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+            />
+            <View className="border-b border-neutral-200 dark:border-neutral-700 my-4" />
+            <ListItem
+              testID="terms-row"
+              Icon={FileText}
+              text="Terms of Use"
+              onPress={() => openLink(LINKS.terms)}
+              iconColor="#7C3AED"
+              textColor={isDarkMode ? "#F9FAFB" : "#111827"}
+              chevronColor={isDarkMode ? "#9CA3AF" : "#6B7280"}
+            />
           </View>
         </View>
 
-        {/* Log Out Button */}
+        {/* Erase All Data Button */}
         <TouchableOpacity
           className="flex-row items-center justify-center gap-2 py-4 rounded-xl bg-error-500 dark:bg-error-600 shadow-lg active:bg-error-600"
-          onPress={handleLogOut}
+          onPress={handleEraseAllData}
           activeOpacity={0.8}
-          testID="logout-button"
+          testID="erase-data-button"
         >
-          <LogOut size={20} color="#FFFFFF" />
-          <Text className="text-base font-semibold text-white">Log Out</Text>
+          <Trash2 size={20} color="#FFFFFF" />
+          <Text className="text-base font-semibold text-white">Erase All Data</Text>
         </TouchableOpacity>
 
         {/* Footer */}
         <View className="items-center gap-2 py-6">
-          <Text className="text-sm text-neutral-500 dark:text-neutral-400">FastTrack v1.0.0</Text>
+          <Text className="text-sm text-neutral-500 dark:text-neutral-400">Tranquil Fast Coach v1.0.0</Text>
           <Text className="text-sm text-neutral-500 dark:text-neutral-400">
             Made with ❤️ for your wellness journey
           </Text>

@@ -50,8 +50,10 @@ export function getFastingMessage(progressPercent: number): string {
     return "Great progress! Your body is adapting.";
   } else if (progressPercent < 90) {
     return "Almost there! You're in the final stretch.";
-  } else {
+  } else if (progressPercent < 100) {
     return "Amazing! You're about to complete your fast!";
+  } else {
+    return "Goal reached. End your fast whenever you're ready.";
   }
 }
 
@@ -59,7 +61,7 @@ export function getPlanDuration(plan: string, customDurationHours?: number): num
   // Handle custom plan
   if (plan === 'custom') {
     if (customDurationHours === undefined) {
-      console.warn('[getPlanDuration] Custom plan requires customDurationHours parameter');
+      if (__DEV__) console.warn('[getPlanDuration] Custom plan requires customDurationHours parameter');
       return 16 * 60 * 60 * 1000; // Default to 16 hours if not provided
     }
     return customDurationHours * 60 * 60 * 1000;
@@ -68,7 +70,7 @@ export function getPlanDuration(plan: string, customDurationHours?: number): num
   // Handle predefined plans (e.g., "16:8", "18:6")
   const hours = parseInt(plan.split(':')[0]);
   if (isNaN(hours)) {
-    console.warn(`[getPlanDuration] Invalid plan format: "${plan}". Defaulting to 16 hours.`);
+    if (__DEV__) console.warn(`[getPlanDuration] Invalid plan format: "${plan}". Defaulting to 16 hours.`);
     return 16 * 60 * 60 * 1000;
   }
 

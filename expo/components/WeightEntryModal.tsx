@@ -1,3 +1,7 @@
+// NOTE: Do NOT use Tailwind transition-* or animate-* utility classes anywhere in
+// className props. react-native-css-interop wraps such components with
+// Animated.createAnimatedComponent, which crashes under React 19 + RN's non-forwardRef
+// Views. For animations, use react-native-reanimated directly. See SPEC-15 for context.
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -13,7 +17,7 @@ import {
 import { X, Save, Scale } from 'lucide-react-native';
 import { useFastStore } from '@/store/fastStore';
 import { useWeightStore, WeightEntry } from '@/store/weightStore';
-import { saveWeightToHealth, isHealthKitReady } from '@/utils/appleHealth';
+import { syncWeightData, isHealthKitReady } from '@/utils/appleHealth';
 
 interface WeightEntryModalProps {
   visible: boolean;
@@ -70,27 +74,23 @@ export default function WeightEntryModal({
           note: (note ?? '').trim() || undefined,
         });
       } else {
-        // Add new entry
+        // Add new entry with its consent state (SPEC-26). Opted-in entries are
+        // saved as 'pending' and exported through the serialized sync queue, so
+        // the modal write can never interleave with another sync (no duplicates).
+        const consented = syncToHealth && isHealthConnected;
+
         addEntry({
           weight: weightNum,
           date: Date.now(),
           unit: unit,
           note: (note ?? '').trim() || undefined,
           source: 'manual',
+          healthExport: consented ? 'pending' : 'opted_out',
         });
 
-        // Wait for Apple Health sync to complete (only if ready and enabled)
-        const canSync = syncToHealth && isHealthKitReady();
-        if (canSync) {
-          try {
-            await saveWeightToHealth(weightNum, unit);
-            console.log('[SUCCESS] Weight saved to Apple Health');
-          } catch (healthError) {
-            console.warn('[WARN] Health sync failed:', healthError instanceof Error ? healthError.message : String(healthError));
-            // Continue - don't block on Health sync failure
-          }
-        } else if (syncToHealth && !isHealthKitReady()) {
-          console.warn('[WARN] Health sync requested but HealthKit is not ready - saving locally only');
+        if (consented && isHealthKitReady()) {
+          // Failure leaves the entry pending; the next sync retries it.
+          syncWeightData('export').catch(() => {});
         }
       }
 
@@ -99,7 +99,7 @@ export default function WeightEntryModal({
       setIsSaving(false);
       onClose();
     } catch (err) {
-      console.error('[ERROR] Failed to save weight:', err);
+      if (__DEV__) console.error('[ERROR] Failed to save weight:', err);
       setError('Failed to save weight. Please try again.');
       setIsSaving(false);
     }
@@ -256,7 +256,7 @@ export default function WeightEntryModal({
                     }`}
                   >
                     <View
-                      className={`w-5 h-5 rounded-full bg-white transition-all ${
+                      className={`w-5 h-5 rounded-full bg-white ${
                         syncToHealth ? 'ml-auto' : 'ml-0'
                       }`}
                     />

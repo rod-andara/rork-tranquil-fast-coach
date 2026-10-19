@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Text, View, TouchableOpacity, ScrollView, Switch, Platform, Animated } from 'react-native';
+import React from 'react';
+import { Text, View, TouchableOpacity, ScrollView, Switch, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Pause, Play, XCircle, Bell, Lightbulb } from 'lucide-react-native';
+import { XCircle, Bell, Lightbulb } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { useFastStore } from '@/store/fastStore';
@@ -11,30 +11,12 @@ import { formatTime, formatDate, getFastingMessage } from '@/utils';
 import useFastTimer from '@/hooks/useFastTimer';
 
 export default function FastScreen() {
-  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, pauseFast, isDarkMode } = useFastStore();
+  const { selectedPlan, currentFast, endFast, notificationsEnabled, setNotificationsEnabled, isDarkMode } = useFastStore();
   const router = useRouter();
   const { elapsedMs, calculateProgress: calc } = useFastTimer();
-  const [isPaused, setIsPaused] = useState<boolean>(false);
 
   const progress = currentFast ? calc(elapsedMs, currentFast.plannedDuration) : 0;
   const targetEndTime = currentFast ? currentFast.startTime + currentFast.plannedDuration : 0;
-  const animatedWidth = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(animatedWidth, {
-      toValue: progress,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  }, [progress, animatedWidth]);
-
-  const handlePauseResume = () => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setIsPaused(!isPaused);
-    pauseFast();
-  };
 
   const handleEndFast = () => {
     if (Platform.OS !== 'web') {
@@ -116,7 +98,7 @@ export default function FastScreen() {
             progress={progress}
             color="#7C3AED"
             backgroundColor="#E5E7EB"
-            isRunning={currentFast?.isRunning ?? false}
+            isRunning
           >
             <View className="items-center">
               <Text
@@ -128,7 +110,7 @@ export default function FastScreen() {
                 {formatTime(elapsedMs)}
               </Text>
               <Text className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider">
-                {currentFast?.isRunning ? 'FASTING' : 'PAUSED'}
+                FASTING
               </Text>
             </View>
           </CircularProgress>
@@ -162,14 +144,9 @@ export default function FastScreen() {
           {/* Progress Bar - true 0% width with visible border */}
           <View className="w-full mt-2">
             <View className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden w-full border border-neutral-300 dark:border-neutral-600">
-              <Animated.View
+              <View
                 className="h-full bg-primary-600 rounded-full"
-                style={{
-                  width: animatedWidth.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: ['0%', '100%']
-                  })
-                }}
+                style={{ width: `${progress}%` }}
               />
             </View>
           </View>
@@ -178,23 +155,14 @@ export default function FastScreen() {
         {/* Action Buttons - 24pt bottom margin */}
         <View className="flex-row gap-4 mb-6">
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center py-4 rounded-xl gap-2 bg-primary-600 dark:bg-primary-500 shadow-lg active:bg-primary-700"
-            onPress={handlePauseResume}
-            activeOpacity={0.8}
-          >
-            {isPaused ? (
-              <Play size={20} color="#FFFFFF" fill="#FFFFFF" />
-            ) : (
-              <Pause size={20} color="#FFFFFF" />
-            )}
-            <Text className="text-base font-semibold text-white">{isPaused ? 'Resume' : 'Pause'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="w-14 h-14 items-center justify-center rounded-xl bg-white dark:bg-neutral-800 border-2 border-error-500 shadow-lg active:bg-neutral-50 dark:active:bg-neutral-700"
+            className="flex-1 flex-row items-center justify-center py-4 rounded-xl gap-2 bg-white dark:bg-neutral-800 border-2 border-error-500 shadow-lg active:bg-neutral-50 dark:active:bg-neutral-700"
             onPress={handleEndFast}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="End fast"
           >
-            <XCircle size={24} color="#EF4444" />
+            <XCircle size={20} color="#EF4444" />
+            <Text className="text-base font-semibold text-error-500">End Fast</Text>
           </TouchableOpacity>
         </View>
 

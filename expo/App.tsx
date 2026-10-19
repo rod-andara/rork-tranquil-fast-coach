@@ -1,9 +1,17 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { usePathname } from 'expo-router';
+import { useFastStore } from '@/store/fastStore';
 import { setupNotifications } from '@/services/notifications';
 
 export default function AppSetup() {
+  const isDarkMode = useFastStore((state) => state.isDarkMode);
+  const pathname = usePathname();
+  // Onboarding screens sit on dark video and the launch spinner on a dark background.
+  const onDarkBackdrop = pathname === '/' || pathname.startsWith('/onboarding');
+  const statusBarStyle = onDarkBackdrop || isDarkMode ? 'light' : 'dark';
+
   useEffect(() => {
     try {
       setupNotifications();
@@ -29,5 +37,5 @@ export default function AppSetup() {
     };
   }, []);
 
-  return <StatusBar style="dark" />;
+  return <StatusBar style={statusBarStyle} />;
 }

@@ -95,7 +95,7 @@ export default function HomeScreen() {
             progress={progress}
             color="#7C3AED"
             backgroundColor="#E5E7EB"
-            isRunning={currentFast?.isRunning ?? false}
+            isRunning={!!currentFast}
           >
             <View className="items-center">
               <Text

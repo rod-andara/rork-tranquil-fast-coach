@@ -1,42 +1,47 @@
 # Tranquil Fast Coach - Claude Code Project Reference
 
+> Premium planning (19 October 2026): `specs/PREMIUM-ROADMAP-2026-10-19.md` ranks proposed enhancements and defines an Apple Watch feasibility track. Planning only; free launch and dormant RevenueCat remain unchanged. SPEC-07's historical custom-plan/chart-history gates are superseded; write fresh implementation specs before paid work.
+
+> Current launch handoff (18 October 2026): see `docs/release/App-Store-Setup-2026-10-18.md` and `docs/release/Launch-Essentials-2026-10-18.md` for verified store/website/privacy status. Older build104, unhosted-site and diagnostics-not-linked statements below are historical assumptions, not current release facts. SPEC-30 replaces placeholder icons with the website brand and requires a new native build after107. Do not treat107 as the final candidate once those assets change.
+
 ## What This App Is
 An iOS intermittent fasting timer app built with Expo/React Native, ~90% complete, live on TestFlight, targeting App Store submission. Users select a fasting plan (16:8, 18:6, etc.), start/stop fasts, track weight via Apple Health, and view progress charts.
 
 ## Tech Stack (exact versions)
-- Expo SDK 52, React Native 0.76.9, TypeScript 5.8.3 (strict mode)
+- Expo SDK 54.0.33, React Native 0.81.5, React 19.1.0, TypeScript 5.8.3 (strict mode)
 - Zustand 5.0.2 for state management (see persistence note below)
-- NativeWind 4.1.23 / Tailwind 3.4.18 for styling
-- Expo Router 4.0.0 (file-based navigation)
-- RevenueCat (`react-native-purchases` 9.6.13) for subscriptions
+- NativeWind 4.1.23 / Tailwind 3.4.18 for styling (pinned — see Known Constraints)
+- Expo Router 6.0.23 (file-based navigation)
+- RevenueCat (`react-native-purchases` 9.6.13) — **dormant in v1.0**, gated by `EXPO_PUBLIC_ENABLE_REVENUECAT` (see SPEC-17)
 - `react-native-health` 1.19.0 for Apple HealthKit
-- `react-native-chart-kit` 6.12.0 for charts
-- Sentry 6.10.0 for error tracking
+- `react-native-gifted-charts` 1.4.76 for weight line chart; native View bars for fasting histogram
+- Sentry 7.2.0 for error tracking (privacy-hardened — see Privacy Invariant below)
 - EAS for builds, TestFlight for distribution
 
 ## Architecture Map
 
 ```
 app/index.tsx             Entry: hydration guard -> onboarding or home
-app/_layout.tsx           Root: Sentry wrap, store hydration, RevenueCat init, HealthKit reinit
+app/_layout.tsx           Root: Sentry wrap, store hydration, RevenueCat init (gated, off in v1.0), HealthKit reinit
 app/(tabs)/_layout.tsx    Tab navigator (5 tabs)
 app/(tabs)/home.tsx       Timer display, start fast, stats summary
-app/(tabs)/fast.tsx       Active fast: progress ring, pause/resume, end, tips
+app/(tabs)/fast.tsx       Active fast: progress ring, end, tips (no Pause since SPEC-25)
 app/(tabs)/progress.tsx   Weight tracking, fasting stats, charts, achievements
 app/(tabs)/learn.tsx      Content feed (recipes, articles, products)
 app/(tabs)/settings.tsx   Preferences, premium card, help/support
 app/onboarding/           3-step flow: welcome -> track-succeed -> choose-plan
-app/paywall.tsx           RevenueCat subscription screen
+dormant/paywall.tsx       RevenueCat subscription screen — OUTSIDE app/ (not a route) in v1.0; move to `app/paywall.tsx` for v1.1 (SPEC-17, SPEC-27)
+constants/links.ts        Privacy/Terms/Support URLs (tranquilfast.app) used by Settings
 
 store/fastStore.ts        Fasting state (MANUAL AsyncStorage persist via save/loadFromStorage)
-store/weightStore.ts      Weight state (zustand persist middleware with AsyncStorage, version 2)
+store/weightStore.ts      Weight state (zustand persist middleware with AsyncStorage, version 4)
 
 utils/fastingUtils.ts     formatTime, formatDate, calculateProgress, getPlanDuration, getFastingMessage
 utils/appleHealth.ts      HealthKit init, read/write weight, sync
 utils/content.ts          Static content data for Learn tab
 utils/index.ts            Re-exports + errorHandler + storage keys
 
-services/revenuecat.ts    RevenueCat wrapper (init, purchase, restore, status check)
+services/revenuecat.ts    RevenueCat wrapper — every public fn short-circuits when `REVENUECAT_ENABLED` is false (SPEC-17)
 services/notifications.ts  Expo notifications setup
 services/offline-sync.ts  Offline queue (stub - not flushed)
 services/supabase.ts      Backend sync (stub - user_id: 'stub')
@@ -60,7 +65,16 @@ The `startFast()` method in `fastStore.ts:71-72` correctly calculates `plannedDu
 4. Read in `loadFromStorage()` (happens automatically via spread: `set({ ...data, hasHydrated: true })`)
 
 ### weightStore uses zustand persist middleware
-`weightStore` uses `persist()` with `createJSONStorage(() => AsyncStorage)`. New fields are automatically persisted. Has a version 2 migration system.
+`weightStore` uses `persist()` with `createJSONStorage(() => AsyncStorage)`. New fields are automatically persisted. Has a version 5 migration system (bump `version` and add a `version < N` block when changing persisted shape).
+
+### Apple Health sync invariants (SPEC-23)
+- Manual entries carry `healthExport` (`opted_out` | `pending` | `synced`, SPEC-26). Consent is separate from delivery: the Add Weight modal saves `pending` when the Sync switch is ON (then exports via the serialized `syncWeightData('export')`), `opted_out` when OFF; editing never changes it. Export only sends `source === 'manual' && healthExport === 'pending'` and flips each to `synced` after a successful save. Persist v5 migration marked legacy manual entries `synced` (if previously flagged) else `opted_out` — history is never silently exported; a v1.1 "export older entries" action may be offered. `syncWeightData` and `saveWeightToHealth` run through a module-level promise queue (`runExclusive`) so they never interleave; `addEntry` ignores a `healthId` already present or in `deletedHealthIds`. `_layout.tsx` awaits `waitForWeightStoreHydration()` before `setUnitDefault`/reading `isHealthConnected`.
+- Imported entries carry `healthId` (HealthKit sample id). Import reads FULL history every sync (never a lastSync-limited window — an early empty sync would hide older data) and dedupes by `healthId` or timestamp within 1s. Locally deleted imports are remembered in `deletedHealthIds` so they don't return.
+- `saveWeight` in react-native-health reads the date from `startDate` (NOT `date`); keep it that way.
+- iOS hides READ permission status: denied read = empty result, no error. The Health card therefore shows a permission hint with an "Open Health" button when a sync finds nothing AND no `apple_health` entry was ever imported (SPEC-24); never show a plain "success" for that case. Confirmed in the field: Weight WRITE on / READ off happens, and iOS will not re-prompt.
+- `lastHealthSync` is set on every successful sync (even when nothing changed).
+- Launch-time `initHealthKit({ keepConnectedOnFailure: true })` must never clear `isHealthConnected`; only an explicit user-initiated connect failure may.
+- HealthKit can only be verified on a physical device. Known gap: edits/deletes of entries are not mirrored to Health.
 
 ### Dark mode: dual system
 - NativeWind `dark:` classes driven by `setColorScheme()` in `_layout.tsx:135`
@@ -84,12 +98,61 @@ bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-ne
 ### Icons: lucide-react-native
 All icons use `lucide-react-native`, NOT `@expo/vector-icons`.
 
+### Privacy Invariant (SPEC-16 — App Store requirement)
+No health, weight, fasting, or user-identifying data may ever reach Sentry servers. App Store privacy labels declare diagnostics-only, not linked to user.
+
+**How it is enforced in `app/_layout.tsx`:**
+- `beforeSend`: `redactSensitive()` recursively strips any event key matching `weight`, `goal`, `unit`, `name`, `kg`, `lbs`, `value`. Add new sensitive key names to the `SENSITIVE_KEYS` set there.
+- `beforeBreadcrumb`: drops all `console.*` breadcrumbs entirely — console output is the primary accidental-leak vector.
+- `tracesSampleRate: 0` — performance tracing disabled; it attached request payloads that could carry values.
+- `autoSessionTracking: false`, `enableUserInteractionTracing: false` — reduced attack surface.
+
+**How it is enforced in `utils/appleHealth.ts`:**
+- All `Sentry.captureException()` calls use **static** `new Error("literal string")`. Never `new Error(someValue)` or template literals containing HealthKit data.
+- All `console.log` / `console.warn` wrapped in `if (__DEV__)` — defense-in-depth.
+
+**How it is enforced in `store/weightStore.ts`:**
+- All weight-bearing `console.log` calls wrapped in `if (__DEV__)`.
+
+**Rule for future Sentry instrumentation:** pass only static strings as Error messages; pass only non-sensitive keys in `extra`/`tags` (e.g. `{ screen: 'progress' }`, never `{ weight: entry.value }`).
+
+### RevenueCat Invariant (SPEC-17 — App Store v1.0 free launch)
+
+v1.0 ships as a genuinely free app: zero in-app purchases, zero paywall, zero SDK initialization. RevenueCat code is retained in the repo for v1.1 reactivation, but the SDK must remain dormant in v1.0.
+
+**How it is enforced in `services/revenuecat.ts`:**
+- Module exports `REVENUECAT_ENABLED = process.env.EXPO_PUBLIC_ENABLE_REVENUECAT === 'true'` (strict-string equality — `undefined`, `"false"`, `"1"`, boolean `true` all resolve to `false`).
+- Every exported function (`initializeRevenueCat`, `checkSubscriptionStatus`, `getCurrentOffering`, `purchasePackage`, `restorePurchases`, `getCustomerInfo`, `getActiveSubscription`, `identifyUser`, `logoutUser`) opens with `if (!REVENUECAT_ENABLED) return …`. No `Purchases.*` call can execute when disabled.
+- No fallback API key in source. `REVENUECAT_IOS_KEY` / `REVENUECAT_ANDROID_KEY` are `string | undefined`, sourced only from `EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY` / `_GOOGLE_API_KEY`.
+- If the flag is true but the API key is missing, `initializeRevenueCat` warns (dev-only) and returns `false` without calling `Purchases.configure`.
+
+**How it is enforced in `app/_layout.tsx`:**
+- The entire RevenueCat startup block is wrapped in `if (REVENUECAT_ENABLED) { ... }`. When disabled, `initializeRevenueCat`, `checkSubscriptionStatus`, and `setPremium` are never reached at app launch.
+
+**How the paywall route is hidden in v1.0:**
+- The paywall screen lives at `dormant/paywall.tsx`, outside `app/`, so no route exists (SPEC-27; the earlier `_paywall.tsx` underscore trick did NOT hide it — expo-router only ignores `+`-prefixed files). Deep links to `/paywall` and `/_paywall` hit `+not-found`.
+- `<Stack.Screen name="paywall" .../>` is no longer registered in `_layout.tsx`.
+- `components/PremiumGate.tsx` is defined but rendered zero times anywhere in the app tree. Its `router.push('/paywall' as any)` is dead code; the `as any` cast satisfies typed-routes since `/paywall` is no longer a valid route.
+
+**v1.1 reactivation is documented in SPEC-17 §10** as three code reversals (~2 min) plus EAS env-var changes (~2 min) plus product decisions about which features to gate.
+
+**Rule for v1.0 contributors:** Do not render `<PremiumGate>` anywhere. Do not import from `services/revenuecat`. Do not navigate to `/paywall`. Do not set `EXPO_PUBLIC_ENABLE_REVENUECAT=true` in production EAS env. All four constraints lift in v1.1.
+
 ## Anti-Patterns (MUST avoid)
 
 - **NEVER** set RevenueCat log level to VERBOSE. It caused a memory leak / OOM crash (fixed in commit f2e7779). Log level must stay at WARN.
-- **NEVER** modify the initialization order in `_layout.tsx`: store hydration -> RevenueCat init -> HealthKit reinit. Changing order causes race conditions.
+- **NEVER** modify the initialization order in `_layout.tsx`: store hydration -> RevenueCat init (gated, may no-op in v1.0) -> HealthKit reinit. Changing order causes race conditions. In v1.0 the RevenueCat block is wrapped in `if (REVENUECAT_ENABLED) { ... }` and skipped entirely — that gate stays.
+- **NEVER** render `<PremiumGate>` or navigate to `/paywall` in v1.0. RevenueCat is disabled; the paywall route is unregistered and the file lives at `dormant/paywall.tsx` (outside `app/`). See SPEC-17 §10 for v1.1 reactivation.
+- **NEVER** restore the placeholder API key fallback `'appl_YOUR_API_KEY_HERE'` in `services/revenuecat.ts`. The constants must remain `string | undefined`, sourced exclusively from env vars (SPEC-17).
 - **NEVER** call `getPlanDuration(selectedPlan)` without the `customDuration` parameter when `selectedPlan` could be `'custom'`. This is a known bug source.
 - **NEVER** add `console.log` to production paths without `__DEV__` guards. Many debug logs exist from prior sessions -- clean them up when touching those files.
+- **NEVER** run `npx expo run:ios`, `npx expo run:android`, or `npx expo prebuild`. These generate a local `ios/`/`android/` directory whose `Info.plist` then silently overrides `app.json` on the next EAS Build (this caused the canceled build 101 — stale HealthKit/notification strings). The simulator is run via `npx expo start` + Expo Go / dev client only. If you ever need to inspect native config, read `app.json` — never generate the native project.
+
+### Known Constraints
+- **Managed workflow — native dirs are GENERATED, never committed (SPEC-22 lesson).** This project has no committed `ios/` or `android/` directory. EAS Build runs `expo prebuild` on the server from `app.json`, so `app.json` is the single source of truth for `Info.plist` (permission strings, `UIBackgroundModes`, entitlements). Both `.gitignore` and `expo/.gitignore` ignore `/ios` and `/android`. **If a local `ios/`/`android/` dir exists, EAS uploads it and its stale `Info.plist` silently overrides `app.json`** — this shipped the wrong HealthKit/notification strings into build 101 (canceled). Canary: if a build log prints *"an ios directory was detected in the project / EAS Build will use the value found in the native code"*, STOP — delete `expo/ios` and `expo/android` and rebuild. All compliance permission edits (SPEC-18 HealthKit, SPEC-20 notifications) live in `app.json` and only reach the binary via a clean server prebuild.
+- **Old Architecture only** (`newArchEnabled: false` in `app.json`). Do NOT enable New Architecture without a dedicated migration spec. Enabling it would unblock NativeWind 4.2 but requires auditing all native modules — out of scope.
+- **NativeWind pinned at 4.1.23.** Do not bump to 4.2+ without first enabling New Architecture (see SPEC-14 progress notes). NativeWind 4.2 requires `react-native-worklets` which requires New Arch.
+- **Tailwind `transition-*` and `animate-*` utility classes are FORBIDDEN** in any `className` prop. They trigger `css-interop`'s `Animated.createAnimatedComponent` path, which crashes under React 19. Use `react-native-reanimated` directly for any animation.
 
 ## Session Protocol
 
@@ -115,7 +178,7 @@ All icons use `lucide-react-native`, NOT `@expo/vector-icons`.
 ## Testing Checklist (per area)
 
 ### After changing fastStore.ts:
-- [ ] Timer start/stop/pause works
+- [ ] Timer start/stop works; plan change mid-fast keeps the fast
 - [ ] Persistence survives app restart (kill and relaunch)
 - [ ] Custom plan duration is preserved correctly
 
@@ -141,14 +204,41 @@ All icons use `lucide-react-native`, NOT `@expo/vector-icons`.
 See `expo/specs/` for numbered task specifications. Execute in order: 00 -> 08.
 Each spec is self-contained with exact file paths, code changes, and verification steps.
 
-**Completed:** SPEC-00, SPEC-01, SPEC-02, SPEC-03, SPEC-04.
-**Next: SPEC-05**.
+**Completed:** SPEC-00–04 (bug fixes + early features), SPEC-09 (auto-detect units, folded into SPEC-11), SPEC-10–14 (SDK 54 upgrade track), SPEC-16 (Sentry privacy hardening), SPEC-17 (RevenueCat dormant for free v1), SPEC-18 (HealthKit usage descriptions), SPEC-19 (Learn-tab external links cleanup), SPEC-20 (notifications brand-voice + lifecycle), SPEC-22 (external link health check), SPEC-23 (Apple Health sync fixes; code complete, on-device verification pending), SPEC-24 (pre-submission hardening; code complete, ships in build 104).
+**Pre-launch blockers from the independent (Manus) review, run in order, fresh session each:** SPEC-25 (fast lifecycle: remove Pause, safe plan change) → SPEC-26 (Health export consent, hydration, serialization) → SPEC-27 (paywall route, Erase All Data, in-app legal links, privacy docs) → SPEC-28 (verification matrix on build 105). Review text: `specs/reference/MANUS-prelaunch-review-2026-10.md`; post-launch items: `specs/BACKLOG-v1.1.md`. **SPEC-27 landed (code):** paywall moved to `dormant/`, Settings "Erase All Data" (cancels notifications, clears AsyncStorage, calls `reset()` on both stores, routes to onboarding; never re-persists stale state), in-app Privacy/Terms/Support links via `constants/links.ts`, `supportsTablet: false`. `tranquilfast.app` is not yet hosted (owner task; hard submission blocker). Next: SPEC-28.
+**In progress:** SPEC-21 (App Store submission punch list — paperwork checklist; build + ASC listing).
+**Pending:** SPEC-05 (Apple Health onboarding), SPEC-06 (Learn tab images), SPEC-08 (App Store submission — superseded by SPEC-21).
+**Deferred to v1.1:** SPEC-07 (premium gating) — depends on SPEC-17 reactivation; see SPEC-17 §10 checklist.
+
+### App Store submission status (v1.0)
+All engineering compliance work is complete (SPEC-16 through SPEC-22). Remaining
+work is paperwork in SPEC-21: production build, privacy-policy URL hosting,
+screenshots, App Privacy labels, and the ASC listing. The compliance-clean
+build candidate is built via `eas build --platform ios --profile production`
+from `app.json` (NOT from any local native dir — see Known Constraints).
+
+**Builds:** buildNumber **103** (EAS `9fd1da62-41bf-4273-bebc-c7b747fbb403`, 2026-10-17) is on TestFlight but has the Health bugs described in SPEC-23's follow-up (empty import, misleading success). **Build 104 (next, not yet built) is the App Store candidate** and includes SPEC-23 follow-up + SPEC-24. `ios.buildNumber` is intentionally absent from `app.json` (EAS remote versioning owns it).
+
+### Pre-submission rules (SPEC-24)
+- No `NSAppTransportSecurity` exceptions in `app.json`; all remote content must be HTTPS. Don't re-add one without a documented reason.
+- Every `console.*` call must be `if (__DEV__)`-gated (single-line or inside a braced `__DEV__` block). Check with: `grep -rnE "console\.(log|warn|error|info|debug)" app components utils store services hooks constants | grep -v __DEV__` and confirm any hits are inside a braced `__DEV__` block.
+- `services/supabase.ts` / `services/offline-sync.ts` are inert stubs (in-memory, no network). Replacing them with a real backend requires updating the privacy policy and App Privacy labels first.
 
 ## Build Commands
+`preview` is internal/ad hoc distribution and does NOT reach TestFlight; use `production` + `eas submit` for TestFlight. If credentials/provisioning profile expired, run the build interactively once (non-interactive fails). The dev Mac's Xcode license must be accepted (`sudo xcodebuild -license`) or `/usr/bin/python3` breaks (EAS cloud builds are unaffected).
 ```bash
 npx expo start                              # Dev server
-eas build --platform ios --profile preview  # TestFlight build
+eas build --platform ios --profile production   # Store build (TestFlight/App Store); auto-increments buildNumber
+eas submit --platform ios --profile production  # Upload latest build to App Store Connect/TestFlight
+eas build --platform ios --profile preview  # Internal ad hoc build (registered devices only)
 eas submit --platform ios                   # App Store submission
 npx tsc --noEmit                            # Type check
 npx expo-doctor                             # Health check
 ```
+
+### Fast lifecycle (SPEC-25)
+- Pause was removed. `FastSession.isRunning` is optional/ignored; `loadFromStorage` flips a persisted `isRunning === false` to `true`. Elapsed is always wall-clock from `startTime`.
+- `updatePlan(plan)` never discards the fast: it keeps `id`/`startTime`, sets `plan` + `plannedDuration` (via `getPlanDuration(plan, customDuration)`), and reschedules remaining milestones. Elapsed > target shows "goal reached".
+- `choose-plan.tsx` only mutates the store from the footer button, never on card tap.
+- `notificationsUtils` uses a module-level generation counter: `cancelFastingNotifications()` bumps it synchronously; `scheduleMilestones(total, enabled, elapsedSeconds)` aborts after any await if superseded. `setNotificationsEnabled(true)` mid-fast still does not reschedule (known, acceptable).
+- `endFast` saves to storage before any NetInfo/stub work.

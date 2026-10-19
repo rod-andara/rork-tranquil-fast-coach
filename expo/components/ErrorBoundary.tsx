@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import { errorHandler } from '@/utils';
 
@@ -15,7 +16,13 @@ export default class ErrorBoundary extends React.Component<React.PropsWithChildr
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    Sentry.captureException(error, {
+      contexts: {
+        react: { componentStack: errorInfo.componentStack },
+      },
+      tags: { source: 'ErrorBoundary' },
+    });
     errorHandler(error, 'Something went wrong');
   }
 

@@ -9,5 +9,5 @@ type SupabaseFast = {
 };
 
 export async function supabaseUpsertFast(_fast: SupabaseFast): Promise<void> {
-  console.log('[supabase] upsert fast stub', _fast.id);
+  if (__DEV__) console.log('[supabase] upsert fast stub', _fast.id);
 }
